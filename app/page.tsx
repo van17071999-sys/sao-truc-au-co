@@ -213,6 +213,8 @@ export default function Home() {
   const [recordingDetailsOpen, setRecordingDetailsOpen] = useState(false);
   const [selectedPurchase, setSelectedPurchase] = useState("");
   const [orderSent, setOrderSent] = useState(false);
+  const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+  const [paymentError, setPaymentError] = useState("");
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState("");
   const [transferContent, setTransferContent] = useState("");
@@ -283,7 +285,38 @@ export default function Home() {
     setPaymentAmount(price);
     setTransferContent(product.toLocaleUpperCase("vi").replace(/[^A-Z0-9À-Ỹ]+/g, "_").slice(0, 32));
     setOrderSent(false);
+    setPaymentSubmitting(false);
+    setPaymentError("");
     setPaymentOpen(true);
+  }
+
+  async function confirmPayment(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setPaymentSubmitting(true);
+    setPaymentError("");
+    const data = new FormData(e.currentTarget);
+
+    try {
+      const response = await fetch("/api/payment-notification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product: selectedPurchase,
+          amount: paymentAmount,
+          transferContent,
+          buyerName: data.get("buyerName"),
+          buyerPhone: data.get("buyerPhone"),
+          buyerEmail: data.get("buyerEmail"),
+        }),
+      });
+
+      if (!response.ok) throw new Error("notification_failed");
+      setOrderSent(true);
+    } catch {
+      setPaymentError("Chưa gửi được thông báo. Vui lòng thử lại hoặc liên hệ Zalo 0374 261 368.");
+    } finally {
+      setPaymentSubmitting(false);
+    }
   }
 
   return (
@@ -383,9 +416,9 @@ export default function Home() {
               <h3>THÔNG TIN CHUYỂN KHOẢN</h3>
               <div className="bank-info"><p><span>Ngân hàng:</span><b>STB · Sacombank</b></p><p><span>Số tài khoản:</span><b>030046023451</b><button type="button" onClick={() => navigator.clipboard?.writeText("030046023451")}>Sao chép</button></p><p><span>Chủ tài khoản:</span><b>QUACH HA VAN</b></p><label><span>Số tiền thanh toán:</span><input value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} placeholder="Nhập số tiền (VNĐ)" inputMode="numeric" /></label><label><span>Nội dung chuyển khoản:</span><input value={transferContent} onChange={(e) => setTransferContent(e.target.value)} placeholder="Nhập nội dung chuyển khoản" /><button type="button" onClick={() => navigator.clipboard?.writeText(transferContent)}>Sao chép</button></label></div>
               <h3>THÔNG TIN NGƯỜI MUA</h3>
-              <form id="payment-form" onSubmit={(e) => { e.preventDefault(); setOrderSent(true); }}><label>Họ và tên <small>(không bắt buộc)</small><input name="buyerName" placeholder="Nhập họ tên của bạn" /></label><label>Số điện thoại / Zalo nhận file *<input required name="buyerPhone" type="tel" placeholder="Nhập số điện thoại Zalo" /></label><label>Email nhận khóa học<input name="buyerEmail" type="email" placeholder="Email của bạn (nếu có)" /></label></form>
+              <form id="payment-form" onSubmit={confirmPayment}><label>Họ và tên <small>(không bắt buộc)</small><input name="buyerName" placeholder="Nhập họ tên của bạn" /></label><label>Số điện thoại / Zalo nhận file *<input required name="buyerPhone" type="tel" placeholder="Nhập số điện thoại Zalo" /></label><label>Email nhận khóa học<input name="buyerEmail" type="email" placeholder="Email của bạn (nếu có)" /></label></form>
             </div>
-            <aside className="payment-qr"><img src="/vietqr-payment.png" alt="Mã thanh toán VietQR Sacombank" width="540" height="540" loading="eager" decoding="sync" /><a href="/vietqr-payment.png" target="_blank" rel="noreferrer">↓ Tải / Mở ảnh QR</a><button className="payment-confirm" type="submit" form="payment-form">● Xác nhận đã chuyển khoản</button>{orderSent && <p role="status">Đã ghi nhận trên trang. Vui lòng gửi ảnh giao dịch qua Zalo 0374 261 368 để Hồng Việt kiểm tra và cấp khóa học.</p>}</aside>
+            <aside className="payment-qr"><img src="/vietqr-payment.png" alt="Mã thanh toán VietQR Sacombank" width="540" height="540" loading="eager" decoding="sync" /><a href="/vietqr-payment.png" target="_blank" rel="noreferrer">↓ Tải / Mở ảnh QR</a><button className="payment-confirm" type="submit" form="payment-form" disabled={paymentSubmitting || orderSent}>{paymentSubmitting ? "Đang gửi thông báo..." : orderSent ? "✓ Đã gửi xác nhận" : "● Xác nhận đã chuyển khoản"}</button>{orderSent && <p role="status">Đã gửi thông báo cho Hồng Việt. Giao dịch sẽ được kiểm tra trước khi cấp khóa học hoặc sản phẩm.</p>}{paymentError && <p className="payment-error" role="alert">{paymentError}</p>}</aside>
           </div>
         </section>
       </div>}
