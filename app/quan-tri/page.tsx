@@ -21,6 +21,7 @@ type CmsEntry = {
 
 const collections = [
   { key: "services", label: "8 mục chính", note: "Các thẻ lớn trên trang chủ" },
+  { key: "hero-slides", label: "5 ảnh đầu trang", note: "Năm ảnh demo bộ môn ở đầu trang chủ", tagLabel: "Nhãn nhỏ phía trên", priceLabel: "Chữ trên nút", excerptLabel: "Mô tả dưới tiêu đề", contentLabel: "Đường dẫn khi bấm nút" },
   { key: "class-details", label: "Chi tiết lớp học", note: "Từng bộ môn, nội dung học và đối tượng phù hợp", tagLabel: "Biểu tượng", priceLabel: "Phù hợp với", contentLabel: "Nội dung học (mỗi dòng một ý)" },
   { key: "product-groups", label: "Nhóm sáo & phụ kiện", note: "Các nhóm như Sáo ngang, Dizi, Sáo mèo…", tagLabel: "Nhãn phụ", contentLabel: "Nội dung bổ sung" },
   { key: "product-items", label: "Từng sản phẩm", note: "Từng cây sáo hoặc phụ kiện nằm trong một nhóm", tagLabel: "Slug nhóm cha *", tagPlaceholder: "Ví dụ: sao-ngang-viet-nam", priceLabel: "Giá / Liên hệ", contentLabel: "Thông tin bổ sung" },
