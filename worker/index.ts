@@ -42,6 +42,8 @@ type CmsRow = {
 const CMS_COOKIE = "hongviet_cms_session";
 const CMS_COLLECTIONS = new Set([
   "services", "classes", "products", "materials", "articles", "courses",
+  "class-details", "product-groups", "product-items", "course-groups", "course-items",
+  "studio-packages", "booking-packages", "recording-instruments",
   "settings", "page-classes", "page-products", "page-articles", "page-courses",
 ]);
 
@@ -58,6 +60,76 @@ const initialCmsEntries = [
   ["article-02", "articles", "Người mới nên bắt đầu với sáo tone nào?", "nguoi-moi-chon-sao-tone-nao", "So sánh sáo Đô C5, La A4 và Sol G4 để chọn cây sáo phù hợp với mục tiêu học.", "", "Chọn nhạc cụ", "", "", 2],
   ["article-03", "articles", "Cách luyện hơi dài mà không bị căng", "cach-luyen-hoi-dai", "Một lịch tập ngắn, an toàn và hiệu quả để cải thiện cột hơi mỗi ngày.", "", "Luyện tập", "", "", 3],
   ["settings-general", "settings", "HỒNG VIỆT", "general", "Sáo trúc & âm nhạc dân tộc", "/hero-flute.webp", "vanquach999x@gmail.com", "0374 261 368", "106/72 Hòa Bình, P. Tân Phú, TP.HCM", 1],
+] as const;
+
+const detailedCmsEntries = [
+  // Chi tiết các bộ môn. Nội dung là danh sách kiến thức, mỗi dòng một ý.
+  ["class-sao-truc", "class-details", "Sáo trúc Việt Nam", "sao-truc-viet-nam", "Nền tảng hơi, ngón và kỹ thuật biểu cảm đặc trưng.", "/carousel-saotruc.webp", "♫", "Người mới bắt đầu, người chơi tự học hoặc học viên muốn biểu diễn.", "Tư thế, khẩu hình và cột hơi\nNgón bấm, đánh lưỡi, rung hơi\nDân ca, nhạc trữ tình và nhạc trẻ", 1],
+  ["class-dizi", "class-details", "Sáo Dizi", "sao-dizi", "Âm sắc sáng, vang với màng rung và phong cách cổ phong.", "/carousel-dizi.webp", "◉", "Người yêu nhạc Trung Hoa, nhạc phim và âm sắc Dizi.", "Dán và điều chỉnh màng rung\nHệ thống ngón và kỹ thuật hơi\nLuyến, láy và xử lý tác phẩm cổ phong", 2],
+  ["class-recorder", "class-details", "Sáo Recorder", "sao-recorder", "Dễ tiếp cận, phù hợp trẻ em và giáo dục âm nhạc.", "/carousel-recorder.webp", "♩", "Trẻ em, người mới học và giáo viên âm nhạc phổ thông.", "Tư thế, hơi và ngón bấm chuẩn\nĐọc bản nhạc và giữ nhịp\nĐộc tấu, song tấu và hòa tấu", 3],
+  ["class-xiao", "class-details", "Động tiêu & Xiao", "dong-tieu-xiao", "Âm thanh trầm ấm, sâu lắng và giàu chất thiền.", "/carousel-tieu.webp", "♬", "Người yêu âm nhạc nhẹ nhàng, cổ phong và thiền định.", "Tạo tiếng và kiểm soát âm trầm\nNgón bấm hai hệ nhạc cụ\nVuốt, rung và xử lý giai điệu chậm", 4],
+  ["class-flute", "class-details", "Flute", "flute", "Kỹ thuật phương Tây bài bản, âm sắc trong trẻo linh hoạt.", "/carousel-flute.webp", "♪", "Người mới, học sinh nghệ thuật hoặc người muốn nâng cao kỹ thuật.", "Tư thế, khẩu hình và cao độ\nGam, etude và kỹ thuật lưỡi\nĐọc nhạc và xử lý tác phẩm", 5],
+  ["class-hmong", "class-details", "Sáo H’Mông", "sao-hmong", "Khám phá âm hưởng Tây Bắc mộc mạc và da diết.", "/carousel-saotruc.webp", "❋", "Người yêu âm nhạc dân tộc và muốn khám phá nhạc cụ mới.", "Tạo tiếng và điều khiển lam đồng\nHệ thống ngón đặc trưng\nLàn điệu và phong cách Tây Bắc", 6],
+
+  // Nhóm sản phẩm và sản phẩm con. Trường nhãn của sản phẩm con là slug nhóm cha.
+  ["pg-sao-ngang", "product-groups", "Sáo ngang Việt Nam", "sao-ngang-viet-nam", "Nhạc cụ ngang truyền thống, âm sắc mộc mạc và phù hợp từ người mới đến người biểu diễn.", "/carousel-saotruc.webp", "", "", "", 1],
+  ["pg-dizi", "product-groups", "Sáo Dizi Trung Quốc", "sao-dizi-trung-quoc", "Dòng sáo có màng rung đặc trưng, âm thanh sáng và giàu chất cổ phong.", "/carousel-dizi.webp", "", "", "", 2],
+  ["pg-sao-meo", "product-groups", "Sáo mèo", "sao-meo", "Âm sắc da diết nhờ lam đồng, mang đậm màu sắc âm nhạc vùng cao.", "/carousel-saotruc.webp", "", "", "", 3],
+  ["pg-tieu-xiao", "product-groups", "Tiêu & Xiao", "tieu-xiao", "Nhạc cụ thổi dọc với âm vực trầm, sâu, thích hợp nhạc thiền và cổ phong.", "/carousel-tieu.webp", "", "", "", 4],
+  ["pg-recorder", "product-groups", "Recorder", "recorder", "Nhạc cụ dễ học, phù hợp trẻ em, giáo dục âm nhạc và hòa tấu.", "/carousel-recorder.webp", "", "", "", 5],
+  ["pg-flute", "product-groups", "Flute", "flute", "Sáo ngang phương Tây với âm sắc trong trẻo, linh hoạt và âm vực rộng.", "/carousel-flute.webp", "", "", "", 6],
+  ["pg-sao-doc", "product-groups", "Sáo dọc", "sao-doc", "Các dòng sáo thổi dọc gọn nhẹ, âm thanh gần gũi và dễ luyện tập.", "/carousel-tieu.webp", "", "", "", 7],
+  ["pi-sao-nua", "product-items", "Sáo nứa", "sao-nua", "Chất âm ấm, nhẹ, dễ rung và giàu màu sắc dân gian.", "/carousel-saotruc.webp", "sao-ngang-viet-nam", "Liên hệ", "", 1],
+  ["pi-sao-truc", "product-items", "Sáo trúc", "sao-truc", "Âm thanh sáng, vang, độ bền cao; có nhiều tone để lựa chọn.", "/carousel-saotruc.webp", "sao-ngang-viet-nam", "Liên hệ", "", 2],
+  ["pi-sao-nua-bac", "product-items", "Sáo nứa Bắc", "sao-nua-bac", "Thành sáo mỏng, tiếng thanh và mềm, phù hợp dân ca miền Bắc.", "/carousel-saotruc.webp", "sao-ngang-viet-nam", "Liên hệ", "", 3],
+  ["pi-dizi-truc", "product-items", "Dizi trúc", "dizi-truc", "Phiên bản truyền thống, âm sắc cân bằng và dễ sử dụng.", "/carousel-dizi.webp", "sao-dizi-trung-quoc", "Liên hệ", "", 1],
+  ["pi-dizi-ngoc", "product-items", "Dizi ngọc", "dizi-ngoc", "Ngoại hình sang trọng, âm sắc riêng và thích hợp sưu tầm.", "/carousel-dizi.webp", "sao-dizi-trung-quoc", "Liên hệ", "", 2],
+  ["pi-dizi-thuy-tinh", "product-items", "Dizi thủy tinh", "dizi-thuy-tinh", "Thiết kế trong suốt độc đáo, nổi bật khi biểu diễn.", "/carousel-dizi.webp", "sao-dizi-trung-quoc", "Liên hệ", "", 3],
+  ["pi-meo-don", "product-items", "Sáo mèo đơn bằng gỗ", "sao-meo-don", "Thân gỗ chắc chắn, âm trầm ấm và dễ mang theo.", "/carousel-saotruc.webp", "sao-meo", "Liên hệ", "", 1],
+  ["pi-meo-cap", "product-items", "Sáo mèo cặp bằng nứa", "sao-meo-cap", "Hai ống nứa hòa âm tạo chất tiếng dày và độc đáo.", "/carousel-saotruc.webp", "sao-meo", "Liên hệ", "", 2],
+  ["pi-tieu", "product-items", "Tiêu trúc Việt 6 lỗ", "tieu-truc-viet", "Hệ ngón quen thuộc, tiếng trầm mộc mạc và dễ tiếp cận.", "/carousel-tieu.webp", "tieu-xiao", "Liên hệ", "", 1],
+  ["pi-xiao", "product-items", "Xiao trúc Trung Quốc 8 lỗ", "xiao-truc", "Hệ 8 lỗ linh hoạt, âm sắc sâu và giàu biểu cảm.", "/carousel-tieu.webp", "tieu-xiao", "Liên hệ", "", 2],
+  ["pi-recorder-nhua", "product-items", "Recorder nhựa", "recorder-nhua", "Bền, dễ vệ sinh và ổn định cao độ cho người mới học.", "/carousel-recorder.webp", "recorder", "Liên hệ", "", 1],
+  ["pi-recorder-go", "product-items", "Recorder gỗ", "recorder-go", "Chất âm ấm, tự nhiên, phù hợp người chơi nâng cao.", "/carousel-recorder.webp", "recorder", "Liên hệ", "", 2],
+  ["pi-flute-nhua", "product-items", "Flute nhựa", "flute-nhua", "Nhẹ, dễ bảo quản, phù hợp người mới.", "/carousel-flute.webp", "flute", "Liên hệ", "", 1],
+  ["pi-flute-ma-bac", "product-items", "Flute mạ bạc", "flute-ma-bac", "Lựa chọn phổ biến cho học tập, âm thanh sáng.", "/carousel-flute.webp", "flute", "Liên hệ", "", 2],
+  ["pi-flute-bac", "product-items", "Flute bạc", "flute-bac", "Âm sắc dày và giàu cộng hưởng, dành cho người chơi chuyên sâu.", "/carousel-flute.webp", "flute", "Liên hệ", "", 3],
+  ["pi-sao-doc-nua", "product-items", "Sáo dọc nứa", "sao-doc-nua", "Chất tiếng mềm, mộc và mang nét dân gian tự nhiên.", "/carousel-tieu.webp", "sao-doc", "Liên hệ", "", 1],
+  ["pi-sao-doc-truc", "product-items", "Sáo dọc trúc", "sao-doc-truc", "Thân chắc, tiếng sáng và độ bền tốt.", "/carousel-tieu.webp", "sao-doc", "Liên hệ", "", 2],
+
+  // Nhóm khóa học và từng nội dung khóa học.
+  ["cg-sao-truc", "course-groups", "Sáo trúc", "sao-truc", "Khóa học sáo trúc quay sẵn, học mọi lúc và xem lại trọn đời.", "/carousel-saotruc.webp", "", "", "", 1],
+  ["cg-sao-meo", "course-groups", "Sáo mèo", "sao-meo", "Lộ trình sáo mèo từ cơ bản đến biểu diễn.", "/carousel-saotruc.webp", "", "", "", 2],
+  ["cg-recorder", "course-groups", "Recorder", "recorder", "Khóa recorder theo cấp độ cho trẻ em và người mới.", "/carousel-recorder.webp", "", "", "", 3],
+  ["cg-dizi", "course-groups", "Sáo Dizi", "sao-dizi", "Kỹ thuật Dizi, màng rung và tác phẩm Trung Hoa.", "/carousel-dizi.webp", "", "", "", 4],
+  ["ci-dan-ca", "course-items", "Dân ca & nhạc cổ ba miền", "dan-ca-nhac-co", "Tác phẩm tiêu biểu ba miền; hướng dẫn luyến láy, hơi và phong cách.", "", "sao-truc", "399.000đ", "", 1],
+  ["ci-dan-gian", "course-items", "Nhạc âm hưởng dân ca, dân gian", "nhac-dan-gian", "Xử lý các ca khúc mới mang màu sắc dân gian Việt Nam.", "", "sao-truc", "399.000đ", "", 2],
+  ["ci-bolero", "course-items", "Nhạc trữ tình & Bolero", "nhac-tru-tinh-bolero", "Kỹ thuật rung hơi, nhả chữ và tạo câu nhạc mềm mại.", "", "sao-truc", "399.000đ", "", 3],
+  ["ci-nhac-tre", "course-items", "Nhạc trẻ", "nhac-tre", "Chuyển soạn và trình diễn ca khúc hiện đại trên sáo trúc.", "", "sao-truc", "399.000đ", "", 4],
+  ["ci-sao-meo", "course-items", "Sáo mèo từ cơ bản đến biểu diễn", "sao-meo-co-ban", "Làm chủ lam đồng, hệ ngón và phong cách âm nhạc vùng cao.", "", "sao-meo", "499.000đ", "", 1],
+  ["ci-recorder-ngu-cung", "course-items", "Nhạc ngũ cung Việt Nam", "nhac-ngu-cung", "Giai điệu Việt Nam chuyển soạn phù hợp recorder.", "", "recorder", "299.000đ", "", 1],
+  ["ci-recorder-steiner", "course-items", "Giáo trình Steiner", "giao-trinh-steiner", "Lộ trình cảm thụ, hơi, ngón và đọc nhạc theo cấp độ.", "", "recorder", "399.000đ", "", 2],
+  ["ci-recorder-thieu-nhi", "course-items", "Nhạc thiếu nhi", "nhac-thieu-nhi", "Tuyển tập bài vui tươi, dễ học dành cho trẻ em.", "", "recorder", "299.000đ", "", 3],
+  ["ci-dizi-co-ban", "course-items", "Dizi cơ bản & 15 nhạc phẩm Trung Quốc", "dizi-co-ban", "Từ dán màng rung, hệ ngón đến 15 tác phẩm kinh điển.", "", "sao-dizi", "599.000đ", "", 1],
+  ["ci-dizi-hoa", "course-items", "Nhạc Hoa lời Việt", "nhac-hoa-loi-viet", "Ca khúc quen thuộc với hướng dẫn diễn cảm chi tiết.", "", "sao-dizi", "399.000đ", "", 2],
+
+  // Các gói dịch vụ. Nội dung là quyền lợi, mỗi dòng một ý.
+  ["studio-basic", "studio-packages", "Thu âm cơ bản", "thu-am-co-ban", "Một nhạc cụ · Một tác phẩm", "", "◉", "900.000đ", "Thu một nhạc cụ tại studio\nChỉnh sửa lỗi và lọc tạp âm\nMixing & mastering cơ bản\nBàn giao WAV và MP3\n01 lần chỉnh sửa", 1],
+  ["studio-complete", "studio-packages", "Thu âm hoàn chỉnh", "thu-am-hoan-chinh", "Bản thu sẵn sàng phát hành", "", "♫", "1.500.000đ", "Tư vấn tone và cấu trúc bài\nThu nhiều lượt, chọn take tốt\nMixing & mastering hoàn chỉnh\nGhép beat hoặc piano có sẵn\nBàn giao WAV, MP3 và instrumental", 2],
+  ["studio-video", "studio-packages", "Quay video biểu diễn", "quay-video-bieu-dien", "Hình ảnh chỉn chu, giàu cảm xúc", "", "▶", "1.800.000đ", "Quay Full HD với nhiều góc máy\nHỗ trợ bố cục và diễn xuất\nDựng video, chỉnh màu cơ bản\n01 bản ngang YouTube/Facebook\n01 lần chỉnh sửa", 3],
+  ["studio-mv", "studio-packages", "MV trọn gói", "mv-tron-goi", "Thu âm · Quay hình · Hậu kỳ", "", "◆", "Liên hệ", "Lên ý tưởng và kịch bản hình ảnh\nThu âm, mixing & mastering\nQuay studio hoặc ngoại cảnh\nDựng MV, chỉnh màu, chèn tiêu đề\nCó thể thêm bản dọc TikTok/Reels", 4],
+  ["studio-memory", "studio-packages", "Video kỷ niệm học viên", "video-ky-niem", "Lưu lại dấu mốc âm nhạc", "", "★", "1.200.000đ", "Tư vấn chọn bài phù hợp\nThu âm hoặc thu tiếng trực tiếp\nQuay video biểu diễn\nDựng clip hoàn chỉnh\nTặng ảnh bìa video", 5],
+  ["booking-solo", "booking-packages", "Độc tấu nghệ sĩ", "doc-tau-nghe-si", "01 nghệ sĩ · 1–3 tiết mục", "", "♪", "Từ 2.000.000đ", "Sáo trúc, Dizi, tiêu, sáo mèo, recorder hoặc flute\nTư vấn tiết mục phù hợp không khí sự kiện\nTrang phục biểu diễn cơ bản", 1],
+  ["booking-duet", "booking-packages", "Song tấu", "song-tau", "Sáo kết hợp piano, guitar hoặc đàn tranh", "", "♫", "Từ 4.000.000đ", "02 nghệ sĩ chuyên nghiệp\nPhối hợp tiết mục theo chủ đề\n1–3 tiết mục biểu diễn", 2],
+  ["booking-ensemble", "booking-packages", "Nhóm hòa tấu", "nhom-hoa-tau", "Đội hình 3–5 nghệ sĩ", "", "♬", "Liên hệ", "Nhạc cụ dân tộc hoặc kết hợp hiện đại\nBiểu diễn đón khách, mở màn hoặc sân khấu\nTư vấn đội hình theo ngân sách", 3],
+  ["booking-band", "booking-packages", "Ban nhạc dân tộc", "ban-nhac-dan-toc", "Đội hình từ 5 nghệ sĩ", "", "◆", "Liên hệ", "Chương trình nghệ thuật quy mô lớn\nDàn dựng theo kịch bản sự kiện\nCó thể kết hợp ca sĩ và múa", 4],
+  ["booking-custom", "booking-packages", "Biểu diễn theo yêu cầu", "bieu-dien-theo-yeu-cau", "Dàn dựng riêng theo chủ đề", "", "★", "Liên hệ", "Chuyển soạn bài mới\nTrang phục và hình thức biểu diễn riêng\nPhù hợp quảng cáo, quay phim, lễ nghi", 5],
+  ["record-sao-truc", "recording-instruments", "Sáo trúc Việt Nam", "sao-truc-viet-nam", "Mộc mạc, mềm mại, giàu chất dân gian", "", "♫", "500.000đ", "", 1],
+  ["record-dizi", "recording-instruments", "Sáo Dizi", "sao-dizi", "Sáng, vang, phù hợp cổ phong và nhạc Hoa", "", "◉", "600.000đ", "", 2],
+  ["record-xiao", "recording-instruments", "Tiêu & Xiao", "tieu-xiao", "Trầm ấm, sâu lắng, thích hợp nhạc thiền", "", "♬", "600.000đ", "", 3],
+  ["record-flute", "recording-instruments", "Recorder & Flute", "recorder-flute", "Trong trẻo, linh hoạt cho nhạc phim và thiếu nhi", "", "♪", "500.000đ", "", 4],
+  ["record-strings", "recording-instruments", "Đàn tranh, đàn bầu, đàn nhị", "dan-truyen-thong", "Âm sắc truyền thống cho bản phối hiện đại", "", "◇", "Liên hệ", "", 5],
+  ["record-custom", "recording-instruments", "Nhạc cụ theo yêu cầu", "nhac-cu-theo-yeu-cau", "Nhạc cụ dây, gõ và hiệu ứng âm thanh riêng", "", "✦", "Liên hệ", "", 6],
 ] as const;
 
 function normalizeCmsRow(row: CmsRow) {
@@ -104,10 +176,8 @@ async function ensureCmsSchema(db: D1Database) {
     )`),
   ]);
 
-  const count = await db.prepare("SELECT COUNT(*) AS total FROM cms_entries").first<{ total: number }>();
-  if (Number(count?.total ?? 0) > 0) return;
   const now = new Date().toISOString();
-  await db.batch(initialCmsEntries.map((item) => db.prepare(`INSERT INTO cms_entries
+  await db.batch([...initialCmsEntries, ...detailedCmsEntries].map((item) => db.prepare(`INSERT OR IGNORE INTO cms_entries
     (id, collection, title, slug, published_at, excerpt, image_url, tag, price, content, visible, sort_order, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`)
     .bind(item[0], item[1], item[2], item[3], item[1] === "articles" ? "2026-08-08" : "", item[4], item[5], item[6], item[7], item[8], item[9], now)));
