@@ -39,13 +39,13 @@ function useCmsEntries(collection: string) {
 
 function ContentHeader() {
   return <header className="article-header">
-    <Link className="brand" href="/"><img className="brand-logo" src="/logo-hong-viet.png" alt="Logo Hồng Việt" /><span><b>HỒNG VIỆT</b><small>SÁO TRÚC & ÂM NHẠC DÂN TỘC</small></span></Link>
+    <Link className="brand" href="/"><span className="brand-mark">〽</span><span><b>HỒNG VIỆT</b><small>SÁO TRÚC & ÂM NHẠC DÂN TỘC</small></span></Link>
     <nav><Link href="/">Trang chủ</Link><Link href="/tin-tuc">Tin tức</Link><Link href="/cam-am">Cảm âm</Link><Link href="/#contact">Liên hệ</Link></nav>
   </header>;
 }
 
 function ContentFooter() {
-  return <footer><Link className="brand" href="/"><img className="brand-logo" src="/logo-hong-viet.png" alt="Logo Hồng Việt" /><span><b>HỒNG VIỆT</b><small>SÁO TRÚC & ÂM NHẠC DÂN TỘC</small></span></Link><p>Đam mê làm nên giá trị · Chất lượng tạo nên uy tín</p><small>© 2026 Hồng Việt.</small></footer>;
+  return <footer><Link className="brand" href="/"><span className="brand-mark">〽</span><span><b>HỒNG VIỆT</b><small>SÁO TRÚC & ÂM NHẠC DÂN TỘC</small></span></Link><p>Đam mê làm nên giá trị · Chất lượng tạo nên uy tín</p><small>© 2026 Hồng Việt.</small></footer>;
 }
 
 function ShareButton({ title }: { title: string }) {
