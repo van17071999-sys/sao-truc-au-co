@@ -282,7 +282,52 @@ export default function Home() {
   const contactAddress = generalSettings?.content || "106/72 Hòa Bình, P. Tân Phú, TP.HCM";
   const contactPhone = generalSettings?.price || "0374 261 368";
   const contactEmail = generalSettings?.tag || "vanquach999x@gmail.com";
-  const collectionForService: Partial<Record<ServiceSection, string>> = { classes: "classes", products: "products", courses: "courses", materials: "materials" };
+  const visibleCollection = (name: string) => cmsEntries
+    .filter((entry) => entry.collection === name && entry.visible)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+  const lines = (value: string) => value.split(/\n+/).map((line) => line.trim()).filter(Boolean);
+
+  const cmsClassDetails = visibleCollection("class-details");
+  const displayedDisciplines = cmsClassDetails.length ? cmsClassDetails.map((entry) => ({
+    slug: entry.slug, image: entry.imageUrl || "/carousel-saotruc.webp", imageAlt: `Minh họa bộ môn ${entry.title}`,
+    icon: entry.tag || "♪", title: entry.title, short: entry.excerpt, intro: entry.excerpt,
+    learn: lines(entry.content), suitable: entry.price || "Phù hợp với mọi người yêu âm nhạc.",
+  })) : disciplines;
+
+  const cmsProductGroups = visibleCollection("product-groups");
+  const cmsProductItems = visibleCollection("product-items");
+  const displayedProductCategories = cmsProductGroups.length ? cmsProductGroups.map((group) => ({
+    title: group.title, image: group.imageUrl || "/carousel-saotruc.webp", intro: group.excerpt,
+    products: cmsProductItems.filter((item) => item.tag === group.slug).map((item) => ({
+      name: item.title, description: item.excerpt, price: item.price || "Liên hệ", image: item.imageUrl || group.imageUrl,
+    })),
+  })) : productCategories;
+
+  const cmsCourseGroups = visibleCollection("course-groups");
+  const cmsCourseItems = visibleCollection("course-items");
+  const displayedRecordedCourses = cmsCourseGroups.length ? cmsCourseGroups.map((group) => ({
+    instrument: group.title, image: group.imageUrl || "/carousel-saotruc.webp",
+    items: cmsCourseItems.filter((item) => item.tag === group.slug).map((item) => ({
+      name: item.title, detail: item.excerpt, price: item.price || "Liên hệ", showPrice: Boolean(item.price && item.price.toLocaleLowerCase("vi") !== "liên hệ"),
+    })),
+  })) : recordedCourses;
+
+  const cmsStudioPackages = visibleCollection("studio-packages");
+  const displayedStudioPackages = cmsStudioPackages.length ? cmsStudioPackages.map((entry) => ({
+    icon: entry.tag || "♪", title: entry.title, subtitle: entry.excerpt, price: entry.price || "Liên hệ",
+    showPrice: Boolean(entry.price && entry.price.toLocaleLowerCase("vi") !== "liên hệ"), features: lines(entry.content),
+  })) : studioPackages;
+  const cmsBookingPackages = visibleCollection("booking-packages");
+  const displayedBookingPackages = cmsBookingPackages.length ? cmsBookingPackages.map((entry) => ({
+    icon: entry.tag || "♪", title: entry.title, detail: entry.excerpt, price: entry.price || "Liên hệ",
+    showPrice: Boolean(entry.price && entry.price.toLocaleLowerCase("vi") !== "liên hệ"), features: lines(entry.content),
+  })) : bookingPackages;
+  const cmsRecordingInstruments = visibleCollection("recording-instruments");
+  const displayedRecordingInstruments = cmsRecordingInstruments.length ? cmsRecordingInstruments.map((entry) => ({
+    icon: entry.tag || "♪", title: entry.title, tone: entry.excerpt, price: entry.price || "Liên hệ",
+    showPrice: Boolean(entry.price && entry.price.toLocaleLowerCase("vi") !== "liên hệ"),
+  })) : recordingInstruments;
+  const collectionForService: Partial<Record<ServiceSection, string>> = { materials: "materials" };
   const activeCmsEntries = activeService && collectionForService[activeService]
     ? cmsEntries.filter((entry) => entry.collection === collectionForService[activeService] && entry.visible)
     : [];
@@ -447,13 +492,13 @@ export default function Home() {
 
       {activeService === "classes" && <section className="courses section" id="classes">
         <div className="courses-head"><div><p className="eyebrow">CÁC BỘ MÔN GIẢNG DẠY</p><h2>Chọn thanh âm<br />phù hợp với bạn</h2></div><p>Mỗi bộ môn có một màu sắc riêng. Bấm “Xem thêm” để khám phá nội dung học, đối tượng phù hợp và đăng ký tư vấn.</p></div>
-        <div className="discipline-grid">{disciplines.map((item, i) => <article className={openDiscipline === i ? "discipline-card is-open" : "discipline-card"} key={item.title}><button className="discipline-summary" onClick={() => setOpenDiscipline(openDiscipline === i ? null : i)} aria-expanded={openDiscipline === i}><span className="discipline-photo"><img src={item.image} alt={item.imageAlt} width="640" height="420" loading="lazy" decoding="async" /><i>{item.icon}</i></span><span className="discipline-copy"><small>BỘ MÔN 0{i + 1}</small><h3>{item.title}</h3><p>{item.short}</p></span><b>{openDiscipline === i ? "Thu gọn −" : "Xem nhanh +"}</b></button>{openDiscipline === i && <div className="discipline-detail"><p>{item.intro}</p><div><span><small>NỘI DUNG HỌC</small><ul>{item.learn.map((point) => <li key={point}>{point}</li>)}</ul></span><span><small>PHÙ HỢP VỚI</small><p>{item.suitable}</p></span></div><div className="discipline-actions"><a className="article-link" href={`/bo-mon/${item.slug}`}>Xem bài giới thiệu đầy đủ →</a><button className="button button-wine" onClick={() => { setSelectedDiscipline(item.title); openService("#contact"); }}>Đăng ký bộ môn này</button></div></div>}</article>)}</div>
+        <div className="discipline-grid">{displayedDisciplines.map((item, i) => <article className={openDiscipline === i ? "discipline-card is-open" : "discipline-card"} key={item.title}><button className="discipline-summary" onClick={() => setOpenDiscipline(openDiscipline === i ? null : i)} aria-expanded={openDiscipline === i}><span className="discipline-photo"><img src={item.image} alt={item.imageAlt} width="640" height="420" loading="lazy" decoding="async" /><i>{item.icon}</i></span><span className="discipline-copy"><small>BỘ MÔN 0{i + 1}</small><h3>{item.title}</h3><p>{item.short}</p></span><b>{openDiscipline === i ? "Thu gọn −" : "Xem nhanh +"}</b></button>{openDiscipline === i && <div className="discipline-detail"><p>{item.intro}</p><div><span><small>NỘI DUNG HỌC</small><ul>{item.learn.map((point) => <li key={point}>{point}</li>)}</ul></span><span><small>PHÙ HỢP VỚI</small><p>{item.suitable}</p></span></div><div className="discipline-actions"><a className="article-link" href={`/bo-mon/${item.slug}`}>Xem bài giới thiệu đầy đủ →</a><button className="button button-wine" onClick={() => { setSelectedDiscipline(item.title); openService("#contact"); }}>Đăng ký bộ môn này</button></div></div>}</article>)}</div>
       </section>}
 
       {activeService === "courses" && <section className="recorded-section" id="courses">
         <div className="recorded-head"><div><p className="eyebrow">HỌC MỌI LÚC · XEM LẠI TRỌN ĐỜI</p><h2>Khóa học & video quay sẵn</h2></div><p>Chọn một lộ trình đầy đủ hoặc mua riêng từng video tác phẩm theo đúng nhạc cụ bạn đang chơi.</p></div>
         <div className="recorded-tabs" role="tablist" aria-label="Loại nội dung quay sẵn"><button className={courseTab === "courses" ? "active" : ""} onClick={() => setCourseTab("courses")} role="tab" aria-selected={courseTab === "courses"}>I. Khóa học theo bộ môn</button><button className={courseTab === "videos" ? "active" : ""} onClick={() => setCourseTab("videos")} role="tab" aria-selected={courseTab === "videos"}>II. Video quay từng bài</button></div>
-        {courseTab === "courses" ? <div className="recorded-course-list">{recordedCourses.map((course, i) => <article className={openRecordedCourse === i ? "recorded-course is-open" : "recorded-course"} key={course.instrument}>
+        {courseTab === "courses" ? <div className="recorded-course-list">{displayedRecordedCourses.map((course, i) => <article className={openRecordedCourse === i ? "recorded-course is-open" : "recorded-course"} key={course.instrument}>
           <button className="recorded-course-summary" onClick={() => setOpenRecordedCourse(openRecordedCourse === i ? null : i)} aria-expanded={openRecordedCourse === i}>
             <span className="recorded-cover" style={{ backgroundImage: `linear-gradient(0deg,rgba(69,14,31,.82),transparent 70%),url(${course.image})` }}><small>KHÓA HỌC 0{i + 1}</small><h3>{course.instrument}</h3></span>
             <span className="recorded-summary-copy"><small>CHƯƠNG TRÌNH QUAY SẴN</small><b>Khóa học {course.instrument}</b><em>{course.items.length} nội dung · Học mọi lúc · Xem lại trọn đời</em></span><i>{openRecordedCourse === i ? "−" : "+"}</i>
@@ -487,13 +532,13 @@ export default function Home() {
 
       {activeService === "products" && <section className="products-section" id="products">
         <div className="products-heading"><div><p className="eyebrow">SÁO & PHỤ KIỆN</p><h2>Chọn nhạc cụ phù hợp<br />với thanh âm của bạn.</h2></div><p>Mỗi nhóm nhạc cụ có nhiều chất liệu và cấu hình khác nhau. Bấm vào từng mục để xem mô tả, hình ảnh và thông tin giá.</p></div>
-        <div className="product-category-list">{productCategories.map((category, i) => <article className={openProductCategory === i ? "product-category is-open" : "product-category"} key={category.title}>
+        <div className="product-category-list">{displayedProductCategories.map((category, i) => <article className={openProductCategory === i ? "product-category is-open" : "product-category"} key={category.title}>
           <button className="product-category-button" onClick={() => setOpenProductCategory(openProductCategory === i ? null : i)} aria-expanded={openProductCategory === i}>
-            <span className="product-category-image" style={{ backgroundImage: `linear-gradient(90deg,rgba(65,13,30,.18),rgba(65,13,30,.02)),url(${category.image})` }} />
+            <span className="product-category-image" style={{ backgroundImage: `linear-gradient(90deg,rgba(65,13,30,.18),rgba(65,13,30,.02)),url(${"image" in product && product.image ? product.image : category.image})` }} />
             <span><small>NHÓM SẢN PHẨM 0{i + 1}</small><b>{category.title}</b><em>{category.intro}</em></span><i>{openProductCategory === i ? "−" : "+"}</i>
           </button>
           {openProductCategory === i && <div className="product-detail-grid">{category.products.map((product) => <div className="product-item" key={product.name}>
-            <div className="product-thumb" style={{ backgroundImage: `url(${category.image})` }}><span>{product.name}</span></div>
+            <div className="product-thumb" style={{ backgroundImage: `url(${"image" in product && product.image ? product.image : category.image})` }}><span>{product.name}</span></div>
             <div className="product-item-copy"><h3>{product.name}</h3><p>{product.description}</p><div><strong>{product.price}</strong><button onClick={() => { setSelectedDiscipline("Mua sáo & phụ kiện"); openService("#contact"); }}>Nhận tư vấn →</button></div></div>
           </div>)}</div>}
         </article>)}</div>
@@ -501,7 +546,7 @@ export default function Home() {
 
       {activeService === "studio" && <section className="studio-section" id="studio">
         <div className="studio-head"><div><p className="eyebrow">THU ÂM & QUAY VIDEO</p><h2>Biến phần trình diễn<br />thành một sản phẩm đẹp.</h2></div><p>Từ một bản thu mộc đến MV hoàn chỉnh, Hồng Việt đồng hành ở cả âm thanh, hình ảnh và cách thể hiện để giữ được màu sắc riêng của người biểu diễn.</p></div>
-        <div className="studio-package-grid">{studioPackages.map((item) => <article className="studio-package" key={item.title}><div className="studio-package-top"><span>{item.icon}</span><div><small>{item.subtitle}</small><h3>{item.title}</h3></div></div><ul>{item.features.map((feature) => <li key={feature}>✓ <span>{feature}</span></li>)}</ul><div className="studio-buy"><small>GIÁ THAM KHẢO</small><strong>{item.showPrice ? item.price : "Liên hệ báo giá"}</strong>{item.showPrice ? <button onClick={() => openPayment(`Đặt cọc ${item.title}`, item.price)}>Đặt cọc qua VietQR</button> : <button onClick={() => { setSelectedDiscipline("Thu âm / Booking biểu diễn"); scrollToId("contact"); }}>Nhận báo giá qua Zalo</button>}</div></article>)}</div>
+        <div className="studio-package-grid">{displayedStudioPackages.map((item) => <article className="studio-package" key={item.title}><div className="studio-package-top"><span>{item.icon}</span><div><small>{item.subtitle}</small><h3>{item.title}</h3></div></div><ul>{item.features.map((feature) => <li key={feature}>✓ <span>{feature}</span></li>)}</ul><div className="studio-buy"><small>GIÁ THAM KHẢO</small><strong>{item.showPrice ? item.price : "Liên hệ báo giá"}</strong>{item.showPrice ? <button onClick={() => openPayment(`Đặt cọc ${item.title}`, item.price)}>Đặt cọc qua VietQR</button> : <button onClick={() => { setSelectedDiscipline("Thu âm / Booking biểu diễn"); scrollToId("contact"); }}>Nhận báo giá qua Zalo</button>}</div></article>)}</div>
         <div className="studio-info-grid"><article><p className="eyebrow">QUY TRÌNH THỰC HIỆN</p><h3>Rõ ràng trong từng bước</h3><ol>{studioSteps.map((step, i) => <li key={step}><span>{String(i + 1).padStart(2, "0")}</span>{step}</li>)}</ol></article><article><p className="eyebrow">THÔNG TIN CẦN GỬI</p><h3>Để nhận báo giá chính xác</h3><ul><li>Tên tác phẩm và nhạc cụ sử dụng</li><li>Beat hoặc bản phối hiện có</li><li>Thu âm, quay video hay gói trọn bộ</li><li>Địa điểm và thời gian mong muốn</li><li>Phong cách hình ảnh tham khảo</li></ul><button onClick={() => { setSelectedDiscipline("Thu âm / Booking biểu diễn"); scrollToId("contact"); }}>Gửi yêu cầu tư vấn →</button></article><article><p className="eyebrow">SẢN PHẨM BÀN GIAO</p><h3>Đầy đủ để lưu giữ & chia sẻ</h3><ul><li>Âm thanh WAV và MP3 chất lượng cao</li><li>Video Full HD hoặc 4K theo thỏa thuận</li><li>Bản ngang cho YouTube/Facebook</li><li>Bản dọc TikTok/Reels khi đăng ký</li><li>Ảnh bìa hoặc thumbnail theo gói</li></ul><small>Chi phí địa điểm, beat bản quyền, nhạc công, trang phục và trang điểm sẽ được báo riêng nếu phát sinh.</small></article></div>
         <div className="studio-note"><b>Lưu ý trước khi đặt lịch</b><span>Mỗi gói có phạm vi, số lần chỉnh sửa và thời gian bàn giao khác nhau. Lịch chỉ được giữ sau khi hai bên thống nhất nội dung và đặt cọc.</span></div>
       </section>}
@@ -509,7 +554,7 @@ export default function Home() {
       {activeService === "booking" && <section className="booking-section" id="booking">
         <div className="booking-head"><div><p className="eyebrow">BOOKING NGHỆ SĨ</p><h2>Âm nhạc phù hợp<br />cho từng khoảnh khắc.</h2></div><p>Độc tấu, song tấu, hòa tấu hoặc ban nhạc dân tộc được tư vấn theo quy mô, không gian và tinh thần riêng của mỗi sự kiện.</p></div>
         <div className="booking-events">{bookingEvents.map((event) => <span key={event}>✦ {event}</span>)}</div>
-        <div className="booking-package-grid">{bookingPackages.map((item) => <article className="booking-package" key={item.title}><span className="booking-icon">{item.icon}</span><small>{item.detail}</small><h3>{item.title}</h3><ul>{item.features.map((feature) => <li key={feature}>{feature}</li>)}</ul><div><small>GIÁ THAM KHẢO</small><strong>{item.showPrice ? item.price : "Liên hệ báo giá"}</strong>{item.showPrice ? <button onClick={() => openPayment(`Đặt cọc booking – ${item.title}`, item.price)}>Kiểm tra lịch & đặt cọc</button> : <button onClick={() => { setSelectedDiscipline("Thu âm / Booking biểu diễn"); scrollToId("contact"); }}>Nhận báo giá qua Zalo</button>}</div></article>)}</div>
+        <div className="booking-package-grid">{displayedBookingPackages.map((item) => <article className="booking-package" key={item.title}><span className="booking-icon">{item.icon}</span><small>{item.detail}</small><h3>{item.title}</h3><ul>{item.features.map((feature) => <li key={feature}>{feature}</li>)}</ul><div><small>GIÁ THAM KHẢO</small><strong>{item.showPrice ? item.price : "Liên hệ báo giá"}</strong>{item.showPrice ? <button onClick={() => openPayment(`Đặt cọc booking – ${item.title}`, item.price)}>Kiểm tra lịch & đặt cọc</button> : <button onClick={() => { setSelectedDiscipline("Thu âm / Booking biểu diễn"); scrollToId("contact"); }}>Nhận báo giá qua Zalo</button>}</div></article>)}</div>
         <button className="booking-detail-toggle" onClick={() => setBookingDetailsOpen(!bookingDetailsOpen)} aria-expanded={bookingDetailsOpen}><span><small>THÔNG TIN BOOKING</small><b>{bookingDetailsOpen ? "Ẩn quy trình và điều khoản" : "Xem quy trình, yêu cầu và điều khoản"}</b></span><i>{bookingDetailsOpen ? "−" : "+"}</i></button>
         {bookingDetailsOpen && <div className="booking-detail-grid"><article><small>QUY TRÌNH BOOKING</small><h3>8 bước xác nhận lịch</h3><ol><li>Gửi thông tin sự kiện</li><li>Kiểm tra lịch nghệ sĩ</li><li>Tư vấn tiết mục và đội hình</li><li>Gửi báo giá</li><li>Xác nhận hợp đồng, đặt cọc</li><li>Thống nhất kịch bản và kỹ thuật</li><li>Biểu diễn tại sự kiện</li><li>Thanh toán phần còn lại</li></ol></article><article><small>THÔNG TIN CẦN GỬI</small><h3>Để báo giá chính xác</h3><ul><li>Tên đơn vị và số điện thoại/Zalo</li><li>Loại sự kiện, ngày giờ, địa điểm</li><li>Số tiết mục hoặc thời lượng</li><li>Đội hình và danh sách bài dự kiến</li><li>Yêu cầu trang phục, âm thanh</li><li>Ngân sách dự kiến</li></ul></article><article><small>CHI PHÍ & ĐIỀU KHOẢN</small><h3>Cần thống nhất trước</h3><ul><li>Di chuyển, lưu trú ngoài tỉnh</li><li>Tập luyện, chuyển soạn bài mới</li><li>Thiết bị, trang phục đặc biệt</li><li>Chính sách đổi ngày hoặc hủy lịch</li><li>Giờ thử âm thanh và thời lượng phát sinh</li><li>Quyền quay phim, livestream và sử dụng hình ảnh</li></ul></article></div>}
         <div className="booking-cta"><div><small>SẴN SÀNG CHO SỰ KIỆN CỦA BẠN?</small><b>Gửi ngày, địa điểm và đội hình mong muốn để kiểm tra lịch.</b></div><button onClick={() => { setSelectedDiscipline("Thu âm / Booking biểu diễn"); scrollToId("contact"); }}>Nhận báo giá qua Zalo →</button></div>
@@ -517,7 +562,7 @@ export default function Home() {
 
       {activeService === "instrument-recording" && <section className="instrument-recording" id="instrument-recording">
         <div className="instrument-recording-head"><div><p className="eyebrow">THU ÂM NHẠC CỤ THẬT</p><h2>Chất liệu âm thanh thật<br />cho bản phối của bạn.</h2></div><p>Dành cho ca sĩ, nhạc sĩ, nhà sản xuất và người làm nội dung cần một track nhạc cụ giàu cảm xúc, đúng tone, BPM và sẵn sàng đưa vào dự án.</p></div>
-        <div className="recording-instrument-grid">{recordingInstruments.map((item) => <article key={item.title}><span>{item.icon}</span><small>NHẠC CỤ NHẬN THU</small><h3>{item.title}</h3><p>{item.tone}</p><div><small>GIÁ TỪ</small><strong>{item.showPrice ? item.price : "Liên hệ"}</strong>{item.showPrice ? <button onClick={() => openPayment(`Đặt thu âm ${item.title}`, item.price)}>Đặt thu qua VietQR</button> : <button onClick={() => { setSelectedDiscipline("Thu âm / Booking biểu diễn"); scrollToId("contact"); }}>Gửi yêu cầu riêng</button>}</div></article>)}</div>
+        <div className="recording-instrument-grid">{displayedRecordingInstruments.map((item) => <article key={item.title}><span>{item.icon}</span><small>NHẠC CỤ NHẬN THU</small><h3>{item.title}</h3><p>{item.tone}</p><div><small>GIÁ TỪ</small><strong>{item.showPrice ? item.price : "Liên hệ"}</strong>{item.showPrice ? <button onClick={() => openPayment(`Đặt thu âm ${item.title}`, item.price)}>Đặt thu qua VietQR</button> : <button onClick={() => { setSelectedDiscipline("Thu âm / Booking biểu diễn"); scrollToId("contact"); }}>Gửi yêu cầu riêng</button>}</div></article>)}</div>
         <div className="recording-package-row">{recordingPackages.map((item, i) => <article key={item.title}><span>0{i + 1}</span><div><h3>{item.title}</h3><p>{item.detail}</p></div><strong>{item.price}</strong></article>)}</div>
         <div className="recording-brief"><div><small>KHÁCH HÀNG CẦN GỬI</small><h3>Beat, BPM, tone và phần tham chiếu</h3><p>Gửi file WAV/MP3, sheet, MIDI hoặc audio mẫu; ghi rõ vị trí cần nhạc cụ, cảm xúc, kỹ thuật mong muốn và thời hạn nhận file.</p></div><button onClick={() => { setSelectedDiscipline("Thu âm / Booking biểu diễn"); scrollToId("contact"); }}>Gửi beat & nhận báo giá →</button></div>
         <button className="recording-detail-toggle" onClick={() => setRecordingDetailsOpen(!recordingDetailsOpen)} aria-expanded={recordingDetailsOpen}><span><small>THÔNG TIN CHUYÊN MÔN</small><b>{recordingDetailsOpen ? "Ẩn quy trình và chính sách" : "Xem quy trình, file bàn giao và bản quyền"}</b></span><i>{recordingDetailsOpen ? "−" : "+"}</i></button>
@@ -570,7 +615,7 @@ export default function Home() {
 
       {activeService === "contact" && <section className="contact section" id="contact">
         <div className="contact-copy"><p className="eyebrow">BẮT ĐẦU HÀNH TRÌNH</p><h2>Để tiếng sáo cất lời.</h2><p>Để lại thông tin, Hồng Việt sẽ liên hệ tư vấn lớp học, chọn sáo hoặc dịch vụ phù hợp.</p><ul><li>{contactAddress}</li><li>Hotline / Zalo: {contactPhone}</li><li>Email: {contactEmail}</li></ul></div>
-        <form onSubmit={submitForm}><label>Họ và tên<input required name="name" placeholder="Tên của bạn" /></label><label>Số điện thoại<input required name="phone" type="tel" placeholder="Số điện thoại liên hệ" /></label><label className="full">Bộ môn bạn quan tâm<select name="interest" value={selectedDiscipline} onChange={(e) => setSelectedDiscipline(e.target.value)}>{disciplines.map((item) => <option key={item.title}>{item.title}</option>)}<option>Mua sáo & phụ kiện</option><option>Sheet nhạc & giáo trình</option><option>Thu âm / Booking biểu diễn</option></select></label><label className="full">Lời nhắn<textarea name="message" rows={3} placeholder="Mục tiêu hoặc nhu cầu của bạn" /></label><button className="button button-wine full" type="submit">Gửi qua Zalo →</button>{sent && <p className="success full" role="status">Nội dung đã được sao chép và Zalo đã được mở. Hãy dán nội dung vào cuộc trò chuyện để gửi đăng ký.</p>}</form>
+        <form onSubmit={submitForm}><label>Họ và tên<input required name="name" placeholder="Tên của bạn" /></label><label>Số điện thoại<input required name="phone" type="tel" placeholder="Số điện thoại liên hệ" /></label><label className="full">Bộ môn bạn quan tâm<select name="interest" value={selectedDiscipline} onChange={(e) => setSelectedDiscipline(e.target.value)}>{displayedDisciplines.map((item) => <option key={item.title}>{item.title}</option>)}<option>Mua sáo & phụ kiện</option><option>Sheet nhạc & giáo trình</option><option>Thu âm / Booking biểu diễn</option></select></label><label className="full">Lời nhắn<textarea name="message" rows={3} placeholder="Mục tiêu hoặc nhu cầu của bạn" /></label><button className="button button-wine full" type="submit">Gửi qua Zalo →</button>{sent && <p className="success full" role="status">Nội dung đã được sao chép và Zalo đã được mở. Hãy dán nội dung vào cuộc trò chuyện để gửi đăng ký.</p>}</form>
       </section>}
 
       <footer><div className="brand"><span className="brand-mark">〽</span><span><b>{brandName}</b><small>{brandTagline}</small></span></div><p>Đam mê làm nên giá trị · Chất lượng tạo nên uy tín</p><small>© 2026 Hồng Việt. All rights reserved.</small></footer>
