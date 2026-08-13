@@ -23,11 +23,11 @@ const disciplines = [
 ];
 
 const slides = [
-  { image: "/carousel-saotruc.webp", eyebrow: "BỘ MÔN TRUYỀN THỐNG", title: "Sáo trúc Việt Nam", copy: "Từ hơi thở đầu tiên đến tiếng sáo giàu cảm xúc.", href: "/bo-mon/sao-truc-viet-nam" },
-  { image: "/carousel-dizi.webp", eyebrow: "ÂM SẮC CỔ PHONG", title: "Sáo Dizi", copy: "Khám phá màng rung và kỹ thuật diễn tấu Trung Hoa.", href: "/bo-mon/sao-dizi" },
-  { image: "/carousel-recorder.webp", eyebrow: "ÂM NHẠC CHO MỌI LỨA TUỔI", title: "Sáo Recorder", copy: "Khởi đầu dễ dàng, đọc nhạc bài bản và cùng nhau hòa tấu.", href: "/bo-mon/sao-recorder" },
-  { image: "/carousel-tieu.webp", eyebrow: "TRẦM ẤM & SÂU LẮNG", title: "Động tiêu & Xiao", copy: "Một khoảng lặng đẹp cho người yêu âm nhạc cổ phong.", href: "/bo-mon/dong-tieu-xiao" },
-  { image: "/carousel-flute.webp", eyebrow: "KỸ THUẬT PHƯƠNG TÂY", title: "Flute", copy: "Âm sắc trong trẻo, linh hoạt cùng lộ trình cá nhân hóa.", href: "/bo-mon/flute" },
+  { image: "/carousel-saotruc.webp", eyebrow: "BỘ MÔN TRUYỀN THỐNG", title: "Sáo trúc Việt Nam", copy: "Từ hơi thở đầu tiên đến tiếng sáo giàu cảm xúc.", href: "/bo-mon/sao-truc-viet-nam", cta: "Khám phá bộ môn" },
+  { image: "/carousel-dizi.webp", eyebrow: "ÂM SẮC CỔ PHONG", title: "Sáo Dizi", copy: "Khám phá màng rung và kỹ thuật diễn tấu Trung Hoa.", href: "/bo-mon/sao-dizi", cta: "Khám phá bộ môn" },
+  { image: "/carousel-recorder.webp", eyebrow: "ÂM NHẠC CHO MỌI LỨA TUỔI", title: "Sáo Recorder", copy: "Khởi đầu dễ dàng, đọc nhạc bài bản và cùng nhau hòa tấu.", href: "/bo-mon/sao-recorder", cta: "Khám phá bộ môn" },
+  { image: "/carousel-tieu.webp", eyebrow: "TRẦM ẤM & SÂU LẮNG", title: "Động tiêu & Xiao", copy: "Một khoảng lặng đẹp cho người yêu âm nhạc cổ phong.", href: "/bo-mon/dong-tieu-xiao", cta: "Khám phá bộ môn" },
+  { image: "/carousel-flute.webp", eyebrow: "KỸ THUẬT PHƯƠNG TÂY", title: "Flute", copy: "Âm sắc trong trẻo, linh hoạt cùng lộ trình cá nhân hóa.", href: "/bo-mon/flute", cta: "Khám phá bộ môn" },
 ];
 
 const defaultArticles = [
@@ -256,11 +256,27 @@ export default function Home() {
   const [requestError, setRequestError] = useState("");
   const [cmsEntries, setCmsEntries] = useState<CmsEntry[]>([]);
 
+  const cmsHeroSlides = cmsEntries
+    .filter((entry) => entry.collection === "hero-slides" && entry.visible)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+  const displayedSlides = cmsHeroSlides.length ? cmsHeroSlides.map((entry) => ({
+    image: entry.imageUrl || "/carousel-saotruc.webp",
+    eyebrow: entry.tag || "BỘ MÔN",
+    title: entry.title,
+    copy: entry.excerpt,
+    href: entry.content || `/bo-mon/${entry.slug}`,
+    cta: entry.price || "Khám phá bộ môn",
+  })) : slides;
+
   useEffect(() => {
     if (sliderPaused) return;
-    const timer = window.setInterval(() => setCurrentSlide((current) => (current + 1) % slides.length), 5500);
+    const timer = window.setInterval(() => setCurrentSlide((current) => (current + 1) % displayedSlides.length), 5500);
     return () => window.clearInterval(timer);
-  }, [sliderPaused]);
+  }, [displayedSlides.length, sliderPaused]);
+
+  useEffect(() => {
+    if (currentSlide >= displayedSlides.length) setCurrentSlide(0);
+  }, [currentSlide, displayedSlides.length]);
 
   useEffect(() => {
     let active = true;
@@ -533,16 +549,16 @@ export default function Home() {
       </header>
 
       <section className="hero" id="top">
-        {slides.map((slide, i) => <div key={slide.image} className={`hero-image hero-slide-${i + 1}${currentSlide === i ? " slide-active" : ""}`} style={{ backgroundImage: `url(${slide.image})` }} aria-hidden="true" />)}
+        {displayedSlides.map((slide, i) => <div key={`${slide.href}-${i}`} className={`hero-image hero-slide-${i + 1}${currentSlide === i ? " slide-active" : ""}`} style={{ backgroundImage: `url(${slide.image})` }} aria-hidden="true" />)}
         <div className="hero-shade" />
         <div className="hero-content">
           <p className="brand-slogan"><span className="slogan-text">Hơi Thở Thành Âm</span><span className="slogan-divider">—</span><span className="slogan-text">Tâm Hồn Thành Nhạc</span></p>
-          <p className="eyebrow">{slides[currentSlide].eyebrow}</p>
-          <p className="slide-count">0{currentSlide + 1} <span>/ 05</span></p>
-          <h1>{slides[currentSlide].title}</h1>
-          <p className="hero-copy">{slides[currentSlide].copy}</p>
+          <p className="eyebrow">{displayedSlides[currentSlide].eyebrow}</p>
+          <p className="slide-count">{String(currentSlide + 1).padStart(2, "0")} <span>/ {String(displayedSlides.length).padStart(2, "0")}</span></p>
+          <h1>{displayedSlides[currentSlide].title}</h1>
+          <p className="hero-copy">{displayedSlides[currentSlide].copy}</p>
           <div className="hero-actions">
-            <a className="button button-gold hero-link" href={slides[currentSlide].href}>Khám phá bộ môn</a>
+            <a className="button button-gold hero-link" href={displayedSlides[currentSlide].href}>{displayedSlides[currentSlide].cta}</a>
             <button className="button button-outline" onClick={() => openService("#contact")}>Đăng ký học</button>
           </div>
         </div>
@@ -552,9 +568,9 @@ export default function Home() {
           <div><i>★</i><span>Dạy Offline tại TP.HCM,<br />Online cho học viên ở xa</span></div>
           <div><i>♥</i><span>Đồng hành – Tận tâm<br />– Truyền cảm hứng</span></div>
         </div>
-        <button className="slider-arrow slider-prev" onClick={() => { setSliderPaused(true); setCurrentSlide((currentSlide - 1 + slides.length) % slides.length); }} aria-label="Ảnh trước">‹</button>
-        <button className="slider-arrow slider-next" onClick={() => { setSliderPaused(true); setCurrentSlide((currentSlide + 1) % slides.length); }} aria-label="Ảnh tiếp theo">›</button>
-        <div className="slider-dots" aria-label="Chọn ảnh quảng cáo">{slides.map((slide, i) => <button key={slide.title} className={currentSlide === i ? "active" : ""} onClick={() => { setSliderPaused(true); setCurrentSlide(i); }} aria-label={`Xem ${slide.title}`} />)}</div>
+        <button className="slider-arrow slider-prev" onClick={() => { setSliderPaused(true); setCurrentSlide((currentSlide - 1 + displayedSlides.length) % displayedSlides.length); }} aria-label="Ảnh trước">‹</button>
+        <button className="slider-arrow slider-next" onClick={() => { setSliderPaused(true); setCurrentSlide((currentSlide + 1) % displayedSlides.length); }} aria-label="Ảnh tiếp theo">›</button>
+        <div className="slider-dots" aria-label="Chọn ảnh quảng cáo">{displayedSlides.map((slide, i) => <button key={`${slide.title}-${i}`} className={currentSlide === i ? "active" : ""} onClick={() => { setSliderPaused(true); setCurrentSlide(i); }} aria-label={`Xem ${slide.title}`} />)}</div>
       </section>
 
       <section className="intro section" id="about">
