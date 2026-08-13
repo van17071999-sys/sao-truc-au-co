@@ -176,11 +176,16 @@ async function ensureCmsSchema(db: D1Database) {
     )`),
   ]);
 
+  const detailCount = await db.prepare("SELECT COUNT(*) AS total FROM cms_entries WHERE collection = 'class-details'").first<{ total: number }>();
+  if (Number(detailCount?.total ?? 0) > 0) return;
   const now = new Date().toISOString();
-  await db.batch([...initialCmsEntries, ...detailedCmsEntries].map((item) => db.prepare(`INSERT OR IGNORE INTO cms_entries
+  const seedStatements = [...initialCmsEntries, ...detailedCmsEntries].map((item) => db.prepare(`INSERT OR IGNORE INTO cms_entries
     (id, collection, title, slug, published_at, excerpt, image_url, tag, price, content, visible, sort_order, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`)
-    .bind(item[0], item[1], item[2], item[3], item[1] === "articles" ? "2026-08-08" : "", item[4], item[5], item[6], item[7], item[8], item[9], now)));
+    .bind(item[0], item[1], item[2], item[3], item[1] === "articles" ? "2026-08-08" : "", item[4], item[5], item[6], item[7], item[8], item[9], now));
+  for (let offset = 0; offset < seedStatements.length; offset += 12) {
+    await db.batch(seedStatements.slice(offset, offset + 12));
+  }
 }
 
 function requestHasSameOrigin(request: Request, url: URL) {
