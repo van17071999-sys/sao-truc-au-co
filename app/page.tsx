@@ -194,7 +194,7 @@ function scrollElementToId(id: string) {
   document.getElementById(id.replace("#", ""))?.scrollIntoView({ behavior: "smooth" });
 }
 
-type ServiceSection = "classes" | "contact" | "products" | "courses" | "materials" | "studio" | "booking" | "instrument-recording";
+type ServiceSection = "classes" | "contact" | "products" | "courses" | "materials" | "studio" | "booking" | "instrument-recording" | "flute-tabs";
 
 type CmsEntry = {
   id: string;
@@ -256,6 +256,12 @@ export default function Home() {
       .then((data: { entries?: CmsEntry[] }) => { if (active && Array.isArray(data.entries)) setCmsEntries(data.entries); })
       .catch(() => undefined);
     return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    if (window.location.hash !== "#contact") return;
+    setActiveService("contact");
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => scrollElementToId("contact")));
   }, []);
 
   const cmsServices = cmsEntries.filter((entry) => entry.collection === "services" && entry.visible && ["classes", "contact", "products", "courses", "materials", "studio", "booking", "instrument-recording"].includes(entry.slug));
@@ -327,6 +333,18 @@ export default function Home() {
     icon: entry.tag || "♪", title: entry.title, tone: entry.excerpt, price: entry.price || "Liên hệ",
     showPrice: Boolean(entry.price && entry.price.toLocaleLowerCase("vi") !== "liên hệ"),
   })) : recordingInstruments;
+  const cmsFluteTabs = visibleCollection("flute-tabs");
+  const displayedFluteTabs = cmsFluteTabs.length ? cmsFluteTabs.map((entry) => ({
+    title: entry.title,
+    fullTitle: entry.excerpt || entry.title,
+    tone: entry.tag || "Cảm âm sáo trúc",
+    lines: lines(entry.content).map((line) => {
+      const separator = line.indexOf("|");
+      return separator >= 0
+        ? { lyric: line.slice(0, separator).trim(), notes: line.slice(separator + 1).trim() }
+        : { lyric: "", notes: line };
+    }),
+  })) : fluteTabs;
   const collectionForService: Partial<Record<ServiceSection, string>> = { materials: "materials" };
   const activeCmsEntries = activeService && collectionForService[activeService]
     ? cmsEntries.filter((entry) => entry.collection === collectionForService[activeService] && entry.visible)
@@ -340,7 +358,7 @@ export default function Home() {
     if (id.replace("#", "") === "contact" && activeService !== "contact") {
       setActiveService("contact");
       window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => scrollElementToId("service-detail"));
+        window.requestAnimationFrame(() => scrollElementToId("contact"));
       });
       return;
     }
@@ -354,7 +372,7 @@ export default function Home() {
     setSearchOpen(false);
     setQuery("");
     window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => scrollToId("service-detail"));
+      window.requestAnimationFrame(() => scrollElementToId(section === "contact" ? "contact" : "service-detail"));
     });
   }
 
@@ -435,7 +453,7 @@ export default function Home() {
           <button className="nav-search" onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false); }}>⌕ Tìm kiếm</button>
           <a href="#services" onClick={() => setMenuOpen(false)}>Danh mục</a>
           <a href="#classes" onClick={(e) => { e.preventDefault(); openService("#classes"); }}>Lớp học</a>
-          <a href="#courses" onClick={(e) => { e.preventDefault(); openService("#courses"); }}>Khóa học</a>
+          <a href="#cam-am-sao-truc" onClick={(e) => { e.preventDefault(); openService("#flute-tabs"); }}>Cảm âm</a>
           <a href="#contact" onClick={(e) => { e.preventDefault(); openService("#contact"); }}>Liên hệ</a>
         </nav>
         <button className="button button-gold header-cta" onClick={() => openService("#contact")}>✦ Đăng ký học</button>
@@ -589,9 +607,9 @@ export default function Home() {
         <div className="free-guides-note"><span>✦</span><p><b>Sẵn sàng để gắn nội dung của bạn</b><small>Thay các đường dẫn mẫu bằng link YouTube, TikTok hoặc bài viết thật; bố cục sẽ tự thích ứng trên máy tính và điện thoại.</small></p><button onClick={() => openService("#contact")}>Gửi link cần cập nhật</button></div>
       </section>}
 
-      {activeService === "classes" && <section className="flute-tabs-section" id="cam-am-sao-truc">
+      {activeService === "flute-tabs" && <section className="flute-tabs-section" id="cam-am-sao-truc">
         <div className="flute-tabs-head"><div><p className="eyebrow">LỜI BÀI HÁT · NỐT CẢM ÂM</p><h2>Cảm âm sáo trúc</h2></div><p>Chọn tên bài và bấm dấu “+” để xem lời cùng nốt cảm âm. Bấm “−” để thu gọn khi không cần sử dụng.</p></div>
-        <div className="flute-tab-list">{fluteTabs.map((song, i) => <article className={openFluteTab === i ? "flute-tab is-open" : "flute-tab"} key={song.title}>
+        <div className="flute-tab-list">{displayedFluteTabs.map((song, i) => <article className={openFluteTab === i ? "flute-tab is-open" : "flute-tab"} key={song.title}>
           <button className="flute-tab-summary" onClick={() => setOpenFluteTab(openFluteTab === i ? null : i)} aria-expanded={openFluteTab === i}><span><small>BÀI CẢM ÂM {String(i + 1).padStart(2,"0")}</small><b>{song.title}</b></span><i aria-hidden="true">{openFluteTab === i ? "−" : "+"}</i></button>
           {openFluteTab === i && <div className="flute-tab-detail"><header><div><small>TÊN ĐẦY ĐỦ</small><h3>{song.fullTitle}</h3></div><span>{song.tone}</span></header><div className="notation-lines">{song.lines.map((line, j) => <div key={`${song.title}-${j}`}><span>{String(j + 1).padStart(2,"0")}</span><p className="lyric-line">{line.lyric}</p><p className="note-line">{line.notes}</p></div>)}</div><footer><span>♪</span><p><b>Hướng dẫn đọc:</b> Dấu “—” là ngân dài; số ² là nốt ở quãng cao. Bạn có thể thay nội dung mẫu bằng lời và cảm âm của từng bài.</p></footer></div>}
         </article>)}</div>
