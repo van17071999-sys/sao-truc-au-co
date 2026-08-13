@@ -236,8 +236,18 @@ export default function Home() {
 
   function submitForm(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    const summary = [
+      "Xin chào Hồng Việt, tôi muốn đăng ký tư vấn.",
+      `Họ tên: ${data.get("name") ?? ""}`,
+      `Số điện thoại: ${data.get("phone") ?? ""}`,
+      `Nhu cầu: ${data.get("interest") ?? ""}`,
+      `Lời nhắn: ${data.get("message") ?? ""}`,
+    ].join("\n");
+
+    void navigator.clipboard?.writeText(summary).catch(() => undefined);
     setSent(true);
-    e.currentTarget.reset();
+    window.open("https://zalo.me/0374261368", "_blank", "noopener,noreferrer");
   }
 
   function openPayment(product: string, price = "") {
@@ -433,7 +443,7 @@ export default function Home() {
 
       <section className="contact section" id="contact">
         <div className="contact-copy"><p className="eyebrow">BẮT ĐẦU HÀNH TRÌNH</p><h2>Để tiếng sáo cất lời.</h2><p>Để lại thông tin, Hồng Việt sẽ liên hệ tư vấn lớp học, chọn sáo hoặc dịch vụ phù hợp.</p><ul><li>106/72 Hòa Bình, P. Tân Phú, TP.HCM</li><li>Hotline / Zalo: 0374 261 368</li><li>Email: vanquach999x@gmail.com</li></ul></div>
-        <form onSubmit={submitForm}><label>Họ và tên<input required name="name" placeholder="Tên của bạn" /></label><label>Số điện thoại<input required name="phone" type="tel" placeholder="Số điện thoại liên hệ" /></label><label className="full">Bộ môn bạn quan tâm<select name="interest" value={selectedDiscipline} onChange={(e) => setSelectedDiscipline(e.target.value)}>{disciplines.map((item) => <option key={item.title}>{item.title}</option>)}<option>Mua sáo & phụ kiện</option><option>Sheet nhạc & giáo trình</option><option>Thu âm / Booking biểu diễn</option></select></label><label className="full">Lời nhắn<textarea name="message" rows={3} placeholder="Mục tiêu hoặc nhu cầu của bạn" /></label><button className="button button-wine full" type="submit">Gửi đăng ký →</button>{sent && <p className="success full" role="status">Đã ghi nhận thông tin. Hồng Việt sẽ sớm liên hệ với bạn!</p>}</form>
+        <form onSubmit={submitForm}><label>Họ và tên<input required name="name" placeholder="Tên của bạn" /></label><label>Số điện thoại<input required name="phone" type="tel" placeholder="Số điện thoại liên hệ" /></label><label className="full">Bộ môn bạn quan tâm<select name="interest" value={selectedDiscipline} onChange={(e) => setSelectedDiscipline(e.target.value)}>{disciplines.map((item) => <option key={item.title}>{item.title}</option>)}<option>Mua sáo & phụ kiện</option><option>Sheet nhạc & giáo trình</option><option>Thu âm / Booking biểu diễn</option></select></label><label className="full">Lời nhắn<textarea name="message" rows={3} placeholder="Mục tiêu hoặc nhu cầu của bạn" /></label><button className="button button-wine full" type="submit">Gửi qua Zalo →</button>{sent && <p className="success full" role="status">Nội dung đã được sao chép và Zalo đã được mở. Hãy dán nội dung vào cuộc trò chuyện để gửi đăng ký.</p>}</form>
       </section>
 
       <footer><div className="brand"><span className="brand-mark">〽</span><span><b>HỒNG VIỆT</b><small>SÁO TRÚC & ÂM NHẠC DÂN TỘC</small></span></div><p>Đam mê làm nên giá trị · Chất lượng tạo nên uy tín</p><small>© 2026 Hồng Việt. All rights reserved.</small></footer>

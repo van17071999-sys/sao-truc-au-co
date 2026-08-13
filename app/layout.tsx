@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://hong-viet-sao-truc.van17071999.chatgpt.site"),
+  metadataBase: new URL("https://saotrucauco.com"),
   title: {
     default: "Hồng Việt Sáo Trúc | Dạy sáo & âm nhạc dân tộc",
     template: "%s | Hồng Việt Sáo Trúc",
@@ -31,9 +31,6 @@ export const metadata: Metadata = {
   },
   twitter: { card: "summary_large_image", images: ["/hero-flute.webp"] },
   robots: { index: true, follow: true },
-  other: {
-    "codex-preview": "development",
-  },
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
