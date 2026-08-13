@@ -14,12 +14,17 @@ const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
 const localBindingConfig = {
   main: "./worker/index.ts",
   compatibility_flags: ["nodejs_compat"],
+  vars: process.env.NODE_ENV === "development" ? {
+    CMS_ADMIN_PASSWORD: process.env.CMS_ADMIN_PASSWORD ?? "",
+    CMS_SESSION_SECRET: process.env.CMS_SESSION_SECRET ?? "",
+  } : {},
   d1_databases: d1
     ? [
         {
           binding: d1,
-          database_name: "site-creator-d1",
-          database_id: SITE_CREATOR_PLACEHOLDER_DATABASE_ID,
+          database_name: process.env.CMS_DATABASE_NAME ?? "sao-truc-au-co-cms",
+          database_id:
+            process.env.CMS_DATABASE_ID ?? SITE_CREATOR_PLACEHOLDER_DATABASE_ID,
         },
       ]
     : [],
@@ -27,7 +32,7 @@ const localBindingConfig = {
     ? [
         {
           binding: r2,
-          bucket_name: "site-creator-r2",
+          bucket_name: process.env.CMS_MEDIA_BUCKET ?? "sao-truc-au-co-media",
         },
       ]
     : [],
