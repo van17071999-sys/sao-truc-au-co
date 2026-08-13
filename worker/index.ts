@@ -60,9 +60,13 @@ const initialCmsEntries = [
   ["article-02", "articles", "Người mới nên bắt đầu với sáo tone nào?", "nguoi-moi-chon-sao-tone-nao", "So sánh sáo Đô C5, La A4 và Sol G4 để chọn cây sáo phù hợp với mục tiêu học.", "", "Chọn nhạc cụ", "", "", 2],
   ["article-03", "articles", "Cách luyện hơi dài mà không bị căng", "cach-luyen-hoi-dai", "Một lịch tập ngắn, an toàn và hiệu quả để cải thiện cột hơi mỗi ngày.", "", "Luyện tập", "", "", 3],
   ["settings-general", "settings", "HỒNG VIỆT", "general", "Sáo trúc & âm nhạc dân tộc", "/hero-flute.webp", "vanquach999x@gmail.com", "0374 261 368", "106/72 Hòa Bình, P. Tân Phú, TP.HCM", 1],
+  ["settings-payment", "settings", "Thanh toán VietQR", "payment", "QUACH HA VAN", "/vietqr-payment.png", "STB · Sacombank", "030046023451", "Thông tin chuyển khoản dùng chung cho toàn bộ website.", 2],
 ] as const;
 
 const detailedCmsEntries = [
+  // Thông tin tài khoản và QR dùng chung cho mọi bảng thanh toán trên website.
+  ["settings-payment", "settings", "Thanh toán VietQR", "payment", "QUACH HA VAN", "/vietqr-payment.png", "STB · Sacombank", "030046023451", "Thông tin chuyển khoản dùng chung cho toàn bộ website.", 2],
+
   // Năm ảnh demo bộ môn ở đầu trang chủ.
   ["hero-slide-01", "hero-slides", "Sáo trúc Việt Nam", "sao-truc-viet-nam", "Từ hơi thở đầu tiên đến tiếng sáo giàu cảm xúc.", "/carousel-saotruc.webp", "BỘ MÔN TRUYỀN THỐNG", "Khám phá bộ môn", "/bo-mon/sao-truc-viet-nam", 1],
   ["hero-slide-02", "hero-slides", "Sáo Dizi", "sao-dizi", "Khám phá màng rung và kỹ thuật diễn tấu Trung Hoa.", "/carousel-dizi.webp", "ÂM SẮC CỔ PHONG", "Khám phá bộ môn", "/bo-mon/sao-dizi", 2],
