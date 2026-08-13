@@ -43,7 +43,7 @@ const CMS_COOKIE = "hongviet_cms_session";
 const CMS_COLLECTIONS = new Set([
   "services", "classes", "products", "materials", "articles", "courses",
   "class-details", "product-groups", "product-items", "course-groups", "course-items",
-  "studio-packages", "booking-packages", "recording-instruments", "flute-tabs",
+  "studio-packages", "booking-packages", "recording-instruments", "flute-tabs", "free-guides",
   "settings", "page-classes", "page-products", "page-articles", "page-courses",
 ]);
 
