@@ -128,3 +128,52 @@ export function NewsDetail() {
     <ContentFooter />
   </main>;
 }
+
+export function SalesDetail({ collection, typeLabel, backHref, backLabel }: { collection: string; typeLabel: string; backHref: string; backLabel: string }) {
+  const params = useParams<{ slug: string }>();
+  const entries = useCmsEntries(collection);
+  const entry = entries?.find((item) => item.slug === params.slug);
+  const paragraphs = (entry?.content || entry?.excerpt || "").split(/\n{2,}|\n/).map((item) => item.trim()).filter(Boolean);
+
+  useEffect(() => {
+    if (!entry) return;
+    document.title = `${entry.title} | Hồng Việt Sáo Trúc`;
+    const description = document.querySelector('meta[name="description"]');
+    description?.setAttribute("content", entry.excerpt || `${typeLabel} ${entry.title} tại Hồng Việt Sáo Trúc.`);
+  }, [entry, typeLabel]);
+
+  const schema = entry ? {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: entry.title,
+    description: entry.excerpt,
+    image: entry.imageUrl || undefined,
+    category: typeLabel,
+    brand: { "@type": "Brand", name: "Hồng Việt Sáo Trúc" },
+    offers: entry.price && entry.price.toLocaleLowerCase("vi") !== "liên hệ" ? {
+      "@type": "Offer",
+      priceCurrency: "VND",
+      price: entry.price.replace(/\D/g, ""),
+      availability: "https://schema.org/InStock",
+      url: typeof window !== "undefined" ? window.location.href : undefined,
+    } : undefined,
+  } : null;
+
+  return <main className="subject-page content-page sales-detail-page">
+    <ContentHeader />
+    {entries === null ? <p className="content-state content-detail-state">Đang tải nội dung…</p> : entry ? <>
+      <section className="sales-detail-hero">
+        <div><p className="eyebrow">{typeLabel.toUpperCase()}</p><h1>{entry.title}</h1><p>{entry.excerpt}</p><div className="sales-detail-price"><small>GIÁ THAM KHẢO</small><strong>{entry.price || "Liên hệ"}</strong></div><Link className="button button-wine" href="/#contact">Gửi yêu cầu tư vấn →</Link></div>
+        {entry.imageUrl && <img src={entry.imageUrl} alt={entry.title} />}
+      </section>
+      <article className="content-detail-body prose-content sales-detail-body">
+        <p className="article-kicker">THÔNG TIN CHI TIẾT</p>
+        {paragraphs.map((paragraph, index) => <p key={`${entry.id}-${index}`}>{paragraph}</p>)}
+        {!paragraphs.length && <p>Nội dung chi tiết đang được cập nhật. Vui lòng gửi yêu cầu để được tư vấn đầy đủ.</p>}
+        <div className="content-detail-actions"><Link href={backHref}>← {backLabel}</Link><ShareButton title={entry.title} /></div>
+      </article>
+      {schema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />}
+    </> : <section className="content-state content-detail-state"><h1>Không tìm thấy nội dung</h1><Link href={backHref}>Quay lại {backLabel.toLocaleLowerCase("vi")}</Link></section>}
+    <ContentFooter />
+  </main>;
+}

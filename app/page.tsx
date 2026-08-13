@@ -190,6 +190,17 @@ const recordingPackages = [
   { title: "Phối nhạc cụ dân tộc", detail: "Đề xuất câu nhạc, cách vào bài và xử lý phong cách", price: "Liên hệ" },
 ];
 
+const defaultSocialLinks = [
+  { slug: "youtube", platform: "YOUTUBE", icon: "▶", title: "Kênh Sáo Hồng Việt", href: "https://www.youtube.com/" },
+  { slug: "facebook", platform: "FACEBOOK", icon: "f", title: "Hồng Việt Sáo Trúc", href: "https://www.facebook.com/" },
+  { slug: "tiktok", platform: "TIKTOK", icon: "♪", title: "@hongvietsao", href: "https://www.tiktok.com/@hongvietsao" },
+  { slug: "instagram", platform: "INSTAGRAM", icon: "◎", title: "@hongviet.music", href: "https://www.instagram.com/hongviet.music/" },
+];
+
+function slugifyPath(value: string) {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
 function scrollElementToId(id: string) {
   document.getElementById(id.replace("#", ""))?.scrollIntoView({ behavior: "smooth" });
 }
@@ -317,9 +328,47 @@ export default function Home() {
   const displayedRecordedCourses = cmsCourseGroups.length ? cmsCourseGroups.map((group) => ({
     instrument: group.title, image: group.imageUrl || "/carousel-saotruc.webp",
     items: cmsCourseItems.filter((item) => item.tag === group.slug).map((item) => ({
-      name: item.title, detail: item.excerpt, price: item.price || "Liên hệ", showPrice: Boolean(item.price && item.price.toLocaleLowerCase("vi") !== "liên hệ"),
+      slug: item.slug, name: item.title, detail: item.excerpt, price: item.price || "Liên hệ", showPrice: Boolean(item.price && item.price.toLocaleLowerCase("vi") !== "liên hệ"),
     })),
-  })) : recordedCourses;
+  })) : recordedCourses.map((group) => ({ ...group, items: group.items.map((item) => ({ ...item, slug: slugifyPath(item.name) })) }));
+
+  const cmsSingleVideos = visibleCollection("single-videos");
+  const displayedSingleVideoGroups = cmsSingleVideos.length ? singleVideoGroups.map((group) => {
+    const groupSlug = slugifyPath(group.instrument);
+    return {
+      ...group,
+      songs: cmsSingleVideos.filter((entry) => entry.tag === groupSlug).map((entry) => ({
+        slug: entry.slug, name: entry.title, detail: entry.excerpt, price: entry.price || "Liên hệ",
+        showPrice: Boolean(entry.price && entry.price.toLocaleLowerCase("vi") !== "liên hệ"),
+      })),
+    };
+  }).filter((group) => group.songs.length) : singleVideoGroups.map((group) => ({
+    ...group,
+    songs: group.songs.map((song) => ({ ...song, slug: `${slugifyPath(song.name)}-${slugifyPath(group.instrument)}`, detail: "Video hướng dẫn từng câu · Sheet nhạc · Ngón bấm · Kỹ thuật" })),
+  }));
+
+  const cmsMaterials = visibleCollection("materials");
+  const materialGroups = (kind: "giao-trinh" | "sheet", fallbackGroups: typeof curriculumGroups | typeof sheetGroups) => {
+    const hasManagedItems = cmsMaterials.some((entry) => entry.tag.startsWith(`${kind}:`));
+    if (!hasManagedItems) return fallbackGroups.map((group, groupIndex) => ({
+      ...group,
+      items: group.items.map((item) => ({ ...item, slug: groupIndex === 0 ? slugifyPath(item.name) : `${slugifyPath(item.name)}-${slugifyPath(group.instrument)}` })),
+    }));
+    return fallbackGroups.map((group) => ({
+      ...group,
+      items: cmsMaterials.filter((entry) => entry.tag === `${kind}:${slugifyPath(group.instrument)}`).map((entry) => ({
+        slug: entry.slug, name: entry.title, detail: entry.excerpt, price: entry.price || "Liên hệ",
+        showPrice: Boolean(entry.price && entry.price.toLocaleLowerCase("vi") !== "liên hệ"),
+      })),
+    })).filter((group) => group.items.length);
+  };
+  const displayedCurriculumGroups = materialGroups("giao-trinh", curriculumGroups);
+  const displayedSheetGroups = materialGroups("sheet", sheetGroups);
+
+  const cmsSocialLinks = visibleCollection("social-links");
+  const displayedSocialLinks = cmsSocialLinks.length ? cmsSocialLinks.map((entry) => ({
+    slug: entry.slug, platform: entry.price || entry.slug.toUpperCase(), icon: entry.tag || "↗", title: entry.title, href: entry.content,
+  })).filter((entry) => entry.href.startsWith("http://") || entry.href.startsWith("https://")) : defaultSocialLinks;
 
   const cmsStudioPackages = visibleCollection("studio-packages");
   const displayedStudioPackages = cmsStudioPackages.length ? cmsStudioPackages.map((entry) => ({
@@ -549,12 +598,12 @@ export default function Home() {
             <span className="recorded-cover" style={{ backgroundImage: `linear-gradient(0deg,rgba(69,14,31,.82),transparent 70%),url(${course.image})` }}><small>KHÓA HỌC 0{i + 1}</small><h3>{course.instrument}</h3></span>
             <span className="recorded-summary-copy"><small>CHƯƠNG TRÌNH QUAY SẴN</small><b>Khóa học {course.instrument}</b><em>{course.items.length} nội dung · Học mọi lúc · Xem lại trọn đời</em></span><i>{openRecordedCourse === i ? "−" : "+"}</i>
           </button>
-          {openRecordedCourse === i && <div className="recorded-lessons">{course.items.map((item, j) => <div key={item.name}><span>{i + 1}.{j + 1}</span><p><b>{item.name}</b><small>{item.detail}</small></p><div className="purchase-action"><small>GIÁ KHÓA HỌC</small><strong>{item.showPrice ? item.price : "Liên hệ"}</strong><button onClick={() => openPayment(`Khóa học ${course.instrument} – ${item.name}`, item.showPrice ? item.price : "")}>Mua ngay qua VietQR</button></div></div>)}</div>}
+          {openRecordedCourse === i && <div className="recorded-lessons">{course.items.map((item, j) => <div key={item.name}><span>{i + 1}.{j + 1}</span><p><a className="catalog-detail-link" href={`/khoa-hoc/${item.slug}`}>{item.name}</a><small>{item.detail}</small></p><div className="purchase-action"><small>GIÁ KHÓA HỌC</small><strong>{item.showPrice ? item.price : "Liên hệ"}</strong><button onClick={() => openPayment(`Khóa học ${course.instrument} – ${item.name}`, item.showPrice ? item.price : "")}>Mua ngay qua VietQR</button></div></div>)}</div>}
         </article>)}</div> : <div className="single-video-catalog">
           <article className="custom-video-card"><div><span>✦</span><p><small>VIDEO CÁ NHÂN HÓA</small><b>Bài quay theo yêu cầu</b><em>Gửi tên bài, tone sáo và yêu cầu kỹ thuật. Hồng Việt sẽ quay video hướng dẫn riêng phù hợp với bạn.</em></p></div><strong>Liên hệ</strong><button onClick={() => openPayment("Bài quay theo yêu cầu")}>Gửi yêu cầu</button></article>
-          <div className="video-group-list">{singleVideoGroups.map((group, i) => <article className={openVideoGroup === i ? "video-group is-open" : "video-group"} key={group.instrument}>
+          <div className="video-group-list">{displayedSingleVideoGroups.map((group, i) => <article className={openVideoGroup === i ? "video-group is-open" : "video-group"} key={group.instrument}>
             <button className="video-group-button" onClick={() => setOpenVideoGroup(openVideoGroup === i ? null : i)} aria-expanded={openVideoGroup === i}><span className="video-group-image" style={{ backgroundImage: `linear-gradient(0deg,rgba(70,14,31,.58),transparent),url(${group.image})` }}><i>▶</i></span><span><small>NHẠC CỤ 0{i + 1}</small><b>{group.instrument}</b><em>{group.description}</em></span><strong>{group.songs.length} bài</strong><i>{openVideoGroup === i ? "−" : "+"}</i></button>
-            {openVideoGroup === i && <div className="video-song-list">{group.songs.map((song, j) => <div key={song.name}><span>{String(j + 1).padStart(2,"0")}</span><p><b>{song.name}</b><small>Video hướng dẫn từng câu · Sheet nhạc · Ngón bấm · Kỹ thuật</small></p><div className="purchase-action"><small>GIÁ VIDEO</small><strong>{song.showPrice ? song.price : "Liên hệ"}</strong><button onClick={() => openPayment(`Video ${group.instrument} – ${song.name}`, song.showPrice ? song.price : "")}>Mua ngay qua VietQR</button></div></div>)}</div>}
+            {openVideoGroup === i && <div className="video-song-list">{group.songs.map((song, j) => <div key={song.name}><span>{String(j + 1).padStart(2,"0")}</span><p><a className="catalog-detail-link" href={`/video/${song.slug}`}>{song.name}</a><small>{song.detail}</small></p><div className="purchase-action"><small>GIÁ VIDEO</small><strong>{song.showPrice ? song.price : "Liên hệ"}</strong><button onClick={() => openPayment(`Video ${group.instrument} – ${song.name}`, song.showPrice ? song.price : "")}>Mua ngay qua VietQR</button></div></div>)}</div>}
           </article>)}</div>
         </div>}
         <div className="payment-note"><span>▣</span><p><b>Thanh toán nhanh bằng VietQR</b><small>Bấm “Mua khóa học” hoặc “Chọn video” để mở bảng thanh toán và chỉnh số tiền, nội dung chuyển khoản.</small></p></div>
@@ -647,17 +696,17 @@ export default function Home() {
       {activeService === "materials" && <section className="materials-section" id="materials">
         <div className="materials-head"><div><p className="eyebrow">GIÁO TRÌNH & SHEET CHUYỂN SOẠN</p><h2>Tài liệu học tập<br />theo từng bộ môn.</h2></div><p>Chọn bộ môn để xem chi tiết. Mỗi tài liệu đều có giá phía trên nút mua VietQR; các mục ẩn giá sẽ hiển thị “Liên hệ”.</p></div>
         <div className="recorded-tabs" role="tablist"><button role="tab" className={materialTab === "curriculum" ? "active" : ""} onClick={() => { setMaterialTab("curriculum"); setOpenMaterialGroup(0); }}>I. Giáo trình</button><button role="tab" className={materialTab === "sheets" ? "active" : ""} onClick={() => { setMaterialTab("sheets"); setOpenMaterialGroup(0); }}>II. Sheet chuyển soạn</button></div>
-        <div className="material-groups">{(materialTab === "curriculum" ? curriculumGroups : sheetGroups).map((group, i) => <article className={openMaterialGroup === i ? "material-group is-open" : "material-group"} key={`${materialTab}-${group.instrument}`}>
+        <div className="material-groups">{(materialTab === "curriculum" ? displayedCurriculumGroups : displayedSheetGroups).map((group, i) => <article className={openMaterialGroup === i ? "material-group is-open" : "material-group"} key={`${materialTab}-${group.instrument}`}>
           <button className="material-group-button" onClick={() => setOpenMaterialGroup(openMaterialGroup === i ? null : i)} aria-expanded={openMaterialGroup === i}><span className="material-cover" style={{ backgroundImage: `linear-gradient(90deg,rgba(60,10,28,.15),rgba(60,10,28,.25)),url(${group.image})` }} /><span><small>{materialTab === "curriculum" ? "BỘ MÔN GIÁO TRÌNH" : "BỘ MÔN SHEET"}</small><b>{group.instrument}</b><em>{group.items.length} tài liệu hiện có</em></span><i>{openMaterialGroup === i ? "−" : "+"}</i></button>
-          {openMaterialGroup === i && <div className="material-items">{group.items.map((item, j) => <div key={item.name}><span>{String(j + 1).padStart(2, "0")}</span><p><b>{item.name}</b><small>{item.detail}</small></p><div className="purchase-action"><small>GIÁ TÀI LIỆU</small><strong>{item.showPrice ? item.price : "Liên hệ"}</strong><button onClick={() => openPayment(`${materialTab === "curriculum" ? "Giáo trình" : "Sheet"} ${group.instrument} – ${item.name}`, item.showPrice ? item.price : "")}>Mua ngay qua VietQR</button></div></div>)}</div>}
+          {openMaterialGroup === i && <div className="material-items">{group.items.map((item, j) => <div key={item.name}><span>{String(j + 1).padStart(2, "0")}</span><p><a className="catalog-detail-link" href={`/${materialTab === "curriculum" ? "giao-trinh" : "sheet"}/${item.slug}`}>{item.name}</a><small>{item.detail}</small></p><div className="purchase-action"><small>GIÁ TÀI LIỆU</small><strong>{item.showPrice ? item.price : "Liên hệ"}</strong><button onClick={() => openPayment(`${materialTab === "curriculum" ? "Giáo trình" : "Sheet"} ${group.instrument} – ${item.name}`, item.showPrice ? item.price : "")}>Mua ngay qua VietQR</button></div></div>)}</div>}
         </article>)}</div>
         {materialTab === "sheets" && <div className="custom-sheet-card"><span>✎</span><div><small>DỊCH VỤ CHUYỂN SOẠN RIÊNG</small><h3>Yêu cầu sheet theo bài</h3><p>Gửi tên bài, tone sáo và yêu cầu ký âm; Hồng Việt sẽ tư vấn giá và thời gian hoàn thiện qua Zalo.</p></div><button onClick={() => { setSelectedDiscipline("Sheet nhạc & giáo trình"); scrollToId("contact"); }}>Liên hệ qua Zalo →</button></div>}
       </section>}
 
-      {activeService === "contact" && <section className="social section">
+      <section className="social section" id="mang-xa-hoi">
         <div className="section-heading"><span /><div><p className="eyebrow">THEO DÕI HỒNG VIỆT</p><h2>Kết nối với chúng tôi</h2></div><span /></div>
-        <div className="social-grid"><a href="#contact" className="youtube"><b>▶</b><span><small>YOUTUBE</small>Kênh Sáo Hồng Việt</span><i>↗</i></a><a href="#contact" className="facebook"><b>f</b><span><small>FACEBOOK</small>Hồng Việt Sáo Trúc</span><i>↗</i></a><a href="#contact" className="tiktok"><b>♪</b><span><small>TIKTOK</small>@hongvietsao</span><i>↗</i></a><a href="#contact" className="instagram"><b>◎</b><span><small>INSTAGRAM</small>@hongviet.music</span><i>↗</i></a></div>
-      </section>}
+        <div className="social-grid">{displayedSocialLinks.map((item) => <a href={item.href} className={item.slug} target="_blank" rel="noreferrer" key={item.slug}><b>{item.icon}</b><span><small>{item.platform}</small>{item.title}</span><i>↗</i></a>)}</div>
+      </section>
 
       {activeService === "contact" && <section className="contact section" id="contact">
         <div className="contact-copy"><p className="eyebrow">BẮT ĐẦU HÀNH TRÌNH</p><h2>Để tiếng sáo cất lời.</h2><p>Để lại thông tin, Hồng Việt sẽ liên hệ tư vấn lớp học, chọn sáo hoặc dịch vụ phù hợp.</p><ul><li>{contactAddress}</li><li>Hotline / Zalo: {contactPhone}</li><li>Email: {contactEmail}</li></ul></div>
