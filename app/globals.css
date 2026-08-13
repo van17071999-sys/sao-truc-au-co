@@ -173,3 +173,13 @@ footer{background:#fffaf1;border-color:var(--line);color:var(--muted)}footer p{c
 .discipline-copy p{color:#765f5d}
 .discipline-copy small{color:#ae772f}
 .discipline-detail{background:#fffdf8;color:var(--wine-deep)}
+
+/* Homepage category-first navigation */
+.service-card.is-selected{border-color:#b77b2e;box-shadow:0 18px 40px rgba(93,25,47,.14);transform:translateY(-4px)}
+.service-card.is-selected a{color:#8a263f;font-weight:800}
+.service-detail-bar{scroll-margin-top:112px;position:sticky;z-index:8;top:107px;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:17px max(clamp(24px,5vw,76px),calc((100% - 1500px)/2 + 76px));border-top:1px solid rgba(215,172,98,.35);border-bottom:1px solid rgba(215,172,98,.35);background:rgba(74,15,34,.97);color:#fff8ed;box-shadow:0 12px 28px rgba(38,7,17,.16);backdrop-filter:blur(12px)}
+.service-detail-bar small{display:block;margin-bottom:4px;color:#dcb269;font-size:8px;font-weight:700;letter-spacing:.14em}
+.service-detail-bar b{font:22px Georgia,serif}
+.service-detail-bar button{padding:10px 15px;border:1px solid rgba(227,187,116,.7);border-radius:999px;background:transparent;color:#f7dfb3;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:.2s}
+.service-detail-bar button:hover{background:#b77b2e;color:#fff;border-color:#b77b2e}
+@media(max-width:760px){.service-detail-bar{top:114px;padding:14px 18px}.service-detail-bar b{font-size:17px}.service-detail-bar button{padding:9px 11px;font-size:7px}.service-card.is-selected{transform:none}}
