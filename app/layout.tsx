@@ -32,8 +32,8 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", images: ["/hero-flute.webp"] },
   robots: { index: true, follow: true },
   icons: {
-    icon: "/logo-hong-viet.png",
-    shortcut: "/logo-hong-viet.png",
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
   },
 };
 
