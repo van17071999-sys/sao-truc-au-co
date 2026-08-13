@@ -19,12 +19,17 @@ type CmsEntry = {
 };
 
 const collections = [
-  { key: "services", label: "Dịch vụ", note: "Các mục lớn trên trang chủ" },
-  { key: "classes", label: "Lớp học – Các bộ môn", note: "Lớp học và chương trình đào tạo" },
-  { key: "products", label: "Sáo & phụ kiện", note: "Sản phẩm và phụ kiện" },
+  { key: "services", label: "8 mục chính", note: "Các thẻ lớn trên trang chủ" },
+  { key: "class-details", label: "Chi tiết lớp học", note: "Từng bộ môn, nội dung học và đối tượng phù hợp", tagLabel: "Biểu tượng", priceLabel: "Phù hợp với", contentLabel: "Nội dung học (mỗi dòng một ý)" },
+  { key: "product-groups", label: "Nhóm sáo & phụ kiện", note: "Các nhóm như Sáo ngang, Dizi, Sáo mèo…", tagLabel: "Nhãn phụ", contentLabel: "Nội dung bổ sung" },
+  { key: "product-items", label: "Từng sản phẩm", note: "Từng cây sáo hoặc phụ kiện nằm trong một nhóm", tagLabel: "Slug nhóm cha *", tagPlaceholder: "Ví dụ: sao-ngang-viet-nam", priceLabel: "Giá / Liên hệ", contentLabel: "Thông tin bổ sung" },
+  { key: "course-groups", label: "Nhóm khóa học", note: "Nhóm theo bộ môn ở trang khóa học quay sẵn", tagLabel: "Nhãn phụ", contentLabel: "Nội dung bổ sung" },
+  { key: "course-items", label: "Từng khóa học", note: "Từng nội dung và giá bên trong mỗi nhóm khóa học", tagLabel: "Slug nhóm cha *", tagPlaceholder: "Ví dụ: sao-truc", priceLabel: "Giá khóa học", contentLabel: "Quyền lợi / nội dung bổ sung" },
   { key: "materials", label: "Giáo trình & sheet", note: "Tài liệu bán trên website" },
+  { key: "studio-packages", label: "Gói thu âm & video", note: "Từng gói, giá và quyền lợi", tagLabel: "Biểu tượng", priceLabel: "Giá tham khảo", contentLabel: "Quyền lợi (mỗi dòng một ý)" },
+  { key: "booking-packages", label: "Gói booking nghệ sĩ", note: "Từng đội hình biểu diễn, giá và quyền lợi", tagLabel: "Biểu tượng", priceLabel: "Giá tham khảo", contentLabel: "Quyền lợi (mỗi dòng một ý)" },
+  { key: "recording-instruments", label: "Thu âm nhạc cụ thật", note: "Từng nhạc cụ nhận thu và giá", tagLabel: "Biểu tượng", priceLabel: "Giá từ", contentLabel: "Thông tin bổ sung" },
   { key: "articles", label: "Tin tức (Blog)", note: "Bài viết và kiến thức" },
-  { key: "courses", label: "Khóa học quay sẵn", note: "Khóa học và video" },
 ];
 
 const singletons = [
@@ -262,11 +267,11 @@ export default function ContentAdmin() {
           <label className="wide slug-field">Slug (đường dẫn, không dấu) *<span><input required pattern="[a-z0-9-]+" value={draft.slug} onChange={(event) => setDraft({ ...draft, slug: slugify(event.target.value) })} /><button type="button" onClick={() => setDraft({ ...draft, slug: slugify(draft.title) })}>Tạo lại</button></span></label>
           <label>Ngày đăng<input type="date" value={draft.publishedAt} onChange={(event) => setDraft({ ...draft, publishedAt: event.target.value })} /></label>
           <label>Thứ tự hiển thị<input type="number" min="0" value={draft.sortOrder} onChange={(event) => setDraft({ ...draft, sortOrder: Number(event.target.value) })} /></label>
-          <label>Phân loại / nhãn<input value={draft.tag} onChange={(event) => setDraft({ ...draft, tag: event.target.value })} placeholder="Ví dụ: Kỹ thuật" /></label>
-          <label>Giá / thông tin phụ<input value={draft.price} onChange={(event) => setDraft({ ...draft, price: event.target.value })} placeholder="Ví dụ: 399.000đ" /></label>
+          <label>{"tagLabel" in activeMeta ? activeMeta.tagLabel : "Phân loại / nhãn"}<input required={section === "product-items" || section === "course-items"} value={draft.tag} onChange={(event) => setDraft({ ...draft, tag: event.target.value })} placeholder={"tagPlaceholder" in activeMeta ? activeMeta.tagPlaceholder : "Ví dụ: Kỹ thuật"} /></label>
+          <label>{"priceLabel" in activeMeta ? activeMeta.priceLabel : "Giá / thông tin phụ"}<input value={draft.price} onChange={(event) => setDraft({ ...draft, price: event.target.value })} placeholder="Ví dụ: 399.000đ hoặc Liên hệ" /></label>
           <label className="wide">Mô tả ngắn<textarea rows={3} value={draft.excerpt} onChange={(event) => setDraft({ ...draft, excerpt: event.target.value })} /></label>
           <label className="wide">Ảnh bìa<div className="admin-upload"><input value={draft.imageUrl} onChange={(event) => setDraft({ ...draft, imageUrl: event.target.value })} placeholder="Dán URL ảnh hoặc tải ảnh lên" /><span><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file); }} />Chọn ảnh</span></div>{draft.imageUrl && <img className="admin-cover-preview" src={draft.imageUrl} alt="Xem trước ảnh bìa" />}</label>
-          <label className="wide">Nội dung<textarea className="content-editor" rows={12} value={draft.content} onChange={(event) => setDraft({ ...draft, content: event.target.value })} placeholder="Nhập nội dung chi tiết. Mỗi đoạn cách nhau bằng một dòng trống." /></label>
+          <label className="wide">{"contentLabel" in activeMeta ? activeMeta.contentLabel : "Nội dung"}<textarea className="content-editor" rows={12} value={draft.content} onChange={(event) => setDraft({ ...draft, content: event.target.value })} placeholder={section.includes("packages") || section === "class-details" ? "Mỗi dòng là một ý hiển thị trên website." : "Nhập nội dung chi tiết."} /></label>
           <label className="admin-check wide"><input type="checkbox" checked={draft.visible} onChange={(event) => setDraft({ ...draft, visible: event.target.checked })} />Hiển thị trên website</label>
         </div>
         <footer><button type="button" onClick={() => setDraft(null)}>Hủy</button>{draft.id && <button type="button" className="danger" onClick={() => void remove(draft)}>Xóa nội dung</button>}<button className="admin-primary" disabled={busy}>{busy ? "Đang lưu…" : "Lưu nội dung"}</button></footer>
