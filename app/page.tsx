@@ -31,9 +31,9 @@ const slides = [
 ];
 
 const defaultArticles = [
-  { tag: "Kỹ thuật", title: "5 bước tạo tiếng sáo trong và ổn định", excerpt: "Từ tư thế, khẩu hình đến luồng hơi — nền tảng dành cho người mới bắt đầu.", date: "08.08.2026" },
-  { tag: "Chọn nhạc cụ", title: "Người mới nên bắt đầu với sáo tone nào?", excerpt: "So sánh sáo Đô C5, La A4 và Sol G4 để chọn cây sáo phù hợp với mục tiêu học.", date: "02.08.2026" },
-  { tag: "Luyện tập", title: "Cách luyện hơi dài mà không bị căng", excerpt: "Một lịch tập ngắn, an toàn và hiệu quả để cải thiện cột hơi mỗi ngày.", date: "28.07.2026" },
+  { slug: "5-buoc-tao-tieng-sao", tag: "Kỹ thuật", title: "5 bước tạo tiếng sáo trong và ổn định", excerpt: "Từ tư thế, khẩu hình đến luồng hơi — nền tảng dành cho người mới bắt đầu.", date: "08.08.2026" },
+  { slug: "nguoi-moi-chon-sao-tone-nao", tag: "Chọn nhạc cụ", title: "Người mới nên bắt đầu với sáo tone nào?", excerpt: "So sánh sáo Đô C5, La A4 và Sol G4 để chọn cây sáo phù hợp với mục tiêu học.", date: "02.08.2026" },
+  { slug: "cach-luyen-hoi-dai", tag: "Luyện tập", title: "Cách luyện hơi dài mà không bị căng", excerpt: "Một lịch tập ngắn, an toàn và hiệu quả để cải thiện cột hơi mỗi ngày.", date: "28.07.2026" },
 ];
 
 const freeGuides = [
@@ -277,6 +277,7 @@ export default function Home() {
   })) : defaultServices;
   const cmsArticles = cmsEntries.filter((entry) => entry.collection === "articles" && entry.visible);
   const articles = cmsArticles.length ? cmsArticles.map((entry) => ({
+    slug: entry.slug,
     tag: entry.tag || "Bài viết",
     title: entry.title,
     excerpt: entry.excerpt,
@@ -345,6 +346,15 @@ export default function Home() {
         : { lyric: "", notes: line };
     }),
   })) : fluteTabs;
+  const cmsFreeGuides = visibleCollection("free-guides");
+  const displayedFreeGuides = cmsFreeGuides.length ? cmsFreeGuides.map((entry) => ({
+    platform: entry.tag || "Bài viết",
+    icon: entry.tag.toLocaleLowerCase("vi").includes("youtube") ? "▶" : entry.tag.toLocaleLowerCase("vi").includes("tiktok") ? "♪" : "✎",
+    topic: entry.price || "Hướng dẫn miễn phí",
+    title: entry.title,
+    description: entry.excerpt,
+    href: entry.content || "#contact",
+  })) : freeGuides;
   const collectionForService: Partial<Record<ServiceSection, string>> = { materials: "materials" };
   const activeCmsEntries = activeService && collectionForService[activeService]
     ? cmsEntries.filter((entry) => entry.collection === collectionForService[activeService] && entry.visible)
@@ -451,9 +461,9 @@ export default function Home() {
         <nav className={menuOpen ? "open" : ""} aria-label="Điều hướng chính">
           <a href="#top" onClick={() => setMenuOpen(false)}>Trang chủ</a>
           <button className="nav-search" onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false); }}>⌕ Tìm kiếm</button>
-          <a href="#services" onClick={() => setMenuOpen(false)}>Danh mục</a>
+          <a href="/tin-tuc" onClick={() => setMenuOpen(false)}>Tin tức</a>
           <a href="#classes" onClick={(e) => { e.preventDefault(); openService("#classes"); }}>Lớp học</a>
-          <a href="#cam-am-sao-truc" onClick={(e) => { e.preventDefault(); openService("#flute-tabs"); }}>Cảm âm</a>
+          <a href="/cam-am" onClick={() => setMenuOpen(false)}>Cảm âm</a>
           <a href="#contact" onClick={(e) => { e.preventDefault(); openService("#contact"); }}>Liên hệ</a>
         </nav>
         <button className="button button-gold header-cta" onClick={() => openService("#contact")}>✦ Đăng ký học</button>
@@ -590,7 +600,7 @@ export default function Home() {
 
       {activeService === "classes" && <section className="articles section" id="articles">
         <div className="articles-head"><div><p className="eyebrow">KIẾN THỨC & CẢM HỨNG</p><h2>Bài viết mới</h2></div><p>Những hướng dẫn ngắn gọn, dễ áp dụng để bạn hiểu nhạc cụ và luyện tập đúng cách.</p></div>
-        <div className="article-grid">{articles.map((article, i) => <article key={article.title}><div className="article-visual"><span>0{i + 1}</span><b>♪</b></div><div className="article-body"><small>{article.tag} · {article.date}</small><h3>{article.title}</h3><p>{article.excerpt}</p><a href="#contact" onClick={(e) => { e.preventDefault(); openService("#contact"); }}>Đọc bài viết <span>→</span></a></div></article>)}</div>
+        <div className="article-grid">{articles.map((article, i) => <article key={article.title}><div className="article-visual"><span>0{i + 1}</span><b>♪</b></div><div className="article-body"><small>{article.tag} · {article.date}</small><h3>{article.title}</h3><p>{article.excerpt}</p><a href={`/tin-tuc/${article.slug}`}>Đọc bài viết <span>→</span></a></div></article>)}</div>
       </section>}
 
       {activeService === "classes" && <section className="free-guides-section" id="free-guides">
@@ -599,9 +609,9 @@ export default function Home() {
           <p>Nơi tổng hợp video YouTube, TikTok và bài viết hữu ích. Bạn chỉ cần thay đường dẫn trong từng nội dung để giới thiệu kênh và chia sẻ kiến thức tới học viên.</p>
         </div>
         <div className="free-guides-grid">
-          {freeGuides.map((guide) => <article key={guide.platform}>
+          {displayedFreeGuides.map((guide) => <article key={`${guide.platform}-${guide.title}`}>
             <div className="guide-visual"><span>{guide.icon}</span><small>{guide.platform}</small></div>
-            <div className="guide-copy"><small>{guide.topic}</small><h3>{guide.title}</h3><p>{guide.description}</p><a href={guide.href} onClick={(e) => { if (guide.href === "#contact") { e.preventDefault(); openService("#contact"); } }}>{guide.platform === "Bài viết" ? "Đọc bài viết" : `Xem trên ${guide.platform}`} <span>→</span></a></div>
+            <div className="guide-copy"><small>{guide.topic}</small><h3>{guide.title}</h3><p>{guide.description}</p><a href={guide.href} target={guide.href.startsWith("http") ? "_blank" : undefined} rel={guide.href.startsWith("http") ? "noreferrer" : undefined} onClick={(e) => { if (guide.href === "#contact") { e.preventDefault(); openService("#contact"); } }}>{guide.platform === "Bài viết" ? "Đọc bài viết" : `Xem trên ${guide.platform}`} <span>→</span></a></div>
           </article>)}
         </div>
         <div className="free-guides-note"><span>✦</span><p><b>Sẵn sàng để gắn nội dung của bạn</b><small>Thay các đường dẫn mẫu bằng link YouTube, TikTok hoặc bài viết thật; bố cục sẽ tự thích ứng trên máy tính và điện thoại.</small></p><button onClick={() => openService("#contact")}>Gửi link cần cập nhật</button></div>
