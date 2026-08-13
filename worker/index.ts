@@ -42,7 +42,7 @@ type CmsRow = {
 const CMS_COOKIE = "hongviet_cms_session";
 const CMS_COLLECTIONS = new Set([
   "services", "classes", "products", "materials", "articles", "courses",
-  "class-details", "product-groups", "product-items", "course-groups", "course-items",
+  "hero-slides", "class-details", "product-groups", "product-items", "course-groups", "course-items",
   "single-videos", "social-links", "studio-packages", "booking-packages", "recording-instruments", "flute-tabs", "free-guides",
   "settings", "page-classes", "page-products", "page-articles", "page-courses",
 ]);
@@ -63,6 +63,13 @@ const initialCmsEntries = [
 ] as const;
 
 const detailedCmsEntries = [
+  // Năm ảnh demo bộ môn ở đầu trang chủ.
+  ["hero-slide-01", "hero-slides", "Sáo trúc Việt Nam", "sao-truc-viet-nam", "Từ hơi thở đầu tiên đến tiếng sáo giàu cảm xúc.", "/carousel-saotruc.webp", "BỘ MÔN TRUYỀN THỐNG", "Khám phá bộ môn", "/bo-mon/sao-truc-viet-nam", 1],
+  ["hero-slide-02", "hero-slides", "Sáo Dizi", "sao-dizi", "Khám phá màng rung và kỹ thuật diễn tấu Trung Hoa.", "/carousel-dizi.webp", "ÂM SẮC CỔ PHONG", "Khám phá bộ môn", "/bo-mon/sao-dizi", 2],
+  ["hero-slide-03", "hero-slides", "Sáo Recorder", "sao-recorder", "Khởi đầu dễ dàng, đọc nhạc bài bản và cùng nhau hòa tấu.", "/carousel-recorder.webp", "ÂM NHẠC CHO MỌI LỨA TUỔI", "Khám phá bộ môn", "/bo-mon/sao-recorder", 3],
+  ["hero-slide-04", "hero-slides", "Động tiêu & Xiao", "dong-tieu-xiao", "Một khoảng lặng đẹp cho người yêu âm nhạc cổ phong.", "/carousel-tieu.webp", "TRẦM ẤM & SÂU LẮNG", "Khám phá bộ môn", "/bo-mon/dong-tieu-xiao", 4],
+  ["hero-slide-05", "hero-slides", "Flute", "flute", "Âm sắc trong trẻo, linh hoạt cùng lộ trình cá nhân hóa.", "/carousel-flute.webp", "KỸ THUẬT PHƯƠNG TÂY", "Khám phá bộ môn", "/bo-mon/flute", 5],
+
   // Chi tiết các bộ môn. Nội dung là danh sách kiến thức, mỗi dòng một ý.
   ["class-sao-truc", "class-details", "Sáo trúc Việt Nam", "sao-truc-viet-nam", "Nền tảng hơi, ngón và kỹ thuật biểu cảm đặc trưng.", "/carousel-saotruc.webp", "♫", "Người mới bắt đầu, người chơi tự học hoặc học viên muốn biểu diễn.", "Tư thế, khẩu hình và cột hơi\nNgón bấm, đánh lưỡi, rung hơi\nDân ca, nhạc trữ tình và nhạc trẻ", 1],
   ["class-dizi", "class-details", "Sáo Dizi", "sao-dizi", "Âm sắc sáng, vang với màng rung và phong cách cổ phong.", "/carousel-dizi.webp", "◉", "Người yêu nhạc Trung Hoa, nhạc phim và âm sắc Dizi.", "Dán và điều chỉnh màng rung\nHệ thống ngón và kỹ thuật hơi\nLuyến, láy và xử lý tác phẩm cổ phong", 2],
