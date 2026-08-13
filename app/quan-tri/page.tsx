@@ -222,7 +222,7 @@ export default function ContentAdmin() {
   if (!authenticated) {
     return <main className="admin-login-shell">
       <section className="admin-login-card">
-        <img className="admin-login-mark" src="/logo-hong-viet.png" alt="Logo Hồng Việt" />
+        <div className="admin-login-mark">♪</div>
         <p>HỒNG VIỆT SÁO TRÚC</p>
         <h1>Quản trị nội dung</h1>
         <span>Đăng nhập để chỉnh sửa nội dung đang hiển thị trên website.</span>
@@ -238,7 +238,7 @@ export default function ContentAdmin() {
 
   return <main className="admin-shell">
     <aside className={navOpen ? "admin-sidebar open" : "admin-sidebar"}>
-      <div className="admin-brand"><img src="/logo-hong-viet.png" alt="Logo Hồng Việt" /><span><strong>Hồng Việt</strong><small>Quản trị nội dung</small></span></div>
+      <div className="admin-brand"><b>♪</b><span><strong>Hồng Việt</strong><small>Quản trị nội dung</small></span></div>
       <button className="admin-nav-close" onClick={() => setNavOpen(false)}>×</button>
       <a className="admin-dashboard-link" href="/" target="_blank" rel="noreferrer">↗ Xem website</a>
       <p className="admin-nav-title">BỘ SƯU TẬP</p>
