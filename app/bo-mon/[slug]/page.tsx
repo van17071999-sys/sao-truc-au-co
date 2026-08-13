@@ -48,13 +48,13 @@ export default async function SubjectPage({ params }: { params: Promise<{ slug: 
   if (!subject) notFound();
 
   return <main className="subject-page">
-    <header className="article-header"><Link className="brand" href="/"><img className="brand-logo" src="/logo-hong-viet.png" alt="Logo Hồng Việt" /><span><b>HỒNG VIỆT</b><small>SÁO TRÚC & ÂM NHẠC DÂN TỘC</small></span></Link><nav><Link href="/">Trang chủ</Link><Link href="/#classes">Các bộ môn</Link><Link href="/#contact">Liên hệ</Link></nav></header>
+    <header className="article-header"><Link className="brand" href="/"><span className="brand-mark">〽</span><span><b>HỒNG VIỆT</b><small>SÁO TRÚC & ÂM NHẠC DÂN TỘC</small></span></Link><nav><Link href="/">Trang chủ</Link><Link href="/#classes">Các bộ môn</Link><Link href="/#contact">Liên hệ</Link></nav></header>
     <section className="subject-hero"><div><p className="eyebrow">BÀI GIỚI THIỆU BỘ MÔN</p><span className="subject-symbol">{subject.icon}</span><h1>{subject.title}</h1><p>{subject.lead}</p><a className="button button-wine" href="#dang-ky">Đăng ký tư vấn →</a></div></section>
     <article className="subject-article">
       <div className="article-main"><p className="article-kicker">HIỂU VỀ BỘ MÔN</p><h2>Một lộ trình rõ ràng để chơi nhạc bằng chính cảm xúc của bạn.</h2><p className="article-lead">{subject.intro}</p><h3>Bạn sẽ học được gì?</h3><ul className="learn-list">{subject.learn.map((item) => <li key={item}><span>✓</span>{item}</li>)}</ul><h3>Lộ trình học</h3><div className="path-grid">{subject.path.map((item, i) => <div key={item}><b>0{i + 1}</b><span>{item}</span></div>)}</div><blockquote>“Học đúng kỹ thuật để tự do thể hiện cảm xúc — đó là nền tảng của mỗi chương trình tại Hồng Việt.”</blockquote></div>
       <aside><div><small>PHÙ HỢP VỚI</small><p>{subject.suitable}</p></div><div><small>HÌNH THỨC HỌC</small><ul><li>Trực tiếp tại trung tâm</li><li>Gia sư tại nhà</li><li>Online 1 kèm 1</li></ul></div><div><small>THỜI GIAN</small><p>Linh động theo lịch học viên</p></div></aside>
     </article>
     <section className="subject-register" id="dang-ky"><p className="eyebrow">BẮT ĐẦU HÀNH TRÌNH</p><h2>Đăng ký học {subject.title}</h2><p>Để lại thông tin tại form đăng ký của Hồng Việt. Bộ môn sẽ được chọn sẵn khi bạn quay về trang chính.</p><Link className="button button-wine" href={`/?subject=${encodeURIComponent(subject.title)}#contact`}>Đi đến form đăng ký →</Link></section>
-    <footer><Link className="brand" href="/"><img className="brand-logo" src="/logo-hong-viet.png" alt="Logo Hồng Việt" /><span><b>HỒNG VIỆT</b><small>SÁO TRÚC & ÂM NHẠC DÂN TỘC</small></span></Link><p>Đam mê làm nên giá trị · Chất lượng tạo nên uy tín</p><small>© 2026 Hồng Việt.</small></footer>
+    <footer><Link className="brand" href="/"><span className="brand-mark">〽</span><span><b>HỒNG VIỆT</b><small>SÁO TRÚC & ÂM NHẠC DÂN TỘC</small></span></Link><p>Đam mê làm nên giá trị · Chất lượng tạo nên uy tín</p><small>© 2026 Hồng Việt.</small></footer>
   </main>;
 }
