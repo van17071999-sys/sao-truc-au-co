@@ -104,13 +104,22 @@ export default function ContentAdmin() {
   );
 
   async function load() {
-    const response = await fetch("/api/cms/admin", { credentials: "same-origin" });
+    let response = await fetch("/api/cms/admin", { credentials: "same-origin" });
     if (response.status === 401) {
       setAuthenticated(false);
       return;
     }
     if (!response.ok) throw new Error("load_failed");
-    const data = (await response.json()) as { entries: CmsEntry[] };
+    let data = (await response.json()) as { entries: CmsEntry[] };
+    let offset: number | null = 0;
+    while (offset !== null) {
+      const seedResponse = await fetch(`/api/cms/seed-details?offset=${offset}`, { method: "POST", credentials: "same-origin" });
+      if (!seedResponse.ok) break;
+      const seedData = (await seedResponse.json()) as { nextOffset: number | null };
+      offset = seedData.nextOffset;
+    }
+    response = await fetch("/api/cms/admin", { credentials: "same-origin" });
+    if (response.ok) data = (await response.json()) as { entries: CmsEntry[] };
     setEntries(data.entries);
     setAuthenticated(true);
   }
