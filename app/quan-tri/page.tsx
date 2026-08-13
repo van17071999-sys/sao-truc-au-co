@@ -39,7 +39,7 @@ const collections = [
 ];
 
 const singletons = [
-  { key: "settings", label: "Cài đặt chung", note: "Thương hiệu và liên hệ" },
+  { key: "settings", label: "Cài đặt chung", note: "Thương hiệu, liên hệ và thanh toán VietQR" },
   { key: "page-classes", label: "Trang Lớp học", note: "Nội dung giới thiệu trang" },
   { key: "page-products", label: "Trang Cửa hàng", note: "Nội dung giới thiệu trang" },
   { key: "page-articles", label: "Trang Tin tức", note: "Nội dung giới thiệu trang" },
@@ -160,7 +160,10 @@ export default function ContentAdmin() {
 
   function startCreate() {
     if (isSingleton && sectionEntries[0]) {
-      setDraft({ ...sectionEntries[0] });
+      const preferredEntry = section === "settings"
+        ? sectionEntries.find((entry) => entry.slug === "payment") || sectionEntries[0]
+        : sectionEntries[0];
+      setDraft({ ...preferredEntry });
       return;
     }
     setDraft(emptyEntry(section));
@@ -198,10 +201,24 @@ export default function ContentAdmin() {
     if (!draft) return;
     setBusy(true);
     setNotice("");
+    let payload = draft;
+    if (draft.collection === "settings" && draft.slug === "payment") {
+      const savedEntry = entries.find((entry) => entry.id === draft.id);
+      const accountChanged = Boolean(savedEntry && savedEntry.price !== draft.price);
+      const qrUnchanged = Boolean(savedEntry && savedEntry.imageUrl === draft.imageUrl);
+      if (accountChanged && qrUnchanged) {
+        const bankCode = (draft.tag.split(/[ ·]/)[0] || "STB").replace(/[^A-Za-z0-9]/g, "");
+        const accountNumber = draft.price.replace(/\D/g, "");
+        if (bankCode && accountNumber) payload = {
+          ...draft,
+          imageUrl: `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact2.png`,
+        };
+      }
+    }
     const response = await fetch("/api/cms/admin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(draft),
+      body: JSON.stringify(payload),
     });
     setBusy(false);
     if (!response.ok) {
@@ -249,6 +266,15 @@ export default function ContentAdmin() {
     </main>;
   }
 
+  const isPaymentSettings = draft?.collection === "settings" && draft.slug === "payment";
+  const fieldMeta = activeMeta as typeof activeMeta & {
+    tagLabel?: string;
+    tagPlaceholder?: string;
+    priceLabel?: string;
+    excerptLabel?: string;
+    contentLabel?: string;
+  };
+
   return <main className="admin-shell">
     <aside className={navOpen ? "admin-sidebar open" : "admin-sidebar"}>
       <div className="admin-brand"><BrandLogo size={35} radius={9} /><span><strong>Hồng Việt</strong><small>Quản trị nội dung</small></span></div>
@@ -284,11 +310,11 @@ export default function ContentAdmin() {
           <label className="wide slug-field">Slug (đường dẫn, không dấu) *<span><input required pattern="[a-z0-9-]+" value={draft.slug} onChange={(event) => setDraft({ ...draft, slug: slugify(event.target.value) })} /><button type="button" onClick={() => setDraft({ ...draft, slug: slugify(draft.title) })}>Tạo lại</button></span></label>
           <label>Ngày đăng<input type="date" value={draft.publishedAt} onChange={(event) => setDraft({ ...draft, publishedAt: event.target.value })} /></label>
           <label>Thứ tự hiển thị<input type="number" min="0" value={draft.sortOrder} onChange={(event) => setDraft({ ...draft, sortOrder: Number(event.target.value) })} /></label>
-          <label>{"tagLabel" in activeMeta ? activeMeta.tagLabel : "Phân loại / nhãn"}<input required={["product-items", "course-items", "single-videos", "materials"].includes(section)} value={draft.tag} onChange={(event) => setDraft({ ...draft, tag: event.target.value })} placeholder={"tagPlaceholder" in activeMeta ? activeMeta.tagPlaceholder : "Ví dụ: Kỹ thuật"} /></label>
-          <label>{"priceLabel" in activeMeta ? activeMeta.priceLabel : "Giá / thông tin phụ"}<input value={draft.price} onChange={(event) => setDraft({ ...draft, price: event.target.value })} placeholder="Ví dụ: 399.000đ hoặc Liên hệ" /></label>
-          <label className="wide">{"excerptLabel" in activeMeta ? activeMeta.excerptLabel : "Mô tả ngắn"}<textarea rows={3} value={draft.excerpt} onChange={(event) => setDraft({ ...draft, excerpt: event.target.value })} /></label>
-          <label className="wide">Ảnh bìa<div className="admin-upload"><input value={draft.imageUrl} onChange={(event) => setDraft({ ...draft, imageUrl: event.target.value })} placeholder="Dán URL ảnh hoặc tải ảnh lên" /><span><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file); }} />Chọn ảnh</span></div>{draft.imageUrl && <img className="admin-cover-preview" src={draft.imageUrl} alt="Xem trước ảnh bìa" />}</label>
-          <label className="wide">{"contentLabel" in activeMeta ? activeMeta.contentLabel : "Nội dung"}<textarea className="content-editor" rows={12} value={draft.content} onChange={(event) => setDraft({ ...draft, content: event.target.value })} placeholder={section.includes("packages") || section === "class-details" ? "Mỗi dòng là một ý hiển thị trên website." : "Nhập nội dung chi tiết."} /></label>
+          <label>{isPaymentSettings ? "Ngân hàng" : fieldMeta.tagLabel || "Phân loại / nhãn"}<input required={isPaymentSettings || ["product-items", "course-items", "single-videos", "materials"].includes(section)} value={draft.tag} onChange={(event) => setDraft({ ...draft, tag: event.target.value })} placeholder={isPaymentSettings ? "Ví dụ: STB · Sacombank" : fieldMeta.tagPlaceholder || "Ví dụ: Kỹ thuật"} /></label>
+          <label>{isPaymentSettings ? "Số tài khoản *" : fieldMeta.priceLabel || "Giá / thông tin phụ"}<input required={isPaymentSettings} inputMode={isPaymentSettings ? "numeric" : undefined} value={draft.price} onChange={(event) => setDraft({ ...draft, price: event.target.value })} placeholder={isPaymentSettings ? "Nhập số tài khoản" : "Ví dụ: 399.000đ hoặc Liên hệ"} /></label>
+          <label className="wide">{isPaymentSettings ? "Tên chủ tài khoản" : fieldMeta.excerptLabel || "Mô tả ngắn"}<textarea rows={3} value={draft.excerpt} onChange={(event) => setDraft({ ...draft, excerpt: event.target.value })} /></label>
+          <label className="wide">{isPaymentSettings ? "Ảnh mã QR dùng chung" : "Ảnh bìa"}<div className="admin-upload"><input value={draft.imageUrl} onChange={(event) => setDraft({ ...draft, imageUrl: event.target.value })} placeholder={isPaymentSettings ? "Tự tạo theo số tài khoản hoặc tải ảnh QR lên" : "Dán URL ảnh hoặc tải ảnh lên"} /><span><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file); }} />Chọn ảnh</span></div>{draft.imageUrl && <img className="admin-cover-preview" src={draft.imageUrl} alt={isPaymentSettings ? "Xem trước mã QR" : "Xem trước ảnh bìa"} />}</label>
+          <label className="wide">{fieldMeta.contentLabel || "Nội dung"}<textarea className="content-editor" rows={12} value={draft.content} onChange={(event) => setDraft({ ...draft, content: event.target.value })} placeholder={section.includes("packages") || section === "class-details" ? "Mỗi dòng là một ý hiển thị trên website." : "Nhập nội dung chi tiết."} /></label>
           <label className="admin-check wide"><input type="checkbox" checked={draft.visible} onChange={(event) => setDraft({ ...draft, visible: event.target.checked })} />Hiển thị trên website</label>
         </div>
         <footer><button type="button" onClick={() => setDraft(null)}>Hủy</button>{draft.id && <button type="button" className="danger" onClick={() => void remove(draft)}>Xóa nội dung</button>}<button className="admin-primary" disabled={busy}>{busy ? "Đang lưu…" : "Lưu nội dung"}</button></footer>
