@@ -176,10 +176,10 @@ async function ensureCmsSchema(db: D1Database) {
     )`),
   ]);
 
-  const detailCount = await db.prepare("SELECT COUNT(*) AS total FROM cms_entries WHERE collection = 'class-details'").first<{ total: number }>();
-  if (Number(detailCount?.total ?? 0) > 0) return;
+  const count = await db.prepare("SELECT COUNT(*) AS total FROM cms_entries").first<{ total: number }>();
+  if (Number(count?.total ?? 0) > 0) return;
   const now = new Date().toISOString();
-  const seedStatements = [...initialCmsEntries, ...detailedCmsEntries].map((item) => db.prepare(`INSERT OR IGNORE INTO cms_entries
+  const seedStatements = initialCmsEntries.map((item) => db.prepare(`INSERT OR IGNORE INTO cms_entries
     (id, collection, title, slug, published_at, excerpt, image_url, tag, price, content, visible, sort_order, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`)
     .bind(item[0], item[1], item[2], item[3], item[1] === "articles" ? "2026-08-08" : "", item[4], item[5], item[6], item[7], item[8], item[9], now));
@@ -261,6 +261,28 @@ async function handleCms(request: Request, env: Env, url: URL): Promise<Response
   }
 
   if (!requestHasSameOrigin(request, url)) return Response.json({ error: "Invalid origin" }, { status: 403 });
+
+  if (url.pathname === "/api/cms/seed-details" && request.method === "POST") {
+    const parsedOffset = Number.parseInt(url.searchParams.get("offset") || "0", 10);
+    const offset = Number.isFinite(parsedOffset)
+      ? Math.max(0, Math.min(parsedOffset, detailedCmsEntries.length))
+      : 0;
+    const batch = detailedCmsEntries.slice(offset, offset + 12);
+    const now = new Date().toISOString();
+    for (const item of batch) {
+      await env.DB.prepare(`INSERT OR IGNORE INTO cms_entries
+        (id, collection, title, slug, published_at, excerpt, image_url, tag, price, content, visible, sort_order, updated_at)
+        VALUES (?, ?, ?, ?, '', ?, ?, ?, ?, ?, 1, ?, ?)`)
+        .bind(item[0], item[1], item[2], item[3], item[4], item[5], item[6], item[7], item[8], item[9], now).run();
+    }
+    const nextOffset = offset + batch.length;
+    return Response.json({
+      ok: true,
+      count: batch.length,
+      nextOffset: nextOffset < detailedCmsEntries.length ? nextOffset : null,
+      total: detailedCmsEntries.length,
+    });
+  }
 
   if (url.pathname === "/api/cms/admin" && request.method === "POST") {
     const body = await request.json().catch(() => ({})) as Record<string, unknown>;
