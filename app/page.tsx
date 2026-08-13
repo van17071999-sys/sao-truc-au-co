@@ -406,11 +406,6 @@ export default function Home() {
     description: entry.excerpt,
     href: entry.content || "#contact",
   })) : freeGuides;
-  const collectionForService: Partial<Record<ServiceSection, string>> = { materials: "materials" };
-  const activeCmsEntries = activeService && collectionForService[activeService]
-    ? cmsEntries.filter((entry) => entry.collection === collectionForService[activeService] && entry.visible)
-    : [];
-
   const searchItems = services
     .map((item) => ({ title: item.title, type: "Danh mục", href: item.href }))
     .filter((item) => item.title.toLocaleLowerCase("vi").includes(query.toLocaleLowerCase("vi")));
@@ -576,14 +571,6 @@ export default function Home() {
         <div><small>NỘI DUNG ĐANG XEM</small><b>{services.find((service) => service.href === `#${activeService}`)?.title}</b></div>
         <button onClick={closeService}>← Quay lại 8 danh mục</button>
       </div>}
-
-      {activeCmsEntries.length > 0 && <section className="cms-content-section section" aria-label="Nội dung cập nhật từ trang quản trị">
-        <div className="cms-content-heading"><p className="eyebrow">NỘI DUNG MỚI CẬP NHẬT</p><h2>{services.find((service) => service.href === `#${activeService}`)?.title}</h2></div>
-        <div className="cms-content-grid">{activeCmsEntries.map((entry) => <article key={entry.id}>
-          {entry.imageUrl && <img src={entry.imageUrl} alt="" loading="lazy" />}
-          <div><small>{entry.tag || "HỒNG VIỆT"}{entry.publishedAt ? ` · ${new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN")}` : ""}</small><h3>{entry.title}</h3><p>{entry.excerpt}</p>{entry.content && <div className="cms-entry-content">{entry.content.split(/\n\n+/).map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div>}{entry.price && <strong>{entry.price}</strong>}</div>
-        </article>)}</div>
-      </section>}
 
       {activeService === "classes" && <section className="courses section" id="classes">
         <div className="courses-head"><div><p className="eyebrow">CÁC BỘ MÔN GIẢNG DẠY</p><h2>Chọn thanh âm<br />phù hợp với bạn</h2></div><p>Mỗi bộ môn có một màu sắc riêng. Bấm “Xem thêm” để khám phá nội dung học, đối tượng phù hợp và đăng ký tư vấn.</p></div>
