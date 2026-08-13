@@ -29,6 +29,7 @@ const collections = [
   { key: "studio-packages", label: "Gói thu âm & video", note: "Từng gói, giá và quyền lợi", tagLabel: "Biểu tượng", priceLabel: "Giá tham khảo", contentLabel: "Quyền lợi (mỗi dòng một ý)" },
   { key: "booking-packages", label: "Gói booking nghệ sĩ", note: "Từng đội hình biểu diễn, giá và quyền lợi", tagLabel: "Biểu tượng", priceLabel: "Giá tham khảo", contentLabel: "Quyền lợi (mỗi dòng một ý)" },
   { key: "recording-instruments", label: "Thu âm nhạc cụ thật", note: "Từng nhạc cụ nhận thu và giá", tagLabel: "Biểu tượng", priceLabel: "Giá từ", contentLabel: "Thông tin bổ sung" },
+  { key: "flute-tabs", label: "Cảm âm sáo trúc", note: "Đăng từng bài cảm âm hiển thị trên website", tagLabel: "Tone / nhịp / độ khó", excerptLabel: "Tên đầy đủ của bài", priceLabel: "Thông tin phụ", contentLabel: "Lời và nốt cảm âm (mỗi dòng: Lời | Nốt)" },
   { key: "articles", label: "Tin tức (Blog)", note: "Bài viết và kiến thức" },
 ];
 
@@ -193,10 +194,12 @@ export default function ContentAdmin() {
       setNotice("Chưa lưu được nội dung. Vui lòng kiểm tra các trường bắt buộc.");
       return;
     }
-    const data = (await response.json()) as { entry: CmsEntry };
+    const data = (await response.json()) as { entry: CmsEntry; telegramNotified?: boolean };
     setEntries((current) => [...current.filter((item) => item.id !== data.entry.id), data.entry]);
     setDraft({ ...data.entry });
-    setNotice("Đã lưu và cập nhật lên website.");
+    setNotice(data.telegramNotified
+      ? "Đã lưu, cập nhật lên website và gửi thông báo Telegram."
+      : "Đã lưu và cập nhật lên website, nhưng chưa gửi được thông báo Telegram.");
   }
 
   async function remove(entry: CmsEntry) {
@@ -269,7 +272,7 @@ export default function ContentAdmin() {
           <label>Thứ tự hiển thị<input type="number" min="0" value={draft.sortOrder} onChange={(event) => setDraft({ ...draft, sortOrder: Number(event.target.value) })} /></label>
           <label>{"tagLabel" in activeMeta ? activeMeta.tagLabel : "Phân loại / nhãn"}<input required={section === "product-items" || section === "course-items"} value={draft.tag} onChange={(event) => setDraft({ ...draft, tag: event.target.value })} placeholder={"tagPlaceholder" in activeMeta ? activeMeta.tagPlaceholder : "Ví dụ: Kỹ thuật"} /></label>
           <label>{"priceLabel" in activeMeta ? activeMeta.priceLabel : "Giá / thông tin phụ"}<input value={draft.price} onChange={(event) => setDraft({ ...draft, price: event.target.value })} placeholder="Ví dụ: 399.000đ hoặc Liên hệ" /></label>
-          <label className="wide">Mô tả ngắn<textarea rows={3} value={draft.excerpt} onChange={(event) => setDraft({ ...draft, excerpt: event.target.value })} /></label>
+          <label className="wide">{"excerptLabel" in activeMeta ? activeMeta.excerptLabel : "Mô tả ngắn"}<textarea rows={3} value={draft.excerpt} onChange={(event) => setDraft({ ...draft, excerpt: event.target.value })} /></label>
           <label className="wide">Ảnh bìa<div className="admin-upload"><input value={draft.imageUrl} onChange={(event) => setDraft({ ...draft, imageUrl: event.target.value })} placeholder="Dán URL ảnh hoặc tải ảnh lên" /><span><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file); }} />Chọn ảnh</span></div>{draft.imageUrl && <img className="admin-cover-preview" src={draft.imageUrl} alt="Xem trước ảnh bìa" />}</label>
           <label className="wide">{"contentLabel" in activeMeta ? activeMeta.contentLabel : "Nội dung"}<textarea className="content-editor" rows={12} value={draft.content} onChange={(event) => setDraft({ ...draft, content: event.target.value })} placeholder={section.includes("packages") || section === "class-details" ? "Mỗi dòng là một ý hiển thị trên website." : "Nhập nội dung chi tiết."} /></label>
           <label className="admin-check wide"><input type="checkbox" checked={draft.visible} onChange={(event) => setDraft({ ...draft, visible: event.target.checked })} />Hiển thị trên website</label>
