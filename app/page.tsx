@@ -318,6 +318,11 @@ export default function Home() {
   const contactAddress = generalSettings?.content || "106/72 Hòa Bình, P. Tân Phú, TP.HCM";
   const contactPhone = generalSettings?.price || "0374 261 368";
   const contactEmail = generalSettings?.tag || "vanquach999x@gmail.com";
+  const paymentSettings = cmsEntries.find((entry) => entry.collection === "settings" && entry.slug === "payment" && entry.visible);
+  const paymentBank = paymentSettings?.tag || "STB · Sacombank";
+  const paymentAccount = paymentSettings?.price || "030046023451";
+  const paymentAccountName = paymentSettings?.excerpt || "QUACH HA VAN";
+  const paymentQrUrl = paymentSettings?.imageUrl || "/vietqr-payment.png";
   const visibleCollection = (name: string) => cmsEntries
     .filter((entry) => entry.collection === name && entry.visible)
     .sort((a, b) => a.sortOrder - b.sortOrder);
@@ -619,11 +624,11 @@ export default function Home() {
           <div className="payment-modal-grid">
             <div className="payment-left">
               <h3>THÔNG TIN CHUYỂN KHOẢN</h3>
-              <div className="bank-info"><p><span>Ngân hàng:</span><b>STB · Sacombank</b></p><p><span>Số tài khoản:</span><b>030046023451</b><button type="button" onClick={() => navigator.clipboard?.writeText("030046023451")}>Sao chép</button></p><p><span>Chủ tài khoản:</span><b>QUACH HA VAN</b></p><label><span>Số tiền thanh toán:</span><input value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} placeholder="Nhập số tiền (VNĐ)" inputMode="numeric" /></label><label><span>Nội dung chuyển khoản:</span><input value={transferContent} onChange={(e) => setTransferContent(e.target.value)} placeholder="Nhập nội dung chuyển khoản" /><button type="button" onClick={() => navigator.clipboard?.writeText(transferContent)}>Sao chép</button></label></div>
+              <div className="bank-info"><p><span>Ngân hàng:</span><b>{paymentBank}</b></p><p><span>Số tài khoản:</span><b>{paymentAccount}</b><button type="button" onClick={() => navigator.clipboard?.writeText(paymentAccount)}>Sao chép</button></p><p><span>Chủ tài khoản:</span><b>{paymentAccountName}</b></p><label><span>Số tiền thanh toán:</span><input value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} placeholder="Nhập số tiền (VNĐ)" inputMode="numeric" /></label><label><span>Nội dung chuyển khoản:</span><input value={transferContent} onChange={(e) => setTransferContent(e.target.value)} placeholder="Nhập nội dung chuyển khoản" /><button type="button" onClick={() => navigator.clipboard?.writeText(transferContent)}>Sao chép</button></label></div>
               <h3>THÔNG TIN NGƯỜI MUA</h3>
               <form id="payment-form" onSubmit={confirmPayment}><label>Họ và tên <small>(không bắt buộc)</small><input name="buyerName" placeholder="Nhập họ tên của bạn" /></label><label>Số điện thoại / Zalo nhận file *<input required name="buyerPhone" type="tel" placeholder="Nhập số điện thoại Zalo" /></label><label>Email nhận khóa học<input name="buyerEmail" type="email" placeholder="Email của bạn (nếu có)" /></label></form>
             </div>
-            <aside className="payment-qr"><img src="/vietqr-payment.png" alt="Mã thanh toán VietQR Sacombank" width="540" height="540" loading="eager" decoding="sync" /><a href="/vietqr-payment.png" target="_blank" rel="noreferrer">↓ Tải / Mở ảnh QR</a><button className="payment-confirm" type="submit" form="payment-form" disabled={paymentSubmitting || orderSent}>{paymentSubmitting ? "Đang gửi thông báo..." : orderSent ? "✓ Đã gửi xác nhận" : "● Xác nhận đã chuyển khoản"}</button>{orderSent && <p role="status">Đã gửi thông báo cho Hồng Việt. Giao dịch sẽ được kiểm tra trước khi cấp khóa học hoặc sản phẩm.</p>}{paymentError && <p className="payment-error" role="alert">{paymentError}</p>}</aside>
+            <aside className="payment-qr"><img src={paymentQrUrl} alt={`Mã thanh toán VietQR ${paymentBank}`} width="540" height="540" loading="eager" decoding="sync" /><a href={paymentQrUrl} target="_blank" rel="noreferrer">↓ Tải / Mở ảnh QR</a><button className="payment-confirm" type="submit" form="payment-form" disabled={paymentSubmitting || orderSent}>{paymentSubmitting ? "Đang gửi thông báo..." : orderSent ? "✓ Đã gửi xác nhận" : "● Xác nhận đã chuyển khoản"}</button>{orderSent && <p role="status">Đã gửi thông báo cho Hồng Việt. Giao dịch sẽ được kiểm tra trước khi cấp khóa học hoặc sản phẩm.</p>}{paymentError && <p className="payment-error" role="alert">{paymentError}</p>}</aside>
           </div>
         </section>
       </div>}
