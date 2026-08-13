@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 
 const subjects = {
   "sao-truc-viet-nam": { icon: "♫", title: "Sáo trúc Việt Nam", lead: "Mang hơi thở dân tộc vào từng giai điệu.", intro: "Sáo trúc Việt Nam có âm sắc mộc mạc, gần gũi nhưng giàu khả năng biểu cảm. Tại Hồng Việt, học viên không chỉ học cách thổi đúng nốt mà còn được xây dựng cột hơi, tiếng sáo và tư duy xử lý tác phẩm một cách bài bản.", learn: ["Tư thế cầm sáo, khẩu hình và điểm đặt môi", "Kiểm soát cột hơi, cao độ và chất lượng âm thanh", "Ngón bấm, đánh lưỡi, rung hơi, láy và vuốt", "Đọc nhạc, cảm âm và luyện tập cùng beat", "Xử lý dân ca, nhạc trữ tình và ca khúc hiện đại"], path: ["Giai đoạn 1 · Làm quen & tạo tiếng", "Giai đoạn 2 · Nốt nhạc & nhịp điệu", "Giai đoạn 3 · Kỹ thuật biểu cảm", "Giai đoạn 4 · Hoàn thiện tác phẩm"], suitable: "Người mới bắt đầu, người từng tự học nhưng chưa vững nền tảng, hoặc học viên muốn nâng cao khả năng biểu diễn." },
@@ -14,6 +15,31 @@ type SubjectKey = keyof typeof subjects;
 
 export function generateStaticParams() {
   return Object.keys(subjects).map((slug) => ({ slug }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const subject = subjects[slug as SubjectKey];
+  if (!subject) return {};
+
+  const path = `/bo-mon/${slug}`;
+  const description = `${subject.lead} ${subject.intro}`;
+
+  return {
+    title: subject.title,
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      type: "article",
+      locale: "vi_VN",
+      siteName: "Hồng Việt Sáo Trúc",
+      title: `${subject.title} | Hồng Việt Sáo Trúc`,
+      description,
+      url: path,
+      images: [{ url: "/hero-flute.webp", width: 1536, height: 1024, alt: subject.title }],
+    },
+    twitter: { card: "summary_large_image", title: subject.title, description, images: ["/hero-flute.webp"] },
+  };
 }
 
 export default async function SubjectPage({ params }: { params: Promise<{ slug: string }> }) {
