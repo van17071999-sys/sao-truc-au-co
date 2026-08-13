@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 
-const services = [
+const defaultServices = [
   { no: "01", icon: "♫", image: "/carousel-saotruc.webp", title: "Lớp học các bộ môn", text: "Sáo trúc, Dizi, sáo nứa, sáo mèo, recorder và các bộ môn dân tộc.", cta: "Xem lớp học", href: "#classes" },
   { no: "02", icon: "⌂", image: "/carousel-recorder.webp", title: "Đăng ký lớp học", text: "Học tại trung tâm, gia sư tại nhà hoặc online 1 kèm 1 với lịch linh động.", cta: "Đăng ký ngay", href: "#contact" },
   { no: "03", icon: "◌", image: "/carousel-dizi.webp", title: "Sáo & phụ kiện", text: "Sáo trúc chuẩn âm, Dizi, sáo nứa, sáo mèo cùng phụ kiện được tuyển chọn.", cta: "Khám phá", href: "#products" },
@@ -30,7 +30,7 @@ const slides = [
   { image: "/carousel-flute.webp", eyebrow: "KỸ THUẬT PHƯƠNG TÂY", title: "Flute", copy: "Âm sắc trong trẻo, linh hoạt cùng lộ trình cá nhân hóa.", href: "/bo-mon/flute" },
 ];
 
-const articles = [
+const defaultArticles = [
   { tag: "Kỹ thuật", title: "5 bước tạo tiếng sáo trong và ổn định", excerpt: "Từ tư thế, khẩu hình đến luồng hơi — nền tảng dành cho người mới bắt đầu.", date: "08.08.2026" },
   { tag: "Chọn nhạc cụ", title: "Người mới nên bắt đầu với sáo tone nào?", excerpt: "So sánh sáo Đô C5, La A4 và Sol G4 để chọn cây sáo phù hợp với mục tiêu học.", date: "02.08.2026" },
   { tag: "Luyện tập", title: "Cách luyện hơi dài mà không bị căng", excerpt: "Một lịch tập ngắn, an toàn và hiệu quả để cải thiện cột hơi mỗi ngày.", date: "28.07.2026" },
@@ -196,6 +196,21 @@ function scrollElementToId(id: string) {
 
 type ServiceSection = "classes" | "contact" | "products" | "courses" | "materials" | "studio" | "booking" | "instrument-recording";
 
+type CmsEntry = {
+  id: string;
+  collection: string;
+  title: string;
+  slug: string;
+  publishedAt: string;
+  excerpt: string;
+  imageUrl: string;
+  tag: string;
+  price: string;
+  content: string;
+  visible: boolean;
+  sortOrder: number;
+};
+
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -226,12 +241,51 @@ export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [sliderPaused, setSliderPaused] = useState(false);
   const [sent, setSent] = useState(false);
+  const [cmsEntries, setCmsEntries] = useState<CmsEntry[]>([]);
 
   useEffect(() => {
     if (sliderPaused) return;
     const timer = window.setInterval(() => setCurrentSlide((current) => (current + 1) % slides.length), 5500);
     return () => window.clearInterval(timer);
   }, [sliderPaused]);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/cms/content")
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error("cms_unavailable")))
+      .then((data: { entries?: CmsEntry[] }) => { if (active && Array.isArray(data.entries)) setCmsEntries(data.entries); })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, []);
+
+  const cmsServices = cmsEntries.filter((entry) => entry.collection === "services" && entry.visible && ["classes", "contact", "products", "courses", "materials", "studio", "booking", "instrument-recording"].includes(entry.slug));
+  const services = cmsServices.length ? cmsServices.map((entry, index) => ({
+    no: String(index + 1).padStart(2, "0"),
+    icon: entry.tag || "♪",
+    image: entry.imageUrl,
+    title: entry.title,
+    text: entry.excerpt,
+    cta: entry.content || "Xem chi tiết",
+    href: `#${entry.slug}`,
+    price: entry.price || undefined,
+  })) : defaultServices;
+  const cmsArticles = cmsEntries.filter((entry) => entry.collection === "articles" && entry.visible);
+  const articles = cmsArticles.length ? cmsArticles.map((entry) => ({
+    tag: entry.tag || "Bài viết",
+    title: entry.title,
+    excerpt: entry.excerpt,
+    date: entry.publishedAt ? new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN") : "",
+  })) : defaultArticles;
+  const generalSettings = cmsEntries.find((entry) => entry.collection === "settings" && entry.slug === "general");
+  const brandName = generalSettings?.title || "HỒNG VIỆT";
+  const brandTagline = generalSettings?.excerpt || "SÁO TRÚC & ÂM NHẠC DÂN TỘC";
+  const contactAddress = generalSettings?.content || "106/72 Hòa Bình, P. Tân Phú, TP.HCM";
+  const contactPhone = generalSettings?.price || "0374 261 368";
+  const contactEmail = generalSettings?.tag || "vanquach999x@gmail.com";
+  const collectionForService: Partial<Record<ServiceSection, string>> = { classes: "classes", products: "products", courses: "courses", materials: "materials" };
+  const activeCmsEntries = activeService && collectionForService[activeService]
+    ? cmsEntries.filter((entry) => entry.collection === collectionForService[activeService] && entry.visible)
+    : [];
 
   const searchItems = services
     .map((item) => ({ title: item.title, type: "Danh mục", href: item.href }))
@@ -322,13 +376,13 @@ export default function Home() {
   return (
     <main>
       <div className="top-contact-bar" aria-label="Thông tin liên hệ nhanh">
-        <a className="top-address" href="#contact" onClick={(e) => { e.preventDefault(); openService("#contact"); }}><span>⌖</span><span>106/72 Hòa Bình, P. Tân Phú, TP.HCM</span></a>
-        <a className="top-phone" href="tel:0374261368"><span>☎</span><span>0374 261 368</span><small>Hotline / Zalo</small></a>
+        <a className="top-address" href="#contact" onClick={(e) => { e.preventDefault(); openService("#contact"); }}><span>⌖</span><span>{contactAddress}</span></a>
+        <a className="top-phone" href={`tel:${contactPhone.replace(/\D/g, "")}`}><span>☎</span><span>{contactPhone}</span><small>Hotline / Zalo</small></a>
       </div>
       <header className="site-header">
         <a className="brand" href="#top" aria-label="Hồng Việt - Trang chủ">
           <span className="brand-mark">〽</span>
-          <span><b>HỒNG VIỆT</b><small>SÁO TRÚC & ÂM NHẠC DÂN TỘC</small></span>
+          <span><b>{brandName}</b><small>{brandTagline}</small></span>
         </a>
         <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Mở menu" aria-expanded={menuOpen}>☰</button>
         <nav className={menuOpen ? "open" : ""} aria-label="Điều hướng chính">
@@ -382,6 +436,14 @@ export default function Home() {
         <div><small>NỘI DUNG ĐANG XEM</small><b>{services.find((service) => service.href === `#${activeService}`)?.title}</b></div>
         <button onClick={closeService}>← Quay lại 8 danh mục</button>
       </div>}
+
+      {activeCmsEntries.length > 0 && <section className="cms-content-section section" aria-label="Nội dung cập nhật từ trang quản trị">
+        <div className="cms-content-heading"><p className="eyebrow">NỘI DUNG MỚI CẬP NHẬT</p><h2>{services.find((service) => service.href === `#${activeService}`)?.title}</h2></div>
+        <div className="cms-content-grid">{activeCmsEntries.map((entry) => <article key={entry.id}>
+          {entry.imageUrl && <img src={entry.imageUrl} alt="" loading="lazy" />}
+          <div><small>{entry.tag || "HỒNG VIỆT"}{entry.publishedAt ? ` · ${new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN")}` : ""}</small><h3>{entry.title}</h3><p>{entry.excerpt}</p>{entry.content && <div className="cms-entry-content">{entry.content.split(/\n\n+/).map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div>}{entry.price && <strong>{entry.price}</strong>}</div>
+        </article>)}</div>
+      </section>}
 
       {activeService === "classes" && <section className="courses section" id="classes">
         <div className="courses-head"><div><p className="eyebrow">CÁC BỘ MÔN GIẢNG DẠY</p><h2>Chọn thanh âm<br />phù hợp với bạn</h2></div><p>Mỗi bộ môn có một màu sắc riêng. Bấm “Xem thêm” để khám phá nội dung học, đối tượng phù hợp và đăng ký tư vấn.</p></div>
@@ -507,11 +569,11 @@ export default function Home() {
       </section>}
 
       {activeService === "contact" && <section className="contact section" id="contact">
-        <div className="contact-copy"><p className="eyebrow">BẮT ĐẦU HÀNH TRÌNH</p><h2>Để tiếng sáo cất lời.</h2><p>Để lại thông tin, Hồng Việt sẽ liên hệ tư vấn lớp học, chọn sáo hoặc dịch vụ phù hợp.</p><ul><li>106/72 Hòa Bình, P. Tân Phú, TP.HCM</li><li>Hotline / Zalo: 0374 261 368</li><li>Email: vanquach999x@gmail.com</li></ul></div>
+        <div className="contact-copy"><p className="eyebrow">BẮT ĐẦU HÀNH TRÌNH</p><h2>Để tiếng sáo cất lời.</h2><p>Để lại thông tin, Hồng Việt sẽ liên hệ tư vấn lớp học, chọn sáo hoặc dịch vụ phù hợp.</p><ul><li>{contactAddress}</li><li>Hotline / Zalo: {contactPhone}</li><li>Email: {contactEmail}</li></ul></div>
         <form onSubmit={submitForm}><label>Họ và tên<input required name="name" placeholder="Tên của bạn" /></label><label>Số điện thoại<input required name="phone" type="tel" placeholder="Số điện thoại liên hệ" /></label><label className="full">Bộ môn bạn quan tâm<select name="interest" value={selectedDiscipline} onChange={(e) => setSelectedDiscipline(e.target.value)}>{disciplines.map((item) => <option key={item.title}>{item.title}</option>)}<option>Mua sáo & phụ kiện</option><option>Sheet nhạc & giáo trình</option><option>Thu âm / Booking biểu diễn</option></select></label><label className="full">Lời nhắn<textarea name="message" rows={3} placeholder="Mục tiêu hoặc nhu cầu của bạn" /></label><button className="button button-wine full" type="submit">Gửi qua Zalo →</button>{sent && <p className="success full" role="status">Nội dung đã được sao chép và Zalo đã được mở. Hãy dán nội dung vào cuộc trò chuyện để gửi đăng ký.</p>}</form>
       </section>}
 
-      <footer><div className="brand"><span className="brand-mark">〽</span><span><b>HỒNG VIỆT</b><small>SÁO TRÚC & ÂM NHẠC DÂN TỘC</small></span></div><p>Đam mê làm nên giá trị · Chất lượng tạo nên uy tín</p><small>© 2026 Hồng Việt. All rights reserved.</small></footer>
+      <footer><div className="brand"><span className="brand-mark">〽</span><span><b>{brandName}</b><small>{brandTagline}</small></span></div><p>Đam mê làm nên giá trị · Chất lượng tạo nên uy tín</p><small>© 2026 Hồng Việt. All rights reserved.</small></footer>
     </main>
   );
 }
