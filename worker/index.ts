@@ -43,7 +43,7 @@ const CMS_COOKIE = "hongviet_cms_session";
 const CMS_COLLECTIONS = new Set([
   "services", "classes", "products", "materials", "articles", "courses",
   "class-details", "product-groups", "product-items", "course-groups", "course-items",
-  "studio-packages", "booking-packages", "recording-instruments",
+  "studio-packages", "booking-packages", "recording-instruments", "flute-tabs",
   "settings", "page-classes", "page-products", "page-articles", "page-courses",
 ]);
 
@@ -217,6 +217,29 @@ async function isCmsAuthenticated(request: Request, env: Env) {
   return constantTimeEqual(signature, await hmac(expires, env.CMS_SESSION_SECRET));
 }
 
+async function notifyCmsUpdate(env: Env, entry: { title: string; collection: string; slug: string }, isUpdate: boolean) {
+  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) return false;
+  const message = [
+    "✅ QUẢN TRỊ WEBSITE ĐÃ CẬP NHẬT THÀNH CÔNG",
+    "",
+    `Thao tác: ${isUpdate ? "Chỉnh sửa nội dung" : "Tạo nội dung mới"}`,
+    `Mục: ${entry.collection}`,
+    `Tiêu đề: ${entry.title}`,
+    `Slug: ${entry.slug}`,
+    `Thời gian: ${new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", dateStyle: "short", timeStyle: "medium" }).format(new Date())}`,
+  ].join("\n");
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, text: message, disable_web_page_preview: true }),
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 async function handleCms(request: Request, env: Env, url: URL): Promise<Response | null> {
   if (!url.pathname.startsWith("/api/cms/") && !url.pathname.startsWith("/media/")) return null;
 
@@ -290,7 +313,8 @@ async function handleCms(request: Request, env: Env, url: URL): Promise<Response
     const title = clean(body.title, 180);
     const slug = clean(body.slug, 160).toLowerCase().replace(/[^a-z0-9-]/g, "");
     if (!CMS_COLLECTIONS.has(collection) || !title || !slug) return Response.json({ error: "Invalid content" }, { status: 400 });
-    const id = clean(body.id, 80) || crypto.randomUUID();
+    const existingId = clean(body.id, 80);
+    const id = existingId || crypto.randomUUID();
     const now = new Date().toISOString();
     const entry = {
       id, collection, title, slug,
@@ -305,7 +329,8 @@ async function handleCms(request: Request, env: Env, url: URL): Promise<Response
       published_at=excluded.published_at, excerpt=excluded.excerpt, image_url=excluded.image_url, tag=excluded.tag,
       price=excluded.price, content=excluded.content, visible=excluded.visible, sort_order=excluded.sort_order, updated_at=excluded.updated_at`)
       .bind(id, collection, title, slug, entry.publishedAt, entry.excerpt, entry.imageUrl, entry.tag, entry.price, entry.content, entry.visible ? 1 : 0, entry.sortOrder, now).run();
-    return Response.json({ entry });
+    const telegramNotified = await notifyCmsUpdate(env, entry, Boolean(existingId));
+    return Response.json({ entry, telegramNotified });
   }
 
   if (url.pathname === "/api/cms/admin" && request.method === "DELETE") {
