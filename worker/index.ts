@@ -221,7 +221,6 @@ async function handleCms(request: Request, env: Env, url: URL): Promise<Response
   if (!url.pathname.startsWith("/api/cms/") && !url.pathname.startsWith("/media/")) return null;
 
   if (!env.DB) return Response.json({ error: "CMS database is unavailable" }, { status: 503 });
-  await ensureCmsSchema(env.DB);
 
   if (url.pathname.startsWith("/media/")) {
     const id = decodeURIComponent(url.pathname.slice("/media/".length));
