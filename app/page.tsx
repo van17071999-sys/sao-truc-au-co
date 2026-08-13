@@ -454,7 +454,7 @@ export default function Home() {
       </div>
       <header className="site-header">
         <a className="brand" href="#top" aria-label="Hồng Việt - Trang chủ">
-          <span className="brand-mark">〽</span>
+          <img className="brand-logo" src="/logo-hong-viet.png" alt="Logo Hồng Việt" />
           <span><b>{brandName}</b><small>{brandTagline}</small></span>
         </a>
         <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Mở menu" aria-expanded={menuOpen}>☰</button>
@@ -646,7 +646,7 @@ export default function Home() {
         <form onSubmit={submitForm}><label>Họ và tên<input required name="name" placeholder="Tên của bạn" /></label><label>Số điện thoại<input required name="phone" type="tel" placeholder="Số điện thoại liên hệ" /></label><label className="full">Bộ môn bạn quan tâm<select name="interest" value={selectedDiscipline} onChange={(e) => setSelectedDiscipline(e.target.value)}>{displayedDisciplines.map((item) => <option key={item.title}>{item.title}</option>)}<option>Mua sáo & phụ kiện</option><option>Sheet nhạc & giáo trình</option><option>Thu âm / Booking biểu diễn</option></select></label><label className="full">Lời nhắn<textarea name="message" rows={3} placeholder="Mục tiêu hoặc nhu cầu của bạn" /></label><button className="button button-wine full" type="submit">Gửi qua Zalo →</button>{sent && <p className="success full" role="status">Nội dung đã được sao chép và Zalo đã được mở. Hãy dán nội dung vào cuộc trò chuyện để gửi đăng ký.</p>}</form>
       </section>}
 
-      <footer><div className="brand"><span className="brand-mark">〽</span><span><b>{brandName}</b><small>{brandTagline}</small></span></div><p>Đam mê làm nên giá trị · Chất lượng tạo nên uy tín</p><small>© 2026 Hồng Việt. All rights reserved.</small></footer>
+      <footer><div className="brand"><img className="brand-logo" src="/logo-hong-viet.png" alt="Logo Hồng Việt" /><span><b>{brandName}</b><small>{brandTagline}</small></span></div><p>Đam mê làm nên giá trị · Chất lượng tạo nên uy tín</p><small>© 2026 Hồng Việt. All rights reserved.</small></footer>
     </main>
   );
 }
