@@ -578,11 +578,6 @@ export default function Home() {
         <div className="slider-dots" aria-label="Chọn ảnh quảng cáo">{displayedSlides.map((slide, i) => <button key={`${slide.title}-${i}`} className={currentSlide === i ? "active" : ""} onClick={() => { setSliderPaused(true); setCurrentSlide(i); }} aria-label={`Xem ${slide.title}`} />)}</div>
       </section>
 
-      <section className="intro section" id="about">
-        <div><p className="eyebrow">CÂU CHUYỆN HỒNG VIỆT</p><h2>Học đúng phương pháp.<br />Tìm thấy tiếng sáo của riêng bạn.</h2></div>
-        <div className="intro-copy"><p>Hồng Việt tạo nên một không gian học tập gần gũi, nơi kỹ thuật vững vàng đi cùng cảm xúc âm nhạc. Mỗi lộ trình được thiết kế theo mục tiêu và tốc độ riêng của học viên.</p><div className="metrics"><span><b>1:1</b><small>Lộ trình cá nhân</small></span><span><b>07+</b><small>Bộ môn đào tạo</small></span><span><b>HD</b><small>Bài giảng rõ nét</small></span></div></div>
-      </section>
-
       <section className="section" id="services">
         <div className="section-heading"><span /><div><p className="eyebrow">HỆ SINH THÁI ÂM NHẠC</p><h2>Dịch vụ của chúng tôi</h2></div><span /></div>
         <div className="service-grid">{services.map((service) => <article className={`service-card${activeService === service.href.slice(1) ? " is-selected" : ""}`} key={service.no}><div className="card-top"><span className="card-no">{service.no}</span><span className="card-icon">{service.icon}</span></div><h3>{service.title}</h3><p>{service.text}</p>{service.price && <strong className="price">{service.price}</strong>}<a href={service.href} onClick={(e) => { e.preventDefault(); openService(service.href); }}>{activeService === service.href.slice(1) ? "Đang xem chi tiết" : service.cta}<span>→</span></a></article>)}</div>
