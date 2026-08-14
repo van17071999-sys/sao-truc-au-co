@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://saotrucauco.com"),
   title: {
-    default: "Hồng Việt Sáo Trúc | Dạy sáo & âm nhạc dân tộc",
+    default: "Sáo Trúc Âu Cơ | Dạy sáo & âm nhạc dân tộc",
     template: "%s | Hồng Việt Sáo Trúc",
   },
   description: "Dạy sáo trúc, Dizi, recorder, flute; giáo trình, sheet nhạc, thu âm và booking biểu diễn nhạc cụ dân tộc.",
