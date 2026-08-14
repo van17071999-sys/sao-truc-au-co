@@ -26,7 +26,7 @@ const collections = [
   { key: "product-groups", label: "Nhóm sáo & phụ kiện", note: "Các nhóm như Sáo ngang, Dizi, Sáo mèo…", tagLabel: "Nhãn phụ", contentLabel: "Nội dung bổ sung" },
   { key: "product-items", label: "Từng sản phẩm", note: "Từng cây sáo hoặc phụ kiện nằm trong một nhóm", tagLabel: "Slug nhóm cha *", tagPlaceholder: "Ví dụ: sao-ngang-viet-nam", priceLabel: "Giá / Liên hệ", contentLabel: "Thông tin bổ sung" },
   { key: "course-groups", label: "Nhóm khóa học", note: "Nhóm theo bộ môn ở trang khóa học quay sẵn", tagLabel: "Nhãn phụ", contentLabel: "Nội dung bổ sung" },
-  { key: "course-items", label: "Từng khóa học", note: "Mỗi khóa học có một trang bán hàng và SEO riêng tại /khoa-hoc/slug", tagLabel: "Slug nhóm cha *", tagPlaceholder: "Ví dụ: sao-truc", priceLabel: "Giá khóa học", contentLabel: "Mô tả chi tiết / quyền lợi khóa học" },
+  { key: "course-items", label: "Trang chi tiết khóa học", note: "Sửa nội dung từng trang riêng sau địa chỉ /khoa-hoc/", tagLabel: "Nhóm khóa học (slug nhóm cha) *", tagPlaceholder: "Ví dụ: sao-truc", priceLabel: "Giá tham khảo", excerptLabel: "Mô tả ngắn ở đầu trang", contentLabel: "Thông tin chi tiết / quyền lợi khóa học" },
   { key: "single-videos", label: "Video từng bài", note: "Mỗi video có một trang riêng tại /video/slug", tagLabel: "Nhóm nhạc cụ *", tagPlaceholder: "Ví dụ: sao-truc", priceLabel: "Giá video", contentLabel: "Mô tả chi tiết / nội dung video" },
   { key: "materials", label: "Giáo trình & sheet", note: "Mỗi tài liệu có trang riêng tại /giao-trinh/slug hoặc /sheet/slug", tagLabel: "Loại và nhóm *", tagPlaceholder: "Ví dụ: giao-trinh:sao-truc hoặc sheet:sao-truc", priceLabel: "Giá tài liệu", contentLabel: "Mô tả chi tiết / nội dung tài liệu" },
   { key: "social-links", label: "Liên kết mạng xã hội", note: "YouTube, Facebook, TikTok và Instagram trên trang chủ", tagLabel: "Biểu tượng", tagPlaceholder: "Ví dụ: ▶", priceLabel: "Tên nền tảng", contentLabel: "Đường dẫn đầy đủ đến trang mạng xã hội" },
@@ -70,6 +70,11 @@ function slugify(value: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+}
+
+function entryHref(entry: CmsEntry) {
+  if (entry.collection === "course-items") return `/khoa-hoc/${entry.slug}`;
+  return "";
 }
 
 async function prepareImage(file: File) {
@@ -301,10 +306,10 @@ export default function ContentAdmin() {
           <div className="admin-entry-image">{entry.imageUrl ? <img src={entry.imageUrl} alt="" /> : <span>♪</span>}</div>
           <div><small>{entry.tag || activeMeta.label} · {entry.publishedAt || "Chưa đặt ngày"}</small><h2>{entry.title}</h2><p>{entry.excerpt || "Chưa có mô tả ngắn"}</p></div>
           <span className={entry.visible ? "status visible" : "status"}>{entry.visible ? "Đang hiển thị" : "Đang ẩn"}</span>
-          <div className="admin-row-actions"><button onClick={() => setDraft({ ...entry })}>Sửa</button><button className="danger" onClick={() => void remove(entry)}>Xóa</button></div>
+          <div className="admin-row-actions">{entryHref(entry) && <a href={entryHref(entry)} target="_blank" rel="noreferrer">Xem trang</a>}<button onClick={() => setDraft({ ...entry })}>Sửa</button><button className="danger" onClick={() => void remove(entry)}>Xóa</button></div>
         </article>)}</div> : <div className="admin-empty"><b>✦</b><h2>Chưa có nội dung</h2><p>Tạo nội dung đầu tiên cho mục {activeMeta.label}.</p><button className="admin-primary" onClick={startCreate}>+ Tạo nội dung</button></div>}
       </div> : <form className="admin-editor" onSubmit={save}>
-        <div className="admin-editor-head"><button type="button" onClick={() => setDraft(null)}>← Danh sách</button><div><small>{draft.id ? "CHỈNH SỬA" : "TẠO MỚI"}</small><h2>{draft.title || activeMeta.label}</h2></div><button className="admin-primary" disabled={busy}>{busy ? "Đang lưu…" : "Lưu nội dung"}</button></div>
+        <div className="admin-editor-head"><button type="button" onClick={() => setDraft(null)}>← Danh sách</button><div><small>{draft.id ? "CHỈNH SỬA" : "TẠO MỚI"}</small><h2>{draft.title || activeMeta.label}</h2>{entryHref(draft) && <a className="admin-page-url" href={entryHref(draft)} target="_blank" rel="noreferrer">saotrucauco.com{entryHref(draft)} ↗</a>}</div><button className="admin-primary" disabled={busy}>{busy ? "Đang lưu…" : "Lưu nội dung"}</button></div>
         <div className="admin-form-grid">
           <label className="wide">Tiêu đề *<input required value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value, slug: draft.slug || slugify(event.target.value) })} /></label>
           <label className="wide slug-field">Slug (đường dẫn, không dấu) *<span><input required pattern="[a-z0-9-]+" value={draft.slug} onChange={(event) => setDraft({ ...draft, slug: slugify(event.target.value) })} /><button type="button" onClick={() => setDraft({ ...draft, slug: slugify(draft.title) })}>Tạo lại</button></span></label>
