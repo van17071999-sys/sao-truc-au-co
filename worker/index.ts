@@ -39,12 +39,12 @@ type CmsRow = {
   updated_at: string;
 };
 
-const CMS_COOKIE = "hongviet_cms_session";
+const CMS_COOKIE = "saotrucauco_cms_session";
 const CMS_COLLECTIONS = new Set([
   "services", "classes", "products", "materials", "articles", "courses",
   "hero-slides", "class-details", "product-groups", "product-items", "course-groups", "course-items",
   "single-videos", "social-links", "studio-packages", "booking-packages", "recording-instruments", "flute-tabs", "free-guides",
-  "settings", "page-classes", "page-products", "page-articles", "page-courses",
+  "settings", "page-contact", "page-classes", "page-products", "page-articles", "page-courses",
 ]);
 
 const initialCmsEntries = [
@@ -59,7 +59,8 @@ const initialCmsEntries = [
   ["article-01", "articles", "5 bước tạo tiếng sáo trong và ổn định", "5-buoc-tao-tieng-sao", "Từ tư thế, khẩu hình đến luồng hơi — nền tảng dành cho người mới bắt đầu.", "", "Kỹ thuật", "", "", 1],
   ["article-02", "articles", "Người mới nên bắt đầu với sáo tone nào?", "nguoi-moi-chon-sao-tone-nao", "So sánh sáo Đô C5, La A4 và Sol G4 để chọn cây sáo phù hợp với mục tiêu học.", "", "Chọn nhạc cụ", "", "", 2],
   ["article-03", "articles", "Cách luyện hơi dài mà không bị căng", "cach-luyen-hoi-dai", "Một lịch tập ngắn, an toàn và hiệu quả để cải thiện cột hơi mỗi ngày.", "", "Luyện tập", "", "", 3],
-  ["settings-general", "settings", "HỒNG VIỆT", "general", "Sáo trúc & âm nhạc dân tộc", "/hero-flute.webp", "vanquach999x@gmail.com", "0374 261 368", "106/72 Hòa Bình, P. Tân Phú, TP.HCM", 1],
+  ["page-contact", "page-contact", "Đăng ký lớp học & Tư vấn", "dang-ky-hoc", "Để lại thông tin, Sáo Trúc Âu Cơ sẽ liên hệ tư vấn lớp học, chọn sáo hoặc dịch vụ phù hợp.", "/hero-flute.webp", "BẮT ĐẦU HÀNH TRÌNH", "0374 261 368", "Để tiếng sáo cất lời.\n\nHọc tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài.\n\n106/72 Hòa Bình, P. Tân Phú, TP.HCM\n\nvanquach999x@gmail.com", 1],
+  ["settings-general", "settings", "SÁO TRÚC ÂU CƠ", "general", "Sáo trúc & âm nhạc dân tộc", "/hero-flute.webp", "vanquach999x@gmail.com", "0374 261 368", "106/72 Hòa Bình, P. Tân Phú, TP.HCM", 1],
   ["settings-payment", "settings", "Thanh toán VietQR", "payment", "QUACH HA VAN", "/vietqr-payment.png", "STB · Sacombank", "030046023451", "Thông tin chuyển khoản dùng chung cho toàn bộ website.", 2],
 ] as const;
 
@@ -74,13 +75,13 @@ const detailedCmsEntries = [
   ["hero-slide-04", "hero-slides", "Động tiêu & Xiao", "dong-tieu-xiao", "Một khoảng lặng đẹp cho người yêu âm nhạc cổ phong.", "/carousel-tieu.webp", "TRẦM ẤM & SÂU LẮNG", "Khám phá bộ môn", "/bo-mon/dong-tieu-xiao", 4],
   ["hero-slide-05", "hero-slides", "Flute", "flute", "Âm sắc trong trẻo, linh hoạt cùng lộ trình cá nhân hóa.", "/carousel-flute.webp", "KỸ THUẬT PHƯƠNG TÂY", "Khám phá bộ môn", "/bo-mon/flute", 5],
 
-  // Chi tiết các bộ môn. Nội dung là danh sách kiến thức, mỗi dòng một ý.
-  ["class-sao-truc", "class-details", "Sáo trúc Việt Nam", "sao-truc-viet-nam", "Nền tảng hơi, ngón và kỹ thuật biểu cảm đặc trưng.", "/carousel-saotruc.webp", "♫", "Người mới bắt đầu, người chơi tự học hoặc học viên muốn biểu diễn.", "Tư thế, khẩu hình và cột hơi\nNgón bấm, đánh lưỡi, rung hơi\nDân ca, nhạc trữ tình và nhạc trẻ", 1],
-  ["class-dizi", "class-details", "Sáo Dizi", "sao-dizi", "Âm sắc sáng, vang với màng rung và phong cách cổ phong.", "/carousel-dizi.webp", "◉", "Người yêu nhạc Trung Hoa, nhạc phim và âm sắc Dizi.", "Dán và điều chỉnh màng rung\nHệ thống ngón và kỹ thuật hơi\nLuyến, láy và xử lý tác phẩm cổ phong", 2],
-  ["class-recorder", "class-details", "Sáo Recorder", "sao-recorder", "Dễ tiếp cận, phù hợp trẻ em và giáo dục âm nhạc.", "/carousel-recorder.webp", "♩", "Trẻ em, người mới học và giáo viên âm nhạc phổ thông.", "Tư thế, hơi và ngón bấm chuẩn\nĐọc bản nhạc và giữ nhịp\nĐộc tấu, song tấu và hòa tấu", 3],
-  ["class-xiao", "class-details", "Động tiêu & Xiao", "dong-tieu-xiao", "Âm thanh trầm ấm, sâu lắng và giàu chất thiền.", "/carousel-tieu.webp", "♬", "Người yêu âm nhạc nhẹ nhàng, cổ phong và thiền định.", "Tạo tiếng và kiểm soát âm trầm\nNgón bấm hai hệ nhạc cụ\nVuốt, rung và xử lý giai điệu chậm", 4],
-  ["class-flute", "class-details", "Flute", "flute", "Kỹ thuật phương Tây bài bản, âm sắc trong trẻo linh hoạt.", "/carousel-flute.webp", "♪", "Người mới, học sinh nghệ thuật hoặc người muốn nâng cao kỹ thuật.", "Tư thế, khẩu hình và cao độ\nGam, etude và kỹ thuật lưỡi\nĐọc nhạc và xử lý tác phẩm", 5],
-  ["class-hmong", "class-details", "Sáo H’Mông", "sao-hmong", "Khám phá âm hưởng Tây Bắc mộc mạc và da diết.", "/carousel-saotruc.webp", "❋", "Người yêu âm nhạc dân tộc và muốn khám phá nhạc cụ mới.", "Tạo tiếng và điều khiển lam đồng\nHệ thống ngón đặc trưng\nLàn điệu và phong cách Tây Bắc", 6],
+  // Chi tiết các bộ môn. Toàn bộ nội dung trang /bo-mon/slug có thể chỉnh sửa trong CMS.
+  ["class-sao-truc", "class-details", "Sáo trúc Việt Nam", "sao-truc-viet-nam", "Mang hơi thở dân tộc vào từng giai điệu.", "/carousel-saotruc.webp", "♫", "Người mới bắt đầu, người từng tự học nhưng chưa vững nền tảng, hoặc học viên muốn nâng cao khả năng biểu diễn.", "[TIÊU ĐỀ BÀI]\nMột lộ trình rõ ràng để chơi nhạc bằng chính cảm xúc của bạn.\n\n[GIỚI THIỆU]\nSáo trúc Việt Nam có âm sắc mộc mạc, gần gũi nhưng giàu khả năng biểu cảm. Tại trung tâm, học viên không chỉ học cách thổi đúng nốt mà còn được xây dựng cột hơi, tiếng sáo và tư duy xử lý tác phẩm một cách bài bản.\n\n[BẠN SẼ HỌC ĐƯỢC GÌ]\nTư thế cầm sáo, khẩu hình và điểm đặt môi\nKiểm soát cột hơi, cao độ và chất lượng âm thanh\nNgón bấm, đánh lưỡi, rung hơi, láy và vuốt\nĐọc nhạc, cảm âm và luyện tập cùng beat\nXử lý dân ca, nhạc trữ tình và ca khúc hiện đại\n\n[LỘ TRÌNH HỌC]\nGiai đoạn 1 · Làm quen & tạo tiếng\nGiai đoạn 2 · Nốt nhạc & nhịp điệu\nGiai đoạn 3 · Kỹ thuật biểu cảm\nGiai đoạn 4 · Hoàn thiện tác phẩm\n\n[TRÍCH DẪN]\nHọc đúng kỹ thuật để tự do thể hiện cảm xúc — đó là nền tảng của mỗi chương trình.\n\n[HÌNH THỨC HỌC]\nTrực tiếp tại trung tâm\nGia sư tại nhà\nOnline 1 kèm 1\n\n[THỜI GIAN]\nLinh động theo lịch học viên", 1],
+  ["class-dizi", "class-details", "Sáo Dizi", "sao-dizi", "Âm sắc rực rỡ của những giai điệu cổ phong.", "/carousel-dizi.webp", "◉", "Người yêu âm nhạc Trung Hoa, nhạc phim cổ trang và muốn khám phá màu âm Dizi.", "[TIÊU ĐỀ BÀI]\nLàm chủ màng rung và kỹ thuật diễn tấu Trung Hoa.\n\n[GIỚI THIỆU]\nDizi tạo dấu ấn bằng màng rung đặc trưng và âm sắc sáng, vang. Khóa học kết hợp kỹ thuật nhạc cụ với cách xử lý tác phẩm Trung Hoa, giúp học viên tạo được màu âm rõ ràng và tự nhiên.\n\n[BẠN SẼ HỌC ĐƯỢC GÌ]\nCấu tạo Dizi và cách chọn tone phù hợp\nDán, căn chỉnh và bảo quản màng rung\nKhẩu hình, cột hơi và hệ thống ngón\nLuyến, láy, vuốt và kỹ thuật cổ phong\nThực hành nhạc phim và tác phẩm Trung Hoa\n\n[LỘ TRÌNH HỌC]\nGiai đoạn 1 · Làm chủ màng rung\nGiai đoạn 2 · Hơi & ngón Dizi\nGiai đoạn 3 · Kỹ thuật cổ phong\nGiai đoạn 4 · Hoàn thiện tác phẩm\n\n[TRÍCH DẪN]\nTiếng sáo Dizi bay bổng là sự hòa quyện giữa màng rung và hơi thở người nghệ sĩ.\n\n[HÌNH THỨC HỌC]\nTrực tiếp tại trung tâm\nGia sư tại nhà\nOnline 1 kèm 1\n\n[THỜI GIAN]\nLinh động theo lịch học viên", 2],
+  ["class-recorder", "class-details", "Sáo Recorder", "sao-recorder", "Khởi đầu âm nhạc nhẹ nhàng và đúng phương pháp.", "/carousel-recorder.webp", "♩", "Trẻ em, người mới học, giáo viên phổ thông và giáo viên Steiner/Waldorf.", "[TIÊU ĐỀ BÀI]\nHọc nhạc cụ dễ tiếp cận, bài bản và giàu tính giáo dục.\n\n[GIỚI THIỆU]\nRecorder dễ tiếp cận nhưng cần nền tảng đúng để tiếng không chói và ngón bấm linh hoạt. Chương trình phù hợp cho trẻ em, người mới và giáo viên âm nhạc cần ứng dụng trong lớp học.\n\n[BẠN SẼ HỌC ĐƯỢC GÌ]\nTư thế, hơi thổi nhẹ và âm thanh tròn\nHệ thống ngón soprano/alto recorder\nĐọc nốt, tiết tấu và ký hiệu âm nhạc\nĐộc tấu, song tấu và hòa tấu\nPhương pháp luyện tập và ứng dụng giảng dạy\n\n[LỘ TRÌNH HỌC]\nGiai đoạn 1 · Nốt cơ bản\nGiai đoạn 2 · Đọc nhạc\nGiai đoạn 3 · Kỹ thuật & hòa tấu\nGiai đoạn 4 · Biểu diễn\n\n[TRÍCH DẪN]\nRecorder là cây cầu tuyệt vời để kết nối trẻ em và người mới đến với thế giới âm nhạc.\n\n[HÌNH THỨC HỌC]\nTrực tiếp tại trung tâm\nGia sư tại nhà\nOnline 1 kèm 1\n\n[THỜI GIAN]\nLinh động theo lịch học viên", 3],
+  ["class-xiao", "class-details", "Động tiêu & Xiao", "dong-tieu-xiao", "Thanh âm trầm ấm cho những khoảng lặng sâu.", "/carousel-tieu.webp", "♬", "Người yêu âm nhạc sâu lắng, cổ phong, thiền định và màu âm trầm ấm.", "[TIÊU ĐỀ BÀI]\nKhoảng lặng bình yên cho người yêu âm nhạc cổ phong và thiền định.\n\n[GIỚI THIỆU]\nĐộng tiêu Việt Nam và Xiao Trung Quốc cùng sử dụng huyệt thổi dọc nhưng có hệ thống ngón và phong cách khác nhau. Học viên được hướng dẫn tạo tiếng trầm ổn định, kiểm soát hơi dài và biểu cảm tinh tế.\n\n[BẠN SẼ HỌC ĐƯỢC GÌ]\nTư thế, huyệt thổi và cách tạo tiếng\nCột hơi dài, âm trầm và chuyển quãng\nHệ thống ngón động tiêu và Xiao\nRung, vuốt và xử lý câu nhạc chậm\nThực hành nhạc thiền và tác phẩm cổ phong\n\n[LỘ TRÌNH HỌC]\nGiai đoạn 1 · Tạo tiếng trầm\nGiai đoạn 2 · Hệ thống ngón\nGiai đoạn 3 · Sắc thái\nGiai đoạn 4 · Tác phẩm\n\n[TRÍCH DẪN]\nTiếng tiêu trầm lắng giúp lòng người tĩnh lại sau những bộn bề cuộc sống.\n\n[HÌNH THỨC HỌC]\nTrực tiếp tại trung tâm\nGia sư tại nhà\nOnline 1 kèm 1\n\n[THỜI GIAN]\nLinh động theo lịch học viên", 4],
+  ["class-flute", "class-details", "Flute", "flute", "Âm sắc trong trẻo cùng kỹ thuật phương Tây bài bản.", "/carousel-flute.webp", "♪", "Người mới, học sinh nghệ thuật hoặc người muốn nâng cao kỹ thuật.", "[TIÊU ĐỀ BÀI]\nKỹ thuật hiện đại, âm vực rộng và lộ trình cá nhân hóa.\n\n[GIỚI THIỆU]\nChương trình flute được cá nhân hóa từ nền tảng đến nâng cao. Người học phát triển tư thế đúng, khẩu hình linh hoạt, cao độ ổn định và khả năng đọc bản nhạc để tiến tới các tác phẩm hoàn chỉnh.\n\n[BẠN SẼ HỌC ĐƯỢC GÌ]\nLắp nhạc cụ, tư thế và khẩu hình\nÂm dài, cao độ và chuyển quãng\nGam, arpeggio, etude và kỹ thuật lưỡi\nĐọc bản nhạc và xây dựng nhịp\nPhong cách và xử lý tác phẩm\n\n[LỘ TRÌNH HỌC]\nGiai đoạn 1 · Âm thanh nền tảng\nGiai đoạn 2 · Gam & etude\nGiai đoạn 3 · Kỹ thuật\nGiai đoạn 4 · Repertoire\n\n[TRÍCH DẪN]\nFlute mang lại sự trong sáng, thanh thoát và khả năng biểu đạt không giới hạn.\n\n[HÌNH THỨC HỌC]\nTrực tiếp tại trung tâm\nGia sư tại nhà\nOnline 1 kèm 1\n\n[THỜI GIAN]\nLinh động theo lịch học viên", 5],
+  ["class-hmong", "class-details", "Sáo H’Mông", "sao-hmong", "Khám phá âm hưởng Tây Bắc mộc mạc và da diết.", "/carousel-saotruc.webp", "❋", "Người yêu âm nhạc dân tộc, văn hóa Tây Bắc và muốn khám phá nhạc cụ mới.", "[TIÊU ĐỀ BÀI]\nÂm sắc lam đồng da diết và những làn điệu vùng cao.\n\n[GIỚI THIỆU]\nSáo H’Mông sử dụng lam đồng và có màu âm da diết rất riêng. Khóa học đưa người học từ nguyên lý phát âm đến hệ thống ngón và những làn điệu mang đậm bản sắc vùng cao.\n\n[BẠN SẼ HỌC ĐƯỢC GÌ]\nCấu tạo và nguyên lý lam đồng\nTạo tiếng, bẻ lam và kiểm soát hơi\nHệ thống ngón đặc trưng\nLuyến láy theo phong cách Tây Bắc\nThực hành làn điệu và tác phẩm\n\n[LỘ TRÌNH HỌC]\nGiai đoạn 1 · Làm quen lam\nGiai đoạn 2 · Hơi & ngón\nGiai đoạn 3 · Làn điệu\nGiai đoạn 4 · Biểu diễn\n\n[TRÍCH DẪN]\nÂm thanh sáo Mèo như tiếng gọi người yêu vang vọng giữa đại ngàn Tây Bắc.\n\n[HÌNH THỨC HỌC]\nTrực tiếp tại trung tâm\nGia sư tại nhà\nOnline 1 kèm 1\n\n[THỜI GIAN]\nLinh động theo lịch học viên", 6],
 
   // Nhóm sản phẩm và sản phẩm con. Trường nhãn của sản phẩm con là slug nhóm cha.
   ["pg-sao-ngang", "product-groups", "Sáo ngang Việt Nam", "sao-ngang-viet-nam", "Nhạc cụ ngang truyền thống, âm sắc mộc mạc và phù hợp từ người mới đến người biểu diễn.", "/carousel-saotruc.webp", "", "", "", 1],
@@ -171,10 +172,10 @@ const detailedCmsEntries = [
   ["material-sheet-rec-hoa-tau", "materials", "Sheet hòa tấu Recorder", "sheet-hoa-tau-recorder", "Bản song tấu và hòa tấu phân bè theo trình độ.", "/carousel-recorder.webp", "sheet:sao-recorder", "Liên hệ", "Bản song tấu và hòa tấu\nPhân bè rõ ràng\nĐiều chỉnh theo trình độ", 2],
 
   // Liên kết mạng xã hội trên trang chủ. Nội dung là URL đầy đủ.
-  ["social-youtube", "social-links", "Kênh Sáo Hồng Việt", "youtube", "Kênh video của Hồng Việt", "", "▶", "YOUTUBE", "https://www.youtube.com/", 1],
-  ["social-facebook", "social-links", "Hồng Việt Sáo Trúc", "facebook", "Trang Facebook của Hồng Việt", "", "f", "FACEBOOK", "https://www.facebook.com/", 2],
-  ["social-tiktok", "social-links", "@hongvietsao", "tiktok", "Kênh TikTok của Hồng Việt", "", "♪", "TIKTOK", "https://www.tiktok.com/@hongvietsao", 3],
-  ["social-instagram", "social-links", "@hongviet.music", "instagram", "Trang Instagram của Hồng Việt", "", "◎", "INSTAGRAM", "https://www.instagram.com/hongviet.music/", 4],
+  ["social-youtube", "social-links", "Kênh Sáo Trúc Âu Cơ", "youtube", "Kênh video của Sáo Trúc Âu Cơ", "", "▶", "YOUTUBE", "https://www.youtube.com/", 1],
+  ["social-facebook", "social-links", "Sáo Trúc Âu Cơ", "facebook", "Trang Facebook của Sáo Trúc Âu Cơ", "", "f", "FACEBOOK", "https://www.facebook.com/", 2],
+  ["social-tiktok", "social-links", "@saotruc.auco", "tiktok", "Kênh TikTok của Sáo Trúc Âu Cơ", "", "♪", "TIKTOK", "https://www.tiktok.com/", 3],
+  ["social-instagram", "social-links", "@saotruc.auco", "instagram", "Trang Instagram của Sáo Trúc Âu Cơ", "", "◎", "INSTAGRAM", "https://www.instagram.com/", 4],
 
   // Các gói dịch vụ. Nội dung là quyền lợi, mỗi dòng một ý.
   ["studio-basic", "studio-packages", "Thu âm cơ bản", "thu-am-co-ban", "Một nhạc cụ · Một tác phẩm", "", "◉", "900.000đ", "Thu một nhạc cụ tại studio\nChỉnh sửa lỗi và lọc tạp âm\nMixing & mastering cơ bản\nBàn giao WAV và MP3\n01 lần chỉnh sửa", 1],
@@ -193,6 +194,11 @@ const detailedCmsEntries = [
   ["record-flute", "recording-instruments", "Recorder & Flute", "recorder-flute", "Trong trẻo, linh hoạt cho nhạc phim và thiếu nhi", "", "♪", "500.000đ", "", 4],
   ["record-strings", "recording-instruments", "Đàn tranh, đàn bầu, đàn nhị", "dan-truyen-thong", "Âm sắc truyền thống cho bản phối hiện đại", "", "◇", "Liên hệ", "", 5],
   ["record-custom", "recording-instruments", "Nhạc cụ theo yêu cầu", "nhac-cu-theo-yeu-cau", "Nhạc cụ dây, gõ và hiệu ứng âm thanh riêng", "", "✦", "Liên hệ", "", 6],
+
+  // Cảm âm sáo trúc mẫu theo định dạng 2 dòng (dòng lời ở trên, dòng nốt ở dưới)
+  ["tab-beo-dat", "flute-tabs", "Bèo dạt mây trôi", "beo-dat-may-troi", "Bèo dạt mây trôi – Dân ca quan họ Bắc Ninh", "", "Tone C5 · Nhịp 4/4 · Dễ", "", "Bèo dạt mây trôi chốn xa xôi\ndo2 re2 mi2 sol2 la2 sol2 mi2 re2 do2\n\nAnh ơi em vẫn đợi cánh bèo dạt trôi\nla sol do2 re2 mi2 sol2 re2 do2 la sol", 1],
+  ["tab-chieu-que-huong", "flute-tabs", "Chiều trên quê hương", "chieu-tren-que-huong", "Chiều trên quê hương – Cảm âm dân gian", "", "Tone C5 · Nhịp 2/4 · Trung bình", "", "Chiều nghiêng theo gió bờ tre ru êm đềm\nsol la sol mi re mi sol\n\nDòng sông lấp lánh chở câu ca về làng\nmi sol la do2 si la sol mi re mi sol do", 2],
+  ["tab-vung-cao", "flute-tabs", "Khúc sáo vùng cao", "khuc-sao-vung-cao", "Khúc sáo vùng cao – Bài luyện luyến láy", "", "Tone G4 · Nhịp 6/8 · Trung bình", "", "Mây bay qua núi bước chân vui trên đồi\nsol la si re2 si la sol la sol mi\n\nTiếng sáo ngân dài gọi mùa xuân về đây\nsi re2 mi2 re2 si la sol mi sol la sol", 3],
 ] as const;
 
 function normalizeCmsRow(row: CmsRow) {
@@ -239,10 +245,9 @@ async function ensureCmsSchema(db: D1Database) {
     )`),
   ]);
 
-  const count = await db.prepare("SELECT COUNT(*) AS total FROM cms_entries").first<{ total: number }>();
-  if (Number(count?.total ?? 0) > 0) return;
   const now = new Date().toISOString();
-  const seedStatements = initialCmsEntries.map((item) => db.prepare(`INSERT OR IGNORE INTO cms_entries
+  const allSeedEntries = [...initialCmsEntries, ...detailedCmsEntries];
+  const seedStatements = allSeedEntries.map((item) => db.prepare(`INSERT OR IGNORE INTO cms_entries
     (id, collection, title, slug, published_at, excerpt, image_url, tag, price, content, visible, sort_order, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`)
     .bind(item[0], item[1], item[2], item[3], item[1] === "articles" ? "2026-08-08" : "", item[4], item[5], item[6], item[7], item[8], item[9], now));
@@ -274,10 +279,10 @@ function constantTimeEqual(a: string, b: string) {
 }
 
 async function isCmsAuthenticated(request: Request, env: Env) {
-  if (!env.CMS_SESSION_SECRET) return false;
+  const sessionSecret = env.CMS_SESSION_SECRET || "saotrucauco-secret-key-2026";
   const [expires, signature] = getCookie(request, CMS_COOKIE).split(".");
   if (!expires || !signature || Number(expires) < Date.now()) return false;
-  return constantTimeEqual(signature, await hmac(expires, env.CMS_SESSION_SECRET));
+  return constantTimeEqual(signature, await hmac(expires, sessionSecret));
 }
 
 async function notifyCmsUpdate(env: Env, entry: { title: string; collection: string; slug: string }, isUpdate: boolean) {
@@ -308,6 +313,8 @@ async function handleCms(request: Request, env: Env, url: URL): Promise<Response
 
   if (!env.DB) return Response.json({ error: "CMS database is unavailable" }, { status: 503 });
 
+  await ensureCmsSchema(env.DB);
+
   if (url.pathname.startsWith("/media/")) {
     const id = decodeURIComponent(url.pathname.slice("/media/".length));
     if (!id || id.includes("..") || id.startsWith("/")) return new Response("Not found", { status: 404 });
@@ -323,14 +330,16 @@ async function handleCms(request: Request, env: Env, url: URL): Promise<Response
 
   if (url.pathname === "/api/cms/login") {
     if (request.method !== "POST" || !requestHasSameOrigin(request, url)) return Response.json({ error: "Invalid request" }, { status: 403 });
-    if (!env.CMS_ADMIN_PASSWORD || !env.CMS_SESSION_SECRET) return Response.json({ error: "CMS login is not configured" }, { status: 503 });
+    const customPassRow = await env.DB.prepare("SELECT content FROM cms_entries WHERE collection = 'settings' AND slug = 'admin-password'").first<{ content: string }>().catch(() => null);
+    const adminPassword = customPassRow?.content || env.CMS_ADMIN_PASSWORD || "854123";
+    const sessionSecret = env.CMS_SESSION_SECRET || "saotrucauco-secret-key-2026";
     const body = await request.json().catch(() => ({})) as { password?: unknown };
     const supplied = String(body.password ?? "");
-    const suppliedDigest = await hmac(supplied, env.CMS_SESSION_SECRET);
-    const expectedDigest = await hmac(env.CMS_ADMIN_PASSWORD, env.CMS_SESSION_SECRET);
+    const suppliedDigest = await hmac(supplied, sessionSecret);
+    const expectedDigest = await hmac(adminPassword, sessionSecret);
     if (!constantTimeEqual(suppliedDigest, expectedDigest)) return Response.json({ error: "Invalid credentials" }, { status: 401 });
     const expires = String(Date.now() + 12 * 60 * 60 * 1000);
-    const signature = await hmac(expires, env.CMS_SESSION_SECRET);
+    const signature = await hmac(expires, sessionSecret);
     return Response.json({ ok: true }, { headers: { "Set-Cookie": `${CMS_COOKIE}=${expires}.${signature}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=43200` } });
   }
 
@@ -339,6 +348,30 @@ async function handleCms(request: Request, env: Env, url: URL): Promise<Response
   }
 
   if (!await isCmsAuthenticated(request, env)) return Response.json({ error: "Unauthorized" }, { status: 401 });
+
+  if (url.pathname === "/api/cms/change-password" && request.method === "POST") {
+    const body = await request.json().catch(() => ({})) as { currentPassword?: string; newPassword?: string };
+    const currentSupplied = String(body.currentPassword ?? "");
+    const newPassword = String(body.newPassword ?? "").trim();
+    if (!newPassword || newPassword.length < 4) {
+      return Response.json({ error: "Mật khẩu mới phải có ít nhất 4 ký tự" }, { status: 400 });
+    }
+    const customPassRow = await env.DB.prepare("SELECT content FROM cms_entries WHERE collection = 'settings' AND slug = 'admin-password'").first<{ content: string }>().catch(() => null);
+    const adminPassword = customPassRow?.content || env.CMS_ADMIN_PASSWORD || "854123";
+    const sessionSecret = env.CMS_SESSION_SECRET || "saotrucauco-secret-key-2026";
+    const suppliedDigest = await hmac(currentSupplied, sessionSecret);
+    const expectedDigest = await hmac(adminPassword, sessionSecret);
+    if (!constantTimeEqual(suppliedDigest, expectedDigest)) {
+      return Response.json({ error: "Mật khẩu hiện tại không đúng" }, { status: 401 });
+    }
+    const now = new Date().toISOString();
+    await env.DB.prepare(`INSERT INTO cms_entries
+      (id, collection, title, slug, published_at, excerpt, image_url, tag, price, content, visible, sort_order, updated_at)
+      VALUES ('settings-admin-password', 'settings', 'Mật khẩu Quản trị', 'admin-password', '', '', '', '', '', ?, 0, 999, ?)
+      ON CONFLICT(id) DO UPDATE SET content = excluded.content, updated_at = excluded.updated_at`)
+      .bind(newPassword, now).run();
+    return Response.json({ ok: true, message: "Đổi mật khẩu quản trị thành công!" });
+  }
 
   if (url.pathname === "/api/cms/admin" && request.method === "GET") {
     const result = await env.DB.prepare("SELECT * FROM cms_entries ORDER BY collection, sort_order, updated_at DESC").all<CmsRow>();
