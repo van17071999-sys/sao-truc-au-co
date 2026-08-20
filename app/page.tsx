@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { parseFluteTab, formatFluteNoteLine } from "./cms-content-pages";
 import { buildVietQrUrl } from "./vietqr-helper";
 import { useLanguage, LanguageSwitcher } from "./i18n-context";
