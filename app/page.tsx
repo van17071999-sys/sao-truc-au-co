@@ -222,6 +222,19 @@ function scrollElementToId(id: string) {
   document.getElementById(id.replace("#", ""))?.scrollIntoView({ behavior: "smooth" });
 }
 
+function renderAddressLine(line: string) {
+  const trimmed = line.trim();
+  const match = trimmed.match(/^((?:CN\s*\d+|Chi\s*nhánh\s*\d+|Cơ\s*sở\s*\d+|Trụ\s*sở(?:\s*chính)?):?)\s*(.*)$/i);
+  if (match) {
+    return (
+      <>
+        <span className="branch-tag">{match[1]}</span> {match[2]}
+      </>
+    );
+  }
+  return trimmed;
+}
+
 type ServiceSection = "classes" | "contact" | "products" | "courses" | "materials" | "studio" | "booking" | "instrument-recording" | "flute-tabs";
 
 type CmsEntry = {
@@ -396,6 +409,10 @@ export default function Home() {
   const brandName = translate(generalSettings?.title || "SÁO TRÚC ÂU CƠ");
   const brandTagline = translate(generalSettings?.excerpt || "SÁO TRÚC & ÂM NHẠC DÂN TỘC");
   const contactAddress = translate(generalSettings?.content || "106/72 Hòa Bình, P. Tân Phú, TP.HCM");
+  const addressLines = (contactAddress || "106/72 Hòa Bình, P. Tân Phú, TP.HCM")
+    .split(/\n+/)
+    .map((l) => l.trim())
+    .filter(Boolean);
   const contactPhone = generalSettings?.price || "0374 261 368";
   const contactEmail = generalSettings?.tag || "vanquach999x@gmail.com";
   const paymentSettings = cmsEntries.find((entry) => entry.collection === "settings" && entry.slug === "payment" && entry.visible);
@@ -776,7 +793,20 @@ export default function Home() {
   return (
     <main>
       <div className="top-contact-bar" aria-label={t("Thông tin liên hệ nhanh", "Quick contact info")}>
-        <a className="top-address" href="#contact" onClick={(e) => { e.preventDefault(); openService("#contact"); }}><span>⌖</span><span>{contactAddress}</span></a>
+        <a className="top-address" href="#contact" onClick={(e) => { e.preventDefault(); openService("#contact"); }}>
+          <span className="top-address-icon">⌖</span>
+          <span className="top-address-list">
+            {addressLines.length > 0 ? (
+              addressLines.map((line, idx) => (
+                <span key={idx} className="top-address-line">
+                  {renderAddressLine(line)}
+                </span>
+              ))
+            ) : (
+              <span className="top-address-line">106/72 Hòa Bình, P. Tân Phú, TP.HCM</span>
+            )}
+          </span>
+        </a>
         <a className="top-phone" href={`tel:${contactPhone.replace(/\D/g, "")}`}><span>☎</span><span>{contactPhone}</span><small>{t("Hotline / Zalo", "Hotline / Zalo")}</small></a>
         <LanguageSwitcher className="lang-switcher-top" compact />
       </div>
@@ -975,7 +1005,18 @@ export default function Home() {
       </section>
 
       {activeService === "contact" && <section className="contact section" id="contact">
-        <div className="contact-copy"><p className="eyebrow">{t("BẮT ĐẦU HÀNH TRÌNH", "BEGIN YOUR MUSICAL JOURNEY")}</p><h2>{t("Để tiếng sáo cất lời.", "Let your melody speak.")}</h2><p>{t("Để lại thông tin, Sáo Trúc Âu Cơ sẽ liên hệ tư vấn lớp học, chọn sáo hoặc dịch vụ phù hợp.", "Leave your information, Au Co Bamboo Flute will contact you for course, instrument, or service advice.")}</p><ul><li>{contactAddress}</li><li>{t("Hotline / Zalo:", "Hotline / Zalo:")} {contactPhone}</li><li>Email: {contactEmail}</li></ul></div>
+        <div className="contact-copy">
+          <p className="eyebrow">{t("BẮT ĐẦU HÀNH TRÌNH", "BEGIN YOUR MUSICAL JOURNEY")}</p>
+          <h2>{t("Để tiếng sáo cất lời.", "Let your melody speak.")}</h2>
+          <p>{t("Để lại thông tin, Sáo Trúc Âu Cơ sẽ liên hệ tư vấn lớp học, chọn sáo hoặc dịch vụ phù hợp.", "Leave your information, Au Co Bamboo Flute will contact you for course, instrument, or service advice.")}</p>
+          <ul>
+            {addressLines.map((line, idx) => (
+              <li key={idx}><span style={{ color: "#ddb268" }}>⌖</span> {renderAddressLine(line)}</li>
+            ))}
+            <li>{t("Hotline / Zalo:", "Hotline / Zalo:")} {contactPhone}</li>
+            <li>Email: {contactEmail}</li>
+          </ul>
+        </div>
         <form onSubmit={submitForm}>
           <label>{t("Họ và tên", "Full Name")}<input required name="name" placeholder={t("Tên của bạn", "Your full name")} /></label>
           <label>{t("Số điện thoại / Zalo", "Phone / Zalo")}<input required name="phone" type="tel" placeholder={t("Số điện thoại liên hệ", "Your contact phone/Zalo")} /></label>

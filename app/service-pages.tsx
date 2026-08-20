@@ -57,15 +57,68 @@ const allInterestOptions = [
   "Booking biểu diễn",
 ];
 
+function renderAddressLine(line: string) {
+  const trimmed = line.trim();
+  const match = trimmed.match(/^((?:CN\s*\d+|Chi\s*nhánh\s*\d+|Cơ\s*sở\s*\d+|Trụ\s*sở(?:\s*chính)?):?)\s*(.*)$/i);
+  if (match) {
+    return (
+      <>
+        <span className="branch-tag">{match[1]}</span> {match[2]}
+      </>
+    );
+  }
+  return trimmed;
+}
+
 export function ServicePageHeader() {
   const { t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [addressText, setAddressText] = useState("106/72 Hòa Bình, P. Tân Phú, TP.HCM");
+  const [phoneText, setPhoneText] = useState("0374 261 368");
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/cms/content")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { entries?: CmsEntry[] } | null) => {
+        if (!active || !data?.entries) return;
+        const general = data.entries.find((e) => e.collection === "settings" && e.slug === "general");
+        if (general?.content) setAddressText(general.content);
+        if (general?.price) setPhoneText(general.price);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const addressLines = (addressText || "106/72 Hòa Bình, P. Tân Phú, TP.HCM")
+    .split(/\n+/)
+    .map((l) => l.trim())
+    .filter(Boolean);
 
   return (
     <>
       <div className="top-contact-bar" aria-label={t("Thông tin liên hệ nhanh", "Quick contact info")}>
-        <Link className="top-address" href="/#contact"><span>⌖</span><span>106/72 Hòa Bình, P. Tân Phú, TP.HCM</span></Link>
-        <a className="top-phone" href="tel:0374261368"><span>☎</span><span>0374 261 368</span><small>{t("Hotline / Zalo", "Hotline / Zalo")}</small></a>
+        <Link className="top-address" href="/#contact">
+          <span className="top-address-icon">⌖</span>
+          <span className="top-address-list">
+            {addressLines.length > 0 ? (
+              addressLines.map((line, idx) => (
+                <span key={idx} className="top-address-line">
+                  {renderAddressLine(line)}
+                </span>
+              ))
+            ) : (
+              <span className="top-address-line">106/72 Hòa Bình, P. Tân Phú, TP.HCM</span>
+            )}
+          </span>
+        </Link>
+        <a className="top-phone" href={`tel:${phoneText.replace(/\D/g, "")}`}>
+          <span>☎</span>
+          <span>{phoneText}</span>
+          <small>{t("Hotline / Zalo", "Hotline / Zalo")}</small>
+        </a>
         <LanguageSwitcher className="lang-switcher-top" compact />
       </div>
       <header className="site-header service-page-header">
@@ -318,7 +371,9 @@ export function ContactPage() {
           <h2>{blockTitle}</h2>
           <p>{blockDesc}</p>
           <ul>
-            <li>{contactAddress}</li>
+            {((contactAddress || "").split(/\n+/).map((l) => l.trim()).filter(Boolean)).map((line, idx) => (
+              <li key={idx}><span style={{ color: "#ddb268" }}>⌖</span> {renderAddressLine(line)}</li>
+            ))}
             <li>{t("Hotline / Zalo:", "Hotline / Zalo:")} <a href={`tel:${contactPhone.replace(/\D/g, "")}`} style={{ color: "inherit", fontWeight: 700 }}>{contactPhone}</a></li>
             <li>Email: {contactEmail}</li>
           </ul>

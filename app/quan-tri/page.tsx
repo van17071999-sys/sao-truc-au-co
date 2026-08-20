@@ -42,7 +42,7 @@ const collections = [
 ];
 
 const singletons = [
-  { key: "settings", label: "Cài đặt chung & VietQR", note: "Thương hiệu, liên hệ và thanh toán VietQR" },
+  { key: "settings", label: "Cài đặt chung & VietQR", note: "Thương hiệu, liên hệ và thanh toán VietQR", contentLabel: "Địa chỉ các chi nhánh (Mỗi chi nhánh 1 dòng - CN1, CN2,...)", excerptLabel: "Khẩu hiệu (Tagline)", priceLabel: "Hotline / Zalo", tagLabel: "Email liên hệ" },
   { key: "page-contact", label: "Trang Đăng ký & Tư vấn", note: "Nội dung lời dẫn, hotline, email và form đăng ký (/dang-ky-hoc)" },
   { key: "change-password", label: "Đổi mật khẩu Quản trị", note: "Thay đổi mật khẩu đăng nhập trang quản trị" },
 ];
@@ -1804,16 +1804,17 @@ export default function ContentAdmin() {
                   />
                 </label>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                  <label>
-                    <span>Địa chỉ trung tâm / Lớp học *</span>
-                    <input
+                <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 14 }}>
+                  <label className="wide">
+                    <span>Địa chỉ trung tâm / Lớp học (Hỗ trợ nhiều chi nhánh - mỗi chi nhánh 1 dòng) *</span>
+                    <textarea
+                      rows={3}
                       value={contactFields.address}
                       onChange={(e) => updateContactField("address", e.target.value)}
-                      placeholder="Ví dụ: 106/72 Hòa Bình, P. Tân Phú, TP.HCM"
+                      placeholder={"Ví dụ:\nCN1: 106/72 Hòa Bình, P. Tân Phú, TP.HCM\nCN2: Vinhomes Grand Park, Tòa S203, TP. Thủ Đức, TP.HCM"}
                     />
                   </label>
-                  <label>
+                  <label className="wide">
                     <span>Email nhận thông báo / liên hệ *</span>
                     <input
                       type="email"
@@ -1835,7 +1836,7 @@ export default function ContentAdmin() {
                     <h3 style={{ margin: "8px 0", font: "400 24px Georgia,serif", color: "#fff5e5" }}>{contactFields.blockTitle}</h3>
                     <p style={{ fontSize: 13, color: "#edd6d0", lineHeight: 1.6 }}>{contactFields.blockDesc}</p>
                     <ul style={{ paddingLeft: 16, fontSize: 13, color: "#eedbd5", margin: "10px 0 0" }}>
-                      <li>{contactFields.address}</li>
+                      {contactFields.address.split(/\n+/).map((l, i) => l.trim() && <li key={i}>{l.trim()}</li>)}
                       <li>Hotline / Zalo: <strong style={{ color: "#eed6a1" }}>{draft.price}</strong></li>
                       <li>Email: {contactFields.email}</li>
                     </ul>
