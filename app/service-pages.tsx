@@ -127,11 +127,11 @@ export function ClassesPage() {
   const cmsArticles = visibleCollection("articles");
   const articles = cmsArticles.length ? cmsArticles.map((entry) => ({
     slug: entry.slug, tag: translate(entry.tag) || t("Kỹ thuật", "Technique"), title: translate(entry.title),
-    excerpt: translate(entry.excerpt), date: entry.publishedAt ? new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN") : "",
+    excerpt: translate(entry.excerpt), imageUrl: entry.imageUrl || "", date: entry.publishedAt ? new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN") : "",
   })) : [
-    { slug: "5-buoc-tao-tieng-sao", tag: "Kỹ thuật", title: "5 bước tạo tiếng sáo trong và ổn định", excerpt: "Từ tư thế, khẩu hình đến luồng hơi — nền tảng dành cho người mới bắt đầu.", date: "08.08.2026" },
-    { slug: "nguoi-moi-chon-sao-tone-nao", tag: "Chọn nhạc cụ", title: "Người mới nên bắt đầu với sáo tone nào?", excerpt: "So sánh sáo Đô C5, La A4 và Sol G4 để chọn cây sáo phù hợp với mục tiêu học.", date: "02.08.2026" },
-    { slug: "cach-luyen-hoi-dai", tag: "Luyện tập", title: "Cách luyện hơi dài mà không bị căng", excerpt: "Một lịch tập ngắn, an toàn và hiệu quả để cải thiện cột hơi mỗi ngày.", date: "28.07.2026" },
+    { slug: "5-buoc-tao-tieng-sao", tag: "Kỹ thuật", title: "5 bước tạo tiếng sáo trong và ổn định", excerpt: "Từ tư thế, khẩu hình đến luồng hơi — nền tảng dành cho người mới bắt đầu.", date: "08.08.2026", imageUrl: "" },
+    { slug: "nguoi-moi-chon-sao-tone-nao", tag: "Chọn nhạc cụ", title: "Người mới nên bắt đầu với sáo tone nào?", excerpt: "So sánh sáo Đô C5, La A4 và Sol G4 để chọn cây sáo phù hợp với mục tiêu học.", date: "02.08.2026", imageUrl: "" },
+    { slug: "cach-luyen-hoi-dai", tag: "Luyện tập", title: "Cách luyện hơi dài mà không bị căng", excerpt: "Một lịch tập ngắn, an toàn và hiệu quả để cải thiện cột hơi mỗi ngày.", date: "28.07.2026", imageUrl: "" },
   ];
 
   return (
@@ -172,7 +172,7 @@ export function ClassesPage() {
 
       <section className="articles section" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px 60px" }}>
         <div className="articles-head"><div><p className="eyebrow">{t("KIẾN THỨC & CẢM HỨNG", "KNOWLEDGE & INSPIRATION")}</p><h2>{t("Bài viết mới", "Recent Articles")}</h2></div><p>{t("Những hướng dẫn ngắn gọn, dễ áp dụng để bạn hiểu nhạc cụ và luyện tập đúng cách.", "Concise, actionable guides to help you understand traditional instruments and practice effectively.")}</p></div>
-        <div className="article-grid">{articles.map((article, i) => <article key={article.title}><div className="article-visual"><span>0{i + 1}</span><b>♪</b></div><div className="article-body"><small>{article.tag} · {article.date}</small><h3>{article.title}</h3><p>{article.excerpt}</p><Link href={`/bai-viet/${article.slug}`}>{t("Đọc bài viết", "Read article")} <span>→</span></Link></div></article>)}</div>
+        <div className="article-grid">{articles.map((article, i) => <article key={article.title}><div className={`article-visual ${article.imageUrl ? "has-image" : ""}`}>{article.imageUrl ? <><img src={article.imageUrl} alt={article.title} className="article-visual-img" onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }} /><span>0{i + 1}</span></> : <><span>0{i + 1}</span><b>♪</b></>}</div><div className="article-body"><small>{article.tag} · {article.date}</small><h3>{article.title}</h3><p>{article.excerpt}</p><Link href={`/bai-viet/${article.slug}`}>{t("Đọc bài viết", "Read article")} <span>→</span></Link></div></article>)}</div>
       </section>
 
       <div style={{ textAlign: "center", paddingBottom: 40 }}>

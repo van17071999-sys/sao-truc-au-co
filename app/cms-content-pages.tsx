@@ -250,7 +250,19 @@ export function NewsIndex() {
     <section className="content-list-hero"><p className="eyebrow">{t("BÀI VIẾT · BLOG · CHIA SẺ", "ARTICLES · BLOG · KNOWLEDGE")}</p><h1>{t("Bài viết", "Articles")}</h1><p>{t("Bài viết về sáo trúc, kỹ thuật luyện tập, chọn nhạc cụ và âm nhạc dân tộc.", "Guides on bamboo flute practice, technique mastery, instrument selection, and traditional music.")}</p></section>
     <section className="content-index">
       {entries === null ? <p className="content-state">{t("Đang tải bài viết…", "Loading articles…")}</p> : entries.length ? <div className="article-grid">{entries.map((entry, index) => <article key={entry.id}>
-        <div className="article-visual"><span>{String(index + 1).padStart(2, "0")}</span><b>♪</b></div>
+        <div className={`article-visual ${entry.imageUrl ? "has-image" : ""}`}>
+          {entry.imageUrl ? (
+            <>
+              <img src={entry.imageUrl} alt={entry.title} className="article-visual-img" onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }} />
+              <span>{String(index + 1).padStart(2, "0")}</span>
+            </>
+          ) : (
+            <>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <b>♪</b>
+            </>
+          )}
+        </div>
         <div className="article-body"><small>{translate(entry.tag)} · {entry.publishedAt ? new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN") : ""}</small><h3>{translate(entry.title)}</h3><p>{translate(entry.excerpt)}</p><Link href={`/bai-viet/${entry.slug}`}>{t("Đọc bài viết", "Read article")} <span>→</span></Link></div>
       </article>)}</div> : <p className="content-state">{t("Chưa có bài viết nào được đăng.", "No articles published yet.")}</p>}
     </section>

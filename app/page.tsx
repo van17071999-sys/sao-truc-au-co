@@ -341,6 +341,7 @@ export default function Home() {
     tag: entry.tag || "Bài viết",
     title: entry.title,
     excerpt: entry.excerpt,
+    imageUrl: entry.imageUrl || "",
     date: entry.publishedAt ? new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString(lang === "en" ? "en-US" : "vi-VN") : "",
   })) : defaultArticles;
   const articles = rawArticles.map((a) => ({
@@ -866,7 +867,7 @@ export default function Home() {
 
       {activeService === "classes" && <section className="articles section" id="articles">
         <div className="articles-head"><div><p className="eyebrow">{t("KIẾN THỨC & CẢM HỨNG", "KNOWLEDGE & INSPIRATION")}</p><h2>{t("Bài viết mới", "Recent Articles")}</h2></div><p>{t("Những hướng dẫn ngắn gọn, dễ áp dụng để bạn hiểu nhạc cụ và luyện tập đúng cách.", "Concise, actionable guides to help you understand traditional instruments and practice effectively.")}</p></div>
-        <div className="article-grid">{articles.map((article, i) => <article key={article.title}><div className="article-visual"><span>0{i + 1}</span><b>♪</b></div><div className="article-body"><small>{article.tag} · {article.date}</small><h3>{article.title}</h3><p>{article.excerpt}</p><a href={`/bai-viet/${article.slug}`}>{t("Đọc bài viết", "Read article")} <span>→</span></a></div></article>)}</div>
+        <div className="article-grid">{articles.map((article, i) => <article key={article.title}><div className={`article-visual ${article.imageUrl ? "has-image" : ""}`}>{article.imageUrl ? <><img src={article.imageUrl} alt={article.title} className="article-visual-img" onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }} /><span>0{i + 1}</span></> : <><span>0{i + 1}</span><b>♪</b></>}</div><div className="article-body"><small>{article.tag} · {article.date}</small><h3>{article.title}</h3><p>{article.excerpt}</p><a href={`/bai-viet/${article.slug}`}>{t("Đọc bài viết", "Read article")} <span>→</span></a></div></article>)}</div>
       </section>}
 
       {activeService === "classes" && <section className="free-guides-section" id="free-guides">
