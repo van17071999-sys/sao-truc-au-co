@@ -262,11 +262,14 @@ export default function Home() {
   const [paymentAmount, setPaymentAmount] = useState("");
   const [transferContent, setTransferContent] = useState("");
   const { lang, t, translate } = useLanguage();
-  const [selectedDisciplines, setSelectedDisciplines] = useState<string[]>(() => {
-    if (typeof window === "undefined") return ["Sáo trúc Việt Nam"];
-    const requested = new URLSearchParams(window.location.search).get("subject");
-    return requested ? [requested] : ["Sáo trúc Việt Nam"];
-  });
+  const [selectedDisciplines, setSelectedDisciplines] = useState<string[]>(["Sáo trúc Việt Nam"]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const requested = new URLSearchParams(window.location.search).get("subject");
+      if (requested) setSelectedDisciplines([requested]);
+    }
+  }, []);
 
   const allInterestOptions = useMemo(() => [
     "Sáo trúc Việt Nam",
