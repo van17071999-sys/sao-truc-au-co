@@ -522,7 +522,7 @@ const worker = {
       const clean = (value: unknown, maximum: number) => String(value ?? "").trim().slice(0, maximum);
       const name = clean(data.name, 100);
       const phone = clean(data.phone, 40);
-      const interest = clean(data.interest, 160);
+      const interest = clean(data.interest, 500);
       const message = clean(data.message, 1000);
       if (!name || !phone || !interest) return Response.json({ error: "Missing required fields" }, { status: 400 });
 

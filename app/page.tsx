@@ -261,11 +261,39 @@ export default function Home() {
   const [paymentAmount, setPaymentAmount] = useState("");
   const [transferContent, setTransferContent] = useState("");
   const { lang, t, translate } = useLanguage();
-  const [selectedDiscipline, setSelectedDiscipline] = useState(() => {
-    if (typeof window === "undefined") return "Sáo trúc Việt Nam";
+  const [selectedDisciplines, setSelectedDisciplines] = useState<string[]>(() => {
+    if (typeof window === "undefined") return ["Sáo trúc Việt Nam"];
     const requested = new URLSearchParams(window.location.search).get("subject");
-    return requested && disciplines.some((item) => item.title === requested) ? requested : "Sáo trúc Việt Nam";
+    return requested ? [requested] : ["Sáo trúc Việt Nam"];
   });
+
+  const allInterestOptions = useMemo(() => [
+    "Sáo trúc Việt Nam",
+    "Sáo Dizi Trung Quốc",
+    "Sáo Recorder",
+    "Động tiêu & Xiao",
+    "Flute phương Tây",
+    "Sáo H'Mông",
+    "Sáo mèo & Sáo bầu",
+    "Mua sáo & phụ kiện",
+    "Khóa học video quay sẵn",
+    "Sheet nhạc & giáo trình",
+    "Thu âm & quay MV",
+    "Booking biểu diễn",
+  ], []);
+
+  function toggleInterest(item: string) {
+    setSelectedDisciplines((prev) => {
+      if (prev.includes(item)) {
+        return prev.length > 1 ? prev.filter((d) => d !== item) : prev;
+      }
+      return [...prev, item];
+    });
+  }
+
+  function setSelectedDiscipline(item: string) {
+    setSelectedDisciplines((prev) => prev.includes(item) ? prev : [item, ...prev]);
+  }
   const [currentSlide, setCurrentSlide] = useState(0);
   const [sliderPaused, setSliderPaused] = useState(false);
   const [sent, setSent] = useState(false);
@@ -676,6 +704,7 @@ export default function Home() {
     setRequestError("");
     setRequestSubmitting(true);
     const data = new FormData(e.currentTarget);
+    const interestsString = selectedDisciplines.length ? selectedDisciplines.join(", ") : "Sáo trúc Việt Nam";
     try {
       const response = await fetch("/api/contact-request", {
         method: "POST",
@@ -683,7 +712,7 @@ export default function Home() {
         body: JSON.stringify({
           name: data.get("name"),
           phone: data.get("phone"),
-          interest: data.get("interest"),
+          interest: interestsString,
           message: data.get("message"),
         }),
       });
@@ -943,7 +972,42 @@ export default function Home() {
 
       {activeService === "contact" && <section className="contact section" id="contact">
         <div className="contact-copy"><p className="eyebrow">{t("BẮT ĐẦU HÀNH TRÌNH", "BEGIN YOUR MUSICAL JOURNEY")}</p><h2>{t("Để tiếng sáo cất lời.", "Let your melody speak.")}</h2><p>{t("Để lại thông tin, Sáo Trúc Âu Cơ sẽ liên hệ tư vấn lớp học, chọn sáo hoặc dịch vụ phù hợp.", "Leave your information, Au Co Bamboo Flute will contact you for course, instrument, or service advice.")}</p><ul><li>{contactAddress}</li><li>{t("Hotline / Zalo:", "Hotline / Zalo:")} {contactPhone}</li><li>Email: {contactEmail}</li></ul></div>
-        <form onSubmit={submitForm}><label>{t("Họ và tên", "Full Name")}<input required name="name" placeholder={t("Tên của bạn", "Your full name")} /></label><label>{t("Số điện thoại", "Phone Number")}<input required name="phone" type="tel" placeholder={t("Số điện thoại liên hệ", "Your contact phone/Zalo")} /></label><label className="full">{t("Bộ môn bạn quan tâm", "Discipline of Interest")}<select name="interest" value={selectedDiscipline} onChange={(e) => setSelectedDiscipline(e.target.value)}>{displayedDisciplines.map((item) => <option key={item.title}>{item.title}</option>)}<option>{t("Mua sáo & phụ kiện", "Buy Flute & Accessories")}</option><option>{t("Sheet nhạc & giáo trình", "Sheet Music & Curriculum")}</option><option>{t("Thu âm / Booking biểu diễn", "Audio Recording / Artist Booking")}</option></select></label><label className="full">{t("Lời nhắn", "Message")}<textarea name="message" rows={3} placeholder={t("Mục tiêu hoặc nhu cầu của bạn", "Your goals, questions, or specific needs")} /></label><button className="button button-wine full" type="submit" disabled={requestSubmitting}>{requestSubmitting ? t("Đang gửi…", "Sending…") : t("Gửi yêu cầu →", "Submit Request →")}</button>{sent && <p className="success full" role="status">{t("Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất.", "Request submitted successfully! Au Co Bamboo Flute will contact you shortly.")}</p>}{requestError && <p className="payment-error full" role="alert">{requestError}</p>}</form>
+        <form onSubmit={submitForm}>
+          <label>{t("Họ và tên", "Full Name")}<input required name="name" placeholder={t("Tên của bạn", "Your full name")} /></label>
+          <label>{t("Số điện thoại / Zalo", "Phone / Zalo")}<input required name="phone" type="tel" placeholder={t("Số điện thoại liên hệ", "Your contact phone/Zalo")} /></label>
+          
+          <div className="full interest-selection-group">
+            <span className="interest-group-label">
+              {t("Đăng ký bộ môn or Tư vấn dịch vụ, sản phẩm", "Course Enrollment or Service & Product Consultation")}
+              <small style={{ display: "block", color: "#8a7e72", fontWeight: 400, marginTop: 3 }}>
+                {t("(Bấm để chọn tích một hoặc nhiều mục cùng lúc)", "(Click to select one or multiple options)")}
+              </small>
+            </span>
+            <div className="interest-checkbox-grid">
+              {allInterestOptions.map((item) => {
+                const isChecked = selectedDisciplines.includes(item);
+                return (
+                  <label key={item} className={`interest-checkbox-chip ${isChecked ? "is-selected" : ""}`}>
+                    <input
+                      type="checkbox"
+                      name="interest"
+                      value={item}
+                      checked={isChecked}
+                      onChange={() => toggleInterest(item)}
+                    />
+                    <span className="interest-check-icon">{isChecked ? "✓" : "+"}</span>
+                    <span className="interest-title">{translate(item)}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          <label className="full">{t("Lời nhắn", "Message")}<textarea name="message" rows={3} placeholder={t("Mục tiêu hoặc nhu cầu của bạn", "Your goals, questions, or specific needs")} /></label>
+          <button className="button button-wine full" type="submit" disabled={requestSubmitting}>{requestSubmitting ? t("Đang gửi…", "Sending…") : t("Gửi yêu cầu →", "Submit Request →")}</button>
+          {sent && <p className="success full" role="status">{t("Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất.", "Request submitted successfully! Au Co Bamboo Flute will contact you shortly.")}</p>}
+          {requestError && <p className="payment-error full" role="alert">{requestError}</p>}
+        </form>
       </section>}
 
       <footer><div className="brand"><img src="/logo.jpg" alt="Logo Sáo Trúc Âu Cơ" width={46} height={46} style={{ width: 46, height: 46, objectFit: "cover", borderRadius: 8, flex: "0 0 auto" }} /><span><b>{brandName}</b><small>{brandTagline}</small></span></div><p>{t("Đam mê làm nên giá trị · Chất lượng tạo nên uy tín", "Passion creates value · Quality builds trust")}</p><small>{t("© 2026 Sáo Trúc Âu Cơ. All rights reserved.", "© 2026 Au Co Bamboo Flute. All rights reserved.")}</small></footer>

@@ -174,7 +174,7 @@ export function ClassesPage() {
 export function ContactPage() {
   const { t, translate } = useLanguage();
   const { generalSettings, visibleCollection } = useServiceData();
-  const [selectedDiscipline, setSelectedDiscipline] = useState("Sáo trúc Việt Nam");
+  const [selectedDisciplines, setSelectedDisciplines] = useState<string[]>(["Sáo trúc Việt Nam"]);
   const [sent, setSent] = useState(false);
   const [requestSubmitting, setRequestSubmitting] = useState(false);
   const [requestError, setRequestError] = useState("");
@@ -222,17 +222,36 @@ export function ContactPage() {
   const contactPhone = pageContact?.price || generalSettings?.price || "0374 261 368";
   const contactEmail = parsedContact?.email || generalSettings?.tag || "van17071999@gmail.com";
 
-  const cmsClassDetails = visibleCollection("class-details");
-  const disciplines = cmsClassDetails.length ? cmsClassDetails.map((c) => c.title) : [
-    "Sáo trúc Việt Nam", "Sáo Dizi", "Sáo Recorder", "Động tiêu & Xiao", "Flute", "Sáo H’Mông"
-  ];
+  const allInterestOptions = useMemo(() => [
+    "Sáo trúc Việt Nam",
+    "Sáo Dizi Trung Quốc",
+    "Sáo Recorder",
+    "Động tiêu & Xiao",
+    "Flute phương Tây",
+    "Sáo H'Mông",
+    "Sáo mèo & Sáo bầu",
+    "Mua sáo & phụ kiện",
+    "Khóa học video quay sẵn",
+    "Sheet nhạc & giáo trình",
+    "Thu âm & quay MV",
+    "Booking biểu diễn",
+  ], []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const requested = new URLSearchParams(window.location.search).get("subject");
-      if (requested) setSelectedDiscipline(requested);
+      if (requested) setSelectedDisciplines([requested]);
     }
   }, []);
+
+  function toggleInterest(item: string) {
+    setSelectedDisciplines((prev) => {
+      if (prev.includes(item)) {
+        return prev.length > 1 ? prev.filter((d) => d !== item) : prev;
+      }
+      return [...prev, item];
+    });
+  }
 
   async function submitForm(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -241,6 +260,7 @@ export function ContactPage() {
     setRequestError("");
     setRequestSubmitting(true);
     const data = new FormData(e.currentTarget);
+    const interestsString = selectedDisciplines.length ? selectedDisciplines.join(", ") : "Sáo trúc Việt Nam";
     try {
       const response = await fetch("/api/contact-request", {
         method: "POST",
@@ -248,7 +268,7 @@ export function ContactPage() {
         body: JSON.stringify({
           name: data.get("name"),
           phone: data.get("phone"),
-          interest: data.get("interest"),
+          interest: interestsString,
           message: data.get("message"),
         }),
       });
@@ -285,14 +305,34 @@ export function ContactPage() {
         <form onSubmit={submitForm}>
           <label>{t("Họ và tên", "Full Name")}<input required name="name" placeholder={t("Tên của bạn", "Your full name")} /></label>
           <label>{t("Số điện thoại / Zalo", "Phone / Zalo")}<input required name="phone" type="tel" placeholder={t("Số điện thoại liên hệ", "Your contact phone/Zalo")} /></label>
-          <label className="full">{t("Bộ môn bạn quan tâm", "Discipline of Interest")}
-            <select name="interest" value={selectedDiscipline} onChange={(e) => setSelectedDiscipline(e.target.value)}>
-              {disciplines.map((item) => <option key={item}>{item}</option>)}
-              <option>{t("Mua sáo & phụ kiện", "Buy Flute & Accessories")}</option>
-              <option>{t("Sheet nhạc & giáo trình", "Sheet Music & Curriculum")}</option>
-              <option>{t("Thu âm / Booking biểu diễn", "Audio Recording / Artist Booking")}</option>
-            </select>
-          </label>
+          
+          <div className="full interest-selection-group">
+            <span className="interest-group-label">
+              {t("Đăng ký bộ môn or Tư vấn dịch vụ, sản phẩm", "Course Enrollment or Service & Product Consultation")}
+              <small style={{ display: "block", color: "#8a7e72", fontWeight: 400, marginTop: 3 }}>
+                {t("(Bấm để chọn tích một hoặc nhiều mục cùng lúc)", "(Click to select one or multiple options)")}
+              </small>
+            </span>
+            <div className="interest-checkbox-grid">
+              {allInterestOptions.map((item) => {
+                const isChecked = selectedDisciplines.includes(item);
+                return (
+                  <label key={item} className={`interest-checkbox-chip ${isChecked ? "is-selected" : ""}`}>
+                    <input
+                      type="checkbox"
+                      name="interest"
+                      value={item}
+                      checked={isChecked}
+                      onChange={() => toggleInterest(item)}
+                    />
+                    <span className="interest-check-icon">{isChecked ? "✓" : "+"}</span>
+                    <span className="interest-title">{translate(item)}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
           <label className="full">{t("Lời nhắn", "Message")}<textarea name="message" rows={4} placeholder={t("Mục tiêu, trình độ hiện tại hoặc nhu cầu của bạn", "Your goals, current experience, or questions")} /></label>
           <button className="button button-wine full" type="submit" disabled={requestSubmitting}>{requestSubmitting ? t("Đang gửi…", "Sending…") : t("Gửi yêu cầu đăng ký →", "Submit Enrollment →")}</button>
           {sent && <p className="success full" role="status">{t("Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất.", "Request submitted successfully! Au Co Bamboo Flute will contact you shortly.")}</p>}
