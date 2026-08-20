@@ -21,6 +21,17 @@ type CmsEntry = {
   sortOrder: number;
 };
 
+function slugify(value: string) {
+  return (value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "d")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export function ServicePageHeader() {
   const { t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);

@@ -213,9 +213,10 @@ const defaultSocialLinks = [
   { slug: "instagram", platform: "INSTAGRAM", icon: "◎", title: "@saotruc.auco", href: "https://www.instagram.com/" },
 ];
 
-function slugifyPath(value: string) {
-  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+function slugify(value: string) {
+  return (value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "d").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
+const slugifyPath = slugify;
 
 function scrollElementToId(id: string) {
   document.getElementById(id.replace("#", ""))?.scrollIntoView({ behavior: "smooth" });
