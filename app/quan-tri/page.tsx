@@ -463,10 +463,34 @@ export default function ContentAdmin() {
   const activeMeta = [...collections, ...singletons].find((item) => item.key === section) || singletons[0];
   const isSingleton = singletons.some((item) => item.key === section);
 
-  const productGroups = useMemo(
-    () => entries.filter((e) => e.collection === "product-groups").sort((a, b) => a.sortOrder - b.sortOrder),
-    [entries],
-  );
+  const defaultProductGroupList = useMemo(() => [
+    { slug: "sao-ngang-viet-nam", title: "Sáo ngang Việt Nam" },
+    { slug: "sao-dizi-trung-quoc", title: "Sáo Dizi Trung Quốc" },
+    { slug: "sao-meo", title: "Sáo mèo" },
+    { slug: "tieu-xiao", title: "Tiêu & Xiao" },
+    { slug: "recorder", title: "Recorder" },
+    { slug: "flute", title: "Flute" },
+    { slug: "sao-doc", title: "Sáo dọc" },
+  ], []);
+
+  const productGroups = useMemo(() => {
+    const fromEntries = entries.filter((e) => e.collection === "product-groups").sort((a, b) => a.sortOrder - b.sortOrder);
+    if (fromEntries.length > 0) return fromEntries;
+    return defaultProductGroupList.map((g, i) => ({
+      id: `pg-${g.slug}`,
+      collection: "product-groups",
+      title: g.title,
+      slug: g.slug,
+      publishedAt: "",
+      excerpt: "",
+      imageUrl: "",
+      tag: "",
+      price: "",
+      content: "",
+      visible: true,
+      sortOrder: i + 1,
+    }));
+  }, [entries, defaultProductGroupList]);
 
   const courseGroups = useMemo(
     () => entries.filter((e) => e.collection === "course-groups").sort((a, b) => a.sortOrder - b.sortOrder),
@@ -793,6 +817,26 @@ export default function ContentAdmin() {
         content: "[TIÊU ĐỀ KHỐI]\nĐể tiếng sáo cất lời.\n\n[MÔ TẢ KHỐI]\nHọc tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài.\n\n[ĐỊA CHỈ]\n106/72 Hòa Bình, P. Tân Phú, TP.HCM\n\n[EMAIL]\nvan17071999@gmail.com",
         visible: true,
         sortOrder: 1,
+      });
+      return;
+    }
+    if (section === "product-items") {
+      const defaultGroup = (productGroupFilter !== "all" ? productGroupFilter : productGroups[0]?.slug) || "sao-ngang-viet-nam";
+      const existing = entries.filter((e) => e.collection === "product-items");
+      const maxOrder = existing.length ? Math.max(...existing.map((e) => e.sortOrder)) : 0;
+      setDraft({
+        id: "",
+        collection: "product-items",
+        title: "",
+        slug: "",
+        publishedAt: new Date().toISOString().slice(0, 10),
+        excerpt: "",
+        imageUrl: "",
+        tag: defaultGroup,
+        price: "Liên hệ",
+        content: "",
+        visible: true,
+        sortOrder: maxOrder + 1,
       });
       return;
     }

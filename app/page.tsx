@@ -388,14 +388,47 @@ export default function Home() {
     suitable: translate(d.suitable),
   }));
 
+  const defaultProductGroupSlugs: Record<string, string> = {
+    "Sáo ngang Việt Nam": "sao-ngang-viet-nam",
+    "Sáo Dizi Trung Quốc": "sao-dizi-trung-quoc",
+    "Sáo mèo": "sao-meo",
+    "Tiêu & Xiao": "tieu-xiao",
+    "Recorder": "recorder",
+    "Flute": "flute",
+    "Sáo dọc": "sao-doc",
+  };
+
   const cmsProductGroups = visibleCollection("product-groups");
   const cmsProductItems = visibleCollection("product-items");
-  const rawProductCats = cmsProductGroups.length ? cmsProductGroups.map((group) => ({
-    title: group.title, image: group.imageUrl || "/carousel-saotruc.webp", intro: group.excerpt,
-    products: cmsProductItems.filter((item) => item.tag === group.slug).map((item) => ({
-      name: item.title, description: item.excerpt, price: item.price || "Liên hệ", image: item.imageUrl || group.imageUrl,
-    })),
-  })) : productCategories;
+  const rawProductCats = cmsProductGroups.length ? cmsProductGroups.map((group) => {
+    const customItems = cmsProductItems.filter((item) => item.tag === group.slug);
+    const defaultCat = productCategories.find((c) => defaultProductGroupSlugs[c.title] === group.slug || c.title === group.title);
+    return {
+      title: group.title,
+      image: group.imageUrl || defaultCat?.image || "/carousel-saotruc.webp",
+      intro: group.excerpt,
+      products: customItems.length ? customItems.map((item) => ({
+        name: item.title,
+        description: item.excerpt,
+        price: item.price || "Liên hệ",
+        image: item.imageUrl || group.imageUrl || defaultCat?.image || "/carousel-saotruc.webp",
+      })) : (defaultCat?.products || []),
+    };
+  }) : productCategories.map((cat) => {
+    const groupSlug = defaultProductGroupSlugs[cat.title] || slugify(cat.title);
+    const customItems = cmsProductItems.filter((item) => item.tag === groupSlug || item.tag === cat.title || slugify(item.tag) === groupSlug);
+    return {
+      title: cat.title,
+      image: cat.image,
+      intro: cat.intro,
+      products: customItems.length ? customItems.map((item) => ({
+        name: item.title,
+        description: item.excerpt,
+        price: item.price || "Liên hệ",
+        image: item.imageUrl || cat.image,
+      })) : cat.products,
+    };
+  });
   const displayedProductCategories = rawProductCats.map((cat) => ({
     ...cat,
     title: translate(cat.title),
