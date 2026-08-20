@@ -25,7 +25,7 @@ type CmsEntry = {
 const collections = [
   { key: "services", label: "8 mục chính", note: "Các thẻ lớn trên trang chủ", priceLabel: "Giá / Phí (VNĐ hoặc 'Liên hệ')" },
   { key: "hero-slides", label: "5 ảnh đầu trang", note: "Năm ảnh demo bộ môn ở đầu trang chủ", tagLabel: "Nhãn nhỏ phía trên", priceLabel: "Chữ trên nút", excerptLabel: "Mô tả dưới tiêu đề", contentLabel: "Đường dẫn khi bấm nút" },
-  { key: "class-details", label: "Chi tiết lớp học", note: "Từng bộ môn (/bo-mon/slug), nội dung học và đối tượng phù hợp", tagLabel: "Biểu tượng bộ môn (ví dụ: ♫, ◉, ♩...)", priceLabel: "Đối tượng phù hợp", excerptLabel: "Mô tả / Lời dẫn giới thiệu", contentLabel: "Bạn sẽ học được gì? (mỗi dòng một ý)" },
+  { key: "class-details", label: "Lớp học các bộ môn", note: "Từng bộ môn (/bo-mon/slug) - bấm thẻ trên web dẫn thẳng vào bài giới thiệu đầy đủ", tagLabel: "Biểu tượng bộ môn (ví dụ: ♫, ◉, ♩...)", priceLabel: "Đối tượng phù hợp", excerptLabel: "Mô tả ngắn trên thẻ danh sách", contentLabel: "Bạn sẽ học được gì? (mỗi dòng một ý)" },
   { key: "product-groups", label: "Nhóm sáo & phụ kiện", note: "Các nhóm như Sáo ngang, Dizi, Sáo mèo…", tagLabel: "Nhãn phụ", contentLabel: "Nội dung bổ sung" },
   { key: "product-items", label: "Từng sản phẩm", note: "Từng cây sáo hoặc phụ kiện nằm trong một nhóm", tagLabel: "Slug nhóm cha *", tagPlaceholder: "Ví dụ: sao-ngang-viet-nam", priceLabel: "Giá bán (VNĐ hoặc 'Liên hệ')", contentLabel: "Thông tin bổ sung" },
   { key: "course-groups", label: "Nhóm khóa học", note: "Nhóm theo bộ môn ở trang khóa học quay sẵn", tagLabel: "Nhãn phụ", contentLabel: "Nội dung bổ sung" },
@@ -1806,9 +1806,9 @@ export default function ContentAdmin() {
             </div>
           ) : draft.collection === "class-details" && classFields ? (
             <div className="wide" style={{ display: "grid", gap: 16, borderTop: "2px solid #e2e8f0", paddingTop: 20, marginTop: 10 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <h3 style={{ margin: 0, color: "#7c1c38", fontSize: 16, fontWeight: 800 }}>✦ NỘI DUNG CHI TIẾT TRANG BỘ MÔN (/bo-mon/{draft.slug})</h3>
-                <small style={{ color: "#64748b" }}>Từng mục sẽ hiển thị trực tiếp trên trang giới thiệu</small>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+                <h3 style={{ margin: 0, color: "#7c1c38", fontSize: 16, fontWeight: 800 }}>✦ NỘI DUNG BÀI GIỚI THIỆU ĐẦY ĐỦ (/bo-mon/{draft.slug})</h3>
+                <a href={`/bo-mon/${draft.slug}`} target="_blank" rel="noreferrer" style={{ fontSize: 13, color: "#7c1c38", fontWeight: 700, textDecoration: "underline" }}>🔗 Xem bài giới thiệu đầy đủ trên web ↗</a>
               </div>
 
               <label className="wide">

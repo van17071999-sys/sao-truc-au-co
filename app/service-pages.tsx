@@ -146,25 +146,12 @@ export function ClassesPage() {
       <section className="courses section" style={{ maxWidth: 1100, margin: "0 auto", padding: "20px 20px 60px" }}>
         <div className="discipline-grid">
           {displayedDisciplines.map((item, i) => (
-            <article className={openDiscipline === i ? "discipline-card is-open" : "discipline-card"} key={item.title}>
-              <button className="discipline-summary" onClick={() => setOpenDiscipline(openDiscipline === i ? null : i)} aria-expanded={openDiscipline === i}>
+            <article className="discipline-card" key={item.title}>
+              <Link className="discipline-summary" href={`/bo-mon/${item.slug}`}>
                 <span className="discipline-photo"><img src={item.image} alt={item.imageAlt} width="640" height="420" loading="lazy" decoding="async" /><i>{item.icon}</i></span>
                 <span className="discipline-copy"><small>{t("BỘ MÔN", "DISCIPLINE")} 0{i + 1}</small><h3>{item.title}</h3><p>{item.short}</p></span>
-                <b>{openDiscipline === i ? t("Thu gọn −", "Collapse −") : t("Xem nhanh +", "Quick view +")}</b>
-              </button>
-              {openDiscipline === i && (
-                <div className="discipline-detail">
-                  <p>{item.intro}</p>
-                  <div>
-                    <span><small>{t("NỘI DUNG HỌC", "SYLLABUS")}</small><ul>{item.learn.map((point) => <li key={point}>{point}</li>)}</ul></span>
-                    <span><small>{t("PHÙ HỢP VỚI", "SUITABLE FOR")}</small><p>{item.suitable}</p></span>
-                  </div>
-                  <div className="discipline-actions">
-                    <Link className="article-link" href={`/bo-mon/${item.slug}`}>{t("Xem bài giới thiệu đầy đủ →", "Read full discipline guide →")}</Link>
-                    <Link className="button button-wine" href={`/dang-ky-hoc?subject=${encodeURIComponent(rawDisciplines[i].title)}`}>{t("Đăng ký bộ môn này", "Enroll in this course")}</Link>
-                  </div>
-                </div>
-              )}
+                <b className="discipline-cta">{t("Xem chi tiết →", "View details →")}</b>
+              </Link>
             </article>
           ))}
         </div>
