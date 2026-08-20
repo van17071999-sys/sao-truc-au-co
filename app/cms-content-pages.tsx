@@ -4,6 +4,7 @@ import Link from "next/link";
 import BrandLogo from "./brand-logo";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import { PaymentModal } from "./service-pages";
 import { PriceTag, parsePrice } from "./price-helper";
 
@@ -255,18 +256,40 @@ export function NewsIndex() {
   </main>;
 }
 
+function renderArticleFormatting(source: string): ReactNode[] {
+  const normalized = source
+    .replace(/<br\s*\/?\s*>/gi, "\n")
+    .replace(/<\/p>\s*<p[^>]*>/gi, "\n\n")
+    .replace(/<\/?p[^>]*>/gi, "");
+  const pattern = /(<strong>[^]*?<\/strong>|<b>[^]*?<\/b>|<em>[^]*?<\/em>|<i>[^]*?<\/i>|\*\*[^]*?\*\*|__[^]*?__|\*[^*\n]+?\*|_[^_\n]+?_)/gi;
+
+  return normalized.split(pattern).filter(Boolean).map((part, index) => {
+    const strong = part.match(/^<(?:strong|b)>([^]*)<\/(?:strong|b)>$/i)
+      || part.match(/^\*\*([^]*)\*\*$/)
+      || part.match(/^__([^]*)__$/);
+    if (strong) return <strong key={index}>{renderArticleFormatting(strong[1])}</strong>;
+
+    const emphasis = part.match(/^<(?:em|i)>([^]*)<\/(?:em|i)>$/i)
+      || part.match(/^\*([^*\n]+)\*$/)
+      || part.match(/^_([^_\n]+)_$/);
+    if (emphasis) return <em key={index}>{renderArticleFormatting(emphasis[1])}</em>;
+
+    return part;
+  });
+}
+
 export function NewsDetail() {
   const { t, translate } = useLanguage();
   const params = useParams<{ slug: string }>();
   const entries = useCmsEntries("articles");
   const entry = entries?.find((item) => item.slug === params.slug);
-  const paragraphs = (entry?.content || entry?.excerpt || "").split(/\n{2,}|\n/).map((item) => item.trim()).filter(Boolean);
+  const articleContent = translate(entry?.content || entry?.excerpt || "");
 
   return <main className="subject-page content-page">
     <ContentHeader />
     {entries === null ? <p className="content-state content-detail-state">{t("Đang tải bài viết…", "Loading article…")}</p> : entry ? <>
       <section className="content-detail-hero"><p className="eyebrow">{translate(entry.tag) || t("BÀI VIẾT", "ARTICLE")}</p><h1>{translate(entry.title)}</h1><p>{translate(entry.excerpt)}</p><span>{entry.publishedAt ? new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN") : ""}</span></section>
-      <article className="content-detail-body prose-content">{entry.imageUrl && <img src={entry.imageUrl} alt={entry.title} />} {paragraphs.map((paragraph, index) => <p key={`${entry.id}-${index}`}>{translate(paragraph)}</p>)}<div className="content-detail-actions"><Link href="/bai-viet">{t("← Tất cả bài viết", "← All Articles")}</Link><ShareButton title={translate(entry.title)} /></div></article>
+      <article className="content-detail-body prose-content">{entry.imageUrl && <img src={entry.imageUrl} alt={entry.title} />}<div className="article-formatted-content">{renderArticleFormatting(articleContent)}</div><div className="content-detail-actions"><Link href="/bai-viet">{t("← Tất cả bài viết", "← All Articles")}</Link><ShareButton title={translate(entry.title)} /></div></article>
     </> : <section className="content-state content-detail-state"><h1>{t("Không tìm thấy bài viết", "Article not found")}</h1><Link href="/bai-viet">{t("Quay lại danh sách bài viết", "Back to articles list")}</Link></section>}
     <ContentFooter />
   </main>;
