@@ -52,6 +52,7 @@ import { useLanguage, LanguageSwitcher } from "./i18n-context";
 
 function ContentHeader() {
   const { t } = useLanguage();
+  const [menuOpen, setMenuOpen] = useState(false);
   return (
     <>
       <div className="top-contact-bar" aria-label={t("Thông tin liên hệ nhanh", "Quick contact info")}>
@@ -61,11 +62,12 @@ function ContentHeader() {
       </div>
       <header className="article-header">
         <Link className="brand" href="/"><BrandLogo /><span><b>{t("SÁO TRÚC ÂU CƠ", "AU CO BAMBOO FLUTE")}</b><small>{t("ÂM NHẠC DÂN TỘC & ĐÀO TẠO CHUYÊN NGHIỆP", "TRADITIONAL MUSIC & PROFESSIONAL TRAINING")}</small></span></Link>
-        <nav>
-          <Link href="/">{t("Trang chủ", "Home")}</Link>
-          <Link href="/bai-viet">{t("Bài viết", "Articles")}</Link>
-          <Link href="/cam-am">{t("Cảm âm", "Flute Tabs")}</Link>
-          <Link href="/#contact">{t("Liên hệ", "Contact")}</Link>
+        <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label={t("Mở menu", "Open menu")} aria-expanded={menuOpen}>☰</button>
+        <nav className={menuOpen ? "open" : ""}>
+          <Link href="/" onClick={() => setMenuOpen(false)}>{t("Trang chủ", "Home")}</Link>
+          <Link href="/bai-viet" onClick={() => setMenuOpen(false)}>{t("Bài viết", "Articles")}</Link>
+          <Link href="/cam-am" onClick={() => setMenuOpen(false)}>{t("Cảm âm", "Flute Tabs")}</Link>
+          <Link href="/#contact" onClick={() => setMenuOpen(false)}>{t("Liên hệ", "Contact")}</Link>
         </nav>
       </header>
     </>
