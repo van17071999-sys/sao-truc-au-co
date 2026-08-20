@@ -834,7 +834,7 @@ export default function Home() {
           </button>
           {openProductCategory === i && <div className="product-detail-grid">{category.products.map((product) => <div className="product-item" key={product.name}>
             <div className="product-thumb" style={{ backgroundImage: `url(${"image" in product && product.image ? product.image : category.image})` }}><span>{product.name}</span></div>
-            <div className="product-item-copy"><h3>{product.name}</h3><p>{product.description}</p><div><PriceTag price={product.price} /><button onClick={() => { setSelectedDiscipline(t("Mua sáo & phụ kiện", "Buy Flute & Accessories")); openService("#contact"); }}>{t("Nhận tư vấn →", "Get Consultation →")}</button></div></div>
+            <div className="product-item-copy"><h3>{product.name}</h3><p>{product.description}</p><div><PriceTag price={product.price} /><button className="button button-wine" onClick={() => { setSelectedDiscipline(t("Mua sáo & phụ kiện", "Buy Flute & Accessories")); openService("#contact"); }}>{t("Nhận tư vấn →", "Get Consultation →")}</button></div></div>
           </div>)}</div>}
         </article>)}</div>
       </section>}

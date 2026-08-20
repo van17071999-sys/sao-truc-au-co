@@ -496,7 +496,7 @@ export function ProductsPage() {
                         <div>
                           <PriceTag price={product.price} />
                           {parsePrice(product.price).effectiveAmount ? (
-                            <button onClick={() => { setPaymentTitle(product.name); setPaymentAmount(parsePrice(product.price).effectiveAmount); setPaymentOpen(true); }}>{t("Mua qua VietQR", "Buy via VietQR")}</button>
+                            <button className="button button-wine" onClick={() => { setPaymentTitle(product.name); setPaymentAmount(parsePrice(product.price).effectiveAmount); setPaymentOpen(true); }}>{t("Mua qua VietQR", "Buy via VietQR")}</button>
                           ) : (
                             <Link className="button button-wine" href={`/dang-ky-hoc?subject=${encodeURIComponent(`Mua sáo - ${product.name}`)}`}>{t("Nhận tư vấn →", "Get Consultation →")}</Link>
                           )}
