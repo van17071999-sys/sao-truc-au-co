@@ -329,9 +329,33 @@ async function handleCms(request: Request, env: Env, url: URL): Promise<Response
   if (url.pathname.startsWith("/media/")) {
     const id = decodeURIComponent(url.pathname.slice("/media/".length));
     if (!id || id.includes("..") || id.startsWith("/")) return new Response("Not found", { status: 404 });
-    const asset = await env.DB.prepare("SELECT content_type, data FROM cms_assets WHERE id = ?").bind(id).first<{ content_type: string; data: ArrayBuffer }>();
-    if (!asset) return new Response("Not found", { status: 404 });
-    return new Response(asset.data, { headers: { "Content-Type": asset.content_type, "Cache-Control": "public, max-age=31536000, immutable" } });
+    const asset = await env.DB.prepare("SELECT content_type, data FROM cms_assets WHERE id = ?").bind(id).first<{ content_type: string; data: any }>();
+    if (!asset || !asset.data) return new Response("Not found", { status: 404 });
+
+    let bodyData: BodyInit;
+    if (asset.data instanceof Uint8Array || asset.data instanceof ArrayBuffer) {
+      bodyData = asset.data;
+    } else if (Array.isArray(asset.data)) {
+      bodyData = new Uint8Array(asset.data);
+    } else if (typeof asset.data === "string") {
+      try {
+        const bin = atob(asset.data);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        bodyData = bytes;
+      } catch {
+        bodyData = new TextEncoder().encode(asset.data);
+      }
+    } else {
+      bodyData = new Uint8Array(asset.data as any);
+    }
+
+    return new Response(bodyData, {
+      headers: {
+        "Content-Type": asset.content_type || "image/jpeg",
+        "Cache-Control": "public, max-age=31536000, immutable",
+      },
+    });
   }
 
   if (url.pathname === "/api/cms/content" && request.method === "GET") {
@@ -454,13 +478,15 @@ async function handleCms(request: Request, env: Env, url: URL): Promise<Response
   if (url.pathname === "/api/cms/upload" && request.method === "POST") {
     const form = await request.formData();
     const file = form.get("file");
-    if (!(file instanceof File) || file.size > 1024 * 1024 || !["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
+    if (!(file instanceof File) || file.size > 2 * 1024 * 1024 || !["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
       return Response.json({ error: "Invalid image" }, { status: 400 });
     }
-    const extension = file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1];
+    const extension = file.type === "image/jpeg" ? "jpg" : (file.type.split("/")[1] || "jpg");
     const key = `${crypto.randomUUID()}.${extension}`;
+    const arrayBuffer = await file.arrayBuffer();
+    const uint8 = new Uint8Array(arrayBuffer);
     await env.DB.prepare("INSERT INTO cms_assets (id, content_type, data, created_at) VALUES (?, ?, ?, ?)")
-      .bind(key, file.type, await file.arrayBuffer(), new Date().toISOString()).run();
+      .bind(key, file.type || "image/jpeg", uint8, new Date().toISOString()).run();
     return Response.json({ url: `/media/${encodeURIComponent(key)}` });
   }
 
