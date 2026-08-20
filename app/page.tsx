@@ -761,18 +761,28 @@ export default function Home() {
         <div className="service-grid">
           {services.map((service) => (
             <article className="service-card" key={service.no}>
-              <Link href={service.href} style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", height: "100%" }}>
+              <Link href={service.href} className="service-card-link-wrapper">
                 <div className="card-top">
                   <span className="card-no">{service.no}</span>
                   <span className="card-icon">{service.icon}</span>
                 </div>
-                <h3>{service.title}</h3>
-                <p>{service.text}</p>
-                {service.price && <PriceTag price={service.price} className="price" />}
-                <span className="service-card-link" style={{ marginTop: "auto", display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 700, color: "#8c1c38", fontSize: 13, textTransform: "uppercase", letterSpacing: "0.08em", paddingTop: 12 }}>
-                  {service.cta}
-                  <span>→</span>
-                </span>
+                <div className="service-card-main">
+                  <h3>{service.title}</h3>
+                  <p>{service.text}</p>
+                </div>
+                <div className="service-card-bottom">
+                  <div className="service-card-price-row">
+                    {service.price ? (
+                      <PriceTag price={service.price} className="price" />
+                    ) : (
+                      <span className="price-placeholder" aria-hidden="true" />
+                    )}
+                  </div>
+                  <span className="service-card-action">
+                    {service.cta}
+                    <span>→</span>
+                  </span>
+                </div>
               </Link>
             </article>
           ))}
@@ -866,7 +876,7 @@ export default function Home() {
 
       {activeService === "classes" && <section className="articles section" id="articles">
         <div className="articles-head"><div><p className="eyebrow">{t("KIẾN THỨC & CẢM HỨNG", "KNOWLEDGE & INSPIRATION")}</p><h2>{t("Bài viết mới", "Recent Articles")}</h2></div><p>{t("Những hướng dẫn ngắn gọn, dễ áp dụng để bạn hiểu nhạc cụ và luyện tập đúng cách.", "Concise, actionable guides to help you understand traditional instruments and practice effectively.")}</p></div>
-        <div className="article-grid">{articles.map((article, i) => <article key={article.title}><div className="article-visual"><span>0{i + 1}</span><b>♪</b></div><div className="article-body"><small>{article.tag} · {article.date}</small><h3>{article.title}</h3><p>{article.excerpt}</p><a href={`/bai-viet/${article.slug}`}>{t("Đọc bài viết", "Read article")} <span>→</span></a></div></article>)}</div>
+        <div className="article-grid">{articles.map((article, i) => <article key={article.title} className="article-card-item"><div className="article-visual"><span>0{i + 1}</span><b>♪</b></div><div className="article-body"><small>{article.tag} · {article.date}</small><h3>{article.title}</h3><p>{article.excerpt}</p><a href={`/bai-viet/${article.slug}`} className="article-read-btn">{t("Đọc bài viết", "Read article")} <span>→</span></a></div></article>)}</div>
       </section>}
 
       {activeService === "classes" && <section className="free-guides-section" id="free-guides">
