@@ -261,9 +261,12 @@ function renderArticleFormatting(source: string): ReactNode[] {
     .replace(/<br\s*\/?\s*>/gi, "\n")
     .replace(/<\/p>\s*<p[^>]*>/gi, "\n\n")
     .replace(/<\/?p[^>]*>/gi, "");
-  const pattern = /(<strong>[^]*?<\/strong>|<b>[^]*?<\/b>|<em>[^]*?<\/em>|<i>[^]*?<\/i>|\*\*[^]*?\*\*|__[^]*?__|\*[^*\n]+?\*|_[^_\n]+?_)/gi;
+  const pattern = /(<strong>[^]*?<\/strong>|<b>[^]*?<\/b>|<em>[^]*?<\/em>|<i>[^]*?<\/i>|\*\*\*[^]*?\*\*\*|\*\*[^]*?\*\*|__[^]*?__|\*[^*\n]+?\*|_[^_\n]+?_)/gi;
 
   return normalized.split(pattern).filter(Boolean).map((part, index) => {
+    const strongEmphasis = part.match(/^\*\*\*([^]*)\*\*\*$/);
+    if (strongEmphasis) return <strong key={index}><em>{renderArticleFormatting(strongEmphasis[1])}</em></strong>;
+
     const strong = part.match(/^<(?:strong|b)>([^]*)<\/(?:strong|b)>$/i)
       || part.match(/^\*\*([^]*)\*\*$/)
       || part.match(/^__([^]*)__$/);
