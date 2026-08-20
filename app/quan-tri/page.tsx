@@ -2,6 +2,9 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import BrandLogo from "../brand-logo";
+import { parseFluteTab } from "../cms-content-pages";
+import { buildVietQrUrl } from "../vietqr-helper";
+import { parsePrice } from "../price-helper";
 
 type CmsEntry = {
   id: string;
@@ -20,30 +23,28 @@ type CmsEntry = {
 };
 
 const collections = [
-  { key: "services", label: "8 mục chính", note: "Các thẻ lớn trên trang chủ" },
+  { key: "services", label: "8 mục chính", note: "Các thẻ lớn trên trang chủ", priceLabel: "Giá / Phí (VNĐ hoặc 'Liên hệ')" },
   { key: "hero-slides", label: "5 ảnh đầu trang", note: "Năm ảnh demo bộ môn ở đầu trang chủ", tagLabel: "Nhãn nhỏ phía trên", priceLabel: "Chữ trên nút", excerptLabel: "Mô tả dưới tiêu đề", contentLabel: "Đường dẫn khi bấm nút" },
-  { key: "class-details", label: "Chi tiết lớp học", note: "Từng bộ môn, nội dung học và đối tượng phù hợp", tagLabel: "Biểu tượng", priceLabel: "Phù hợp với", contentLabel: "Nội dung học (mỗi dòng một ý)" },
+  { key: "class-details", label: "Chi tiết lớp học", note: "Từng bộ môn (/bo-mon/slug), nội dung học và đối tượng phù hợp", tagLabel: "Biểu tượng bộ môn (ví dụ: ♫, ◉, ♩...)", priceLabel: "Đối tượng phù hợp", excerptLabel: "Mô tả / Lời dẫn giới thiệu", contentLabel: "Bạn sẽ học được gì? (mỗi dòng một ý)" },
   { key: "product-groups", label: "Nhóm sáo & phụ kiện", note: "Các nhóm như Sáo ngang, Dizi, Sáo mèo…", tagLabel: "Nhãn phụ", contentLabel: "Nội dung bổ sung" },
-  { key: "product-items", label: "Từng sản phẩm", note: "Từng cây sáo hoặc phụ kiện nằm trong một nhóm", tagLabel: "Slug nhóm cha *", tagPlaceholder: "Ví dụ: sao-ngang-viet-nam", priceLabel: "Giá / Liên hệ", contentLabel: "Thông tin bổ sung" },
+  { key: "product-items", label: "Từng sản phẩm", note: "Từng cây sáo hoặc phụ kiện nằm trong một nhóm", tagLabel: "Slug nhóm cha *", tagPlaceholder: "Ví dụ: sao-ngang-viet-nam", priceLabel: "Giá bán (VNĐ hoặc 'Liên hệ')", contentLabel: "Thông tin bổ sung" },
   { key: "course-groups", label: "Nhóm khóa học", note: "Nhóm theo bộ môn ở trang khóa học quay sẵn", tagLabel: "Nhãn phụ", contentLabel: "Nội dung bổ sung" },
-  { key: "course-items", label: "Trang chi tiết khóa học", note: "Sửa nội dung từng trang riêng sau địa chỉ /khoa-hoc/", tagLabel: "Nhóm khóa học (slug nhóm cha) *", tagPlaceholder: "Ví dụ: sao-truc", priceLabel: "Giá tham khảo", excerptLabel: "Mô tả ngắn ở đầu trang", contentLabel: "Thông tin chi tiết / quyền lợi khóa học" },
-  { key: "single-videos", label: "Video từng bài", note: "Mỗi video có một trang riêng tại /video/slug", tagLabel: "Nhóm nhạc cụ *", tagPlaceholder: "Ví dụ: sao-truc", priceLabel: "Giá video", contentLabel: "Mô tả chi tiết / nội dung video" },
-  { key: "materials", label: "Giáo trình & sheet", note: "Mỗi tài liệu có trang riêng tại /giao-trinh/slug hoặc /sheet/slug", tagLabel: "Loại và nhóm *", tagPlaceholder: "Ví dụ: giao-trinh:sao-truc hoặc sheet:sao-truc", priceLabel: "Giá tài liệu", contentLabel: "Mô tả chi tiết / nội dung tài liệu" },
+  { key: "course-items", label: "Trang chi tiết khóa học", note: "Sửa nội dung từng trang riêng sau địa chỉ /khoa-hoc/", tagLabel: "Nhóm khóa học (slug nhóm cha) *", tagPlaceholder: "Ví dụ: sao-truc", priceLabel: "Giá khóa học (VNĐ hoặc 'Liên hệ')", excerptLabel: "Mô tả ngắn ở đầu trang", contentLabel: "Thông tin chi tiết / quyền lợi khóa học" },
+  { key: "curriculums", label: "Giáo trình", note: "Quản lý từng giáo trình theo bộ môn (/giao-trinh/slug)", tagLabel: "Bộ môn (Nhóm nhạc cụ) *", tagPlaceholder: "Ví dụ: sao-truc", priceLabel: "Giá giáo trình (VNĐ hoặc 'Liên hệ')", excerptLabel: "Mô tả ngắn / Lời giới thiệu", contentLabel: "Nội dung chi tiết giáo trình & lộ trình bài học" },
+  { key: "sheets", label: "Sheet nhạc", note: "Quản lý sheet chuyển soạn theo bộ môn (/sheet/slug)", tagLabel: "Bộ môn (Nhóm nhạc cụ) *", tagPlaceholder: "Ví dụ: sao-truc", priceLabel: "Giá sheet (VNĐ hoặc 'Liên hệ')", excerptLabel: "Mô tả ngắn / Tone, nhịp", contentLabel: "Mô tả chi tiết / Ghi chú biểu diễn" },
   { key: "social-links", label: "Liên kết mạng xã hội", note: "YouTube, Facebook, TikTok và Instagram trên trang chủ", tagLabel: "Biểu tượng", tagPlaceholder: "Ví dụ: ▶", priceLabel: "Tên nền tảng", contentLabel: "Đường dẫn đầy đủ đến trang mạng xã hội" },
-  { key: "studio-packages", label: "Gói thu âm & video", note: "Từng gói, giá và quyền lợi", tagLabel: "Biểu tượng", priceLabel: "Giá tham khảo", contentLabel: "Quyền lợi (mỗi dòng một ý)" },
-  { key: "booking-packages", label: "Gói booking nghệ sĩ", note: "Từng đội hình biểu diễn, giá và quyền lợi", tagLabel: "Biểu tượng", priceLabel: "Giá tham khảo", contentLabel: "Quyền lợi (mỗi dòng một ý)" },
-  { key: "recording-instruments", label: "Thu âm nhạc cụ thật", note: "Từng nhạc cụ nhận thu và giá", tagLabel: "Biểu tượng", priceLabel: "Giá từ", contentLabel: "Thông tin bổ sung" },
-  { key: "flute-tabs", label: "Cảm âm sáo trúc", note: "Đăng từng bài cảm âm hiển thị trên website", tagLabel: "Tone / nhịp / độ khó", excerptLabel: "Tên đầy đủ của bài", priceLabel: "Thông tin phụ", contentLabel: "Lời và nốt cảm âm (mỗi dòng: Lời | Nốt)" },
+  { key: "studio-packages", label: "Gói thu âm & video", note: "Từng gói, giá và quyền lợi", tagLabel: "Biểu tượng", priceLabel: "Giá gói thu (VNĐ hoặc 'Liên hệ')", contentLabel: "Quyền lợi (mỗi dòng một ý)" },
+  { key: "booking-packages", label: "Gói booking nghệ sĩ", note: "Từng đội hình biểu diễn, giá và quyền lợi", tagLabel: "Biểu tượng", priceLabel: "Giá booking (VNĐ hoặc 'Liên hệ')", contentLabel: "Quyền lợi (mỗi dòng một ý)" },
+  { key: "recording-instruments", label: "Thu âm nhạc cụ thật", note: "Từng nhạc cụ nhận thu và giá", tagLabel: "Biểu tượng", priceLabel: "Giá thu (VNĐ hoặc 'Liên hệ')", contentLabel: "Thông tin bổ sung" },
+  { key: "flute-tabs", label: "Cảm âm sáo trúc", note: "Đăng từng bài cảm âm (1 dòng Lời ở trên, 1 dòng Nốt ở dưới)", tagLabel: "Tone / nhịp / độ khó (Ví dụ: Tone C5 · Nhịp 4/4)", excerptLabel: "Tên đầy đủ của bài", priceLabel: "Thông tin phụ", contentLabel: "Lời và nốt cảm âm (1 dòng Lời, 1 dòng Nốt bên dưới)" },
   { key: "free-guides", label: "Hướng dẫn miễn phí", note: "Gắn video YouTube, TikTok hoặc bài chia sẻ", tagLabel: "Nền tảng", tagPlaceholder: "YouTube hoặc TikTok", priceLabel: "Chủ đề", contentLabel: "Đường dẫn YouTube / TikTok / bài viết" },
-  { key: "articles", label: "Tin tức (Blog)", note: "Bài viết và kiến thức" },
+  { key: "articles", label: "Bài viết", note: "Bài viết chia sẻ, kiến thức và blog" },
 ];
 
 const singletons = [
-  { key: "settings", label: "Cài đặt chung", note: "Thương hiệu, liên hệ và thanh toán VietQR" },
-  { key: "page-classes", label: "Trang Lớp học", note: "Nội dung giới thiệu trang" },
-  { key: "page-products", label: "Trang Cửa hàng", note: "Nội dung giới thiệu trang" },
-  { key: "page-articles", label: "Trang Tin tức", note: "Nội dung giới thiệu trang" },
-  { key: "page-courses", label: "Trang Khóa học", note: "Nội dung giới thiệu trang" },
+  { key: "settings", label: "Cài đặt chung & VietQR", note: "Thương hiệu, liên hệ và thanh toán VietQR" },
+  { key: "page-contact", label: "Trang Đăng ký & Tư vấn", note: "Nội dung lời dẫn, hotline, email và form đăng ký (/dang-ky-hoc)" },
+  { key: "change-password", label: "Đổi mật khẩu Quản trị", note: "Thay đổi mật khẩu đăng nhập trang quản trị" },
 ];
 
 const emptyEntry = (collection: string): CmsEntry => ({
@@ -73,7 +74,18 @@ function slugify(value: string) {
 }
 
 function entryHref(entry: CmsEntry) {
+  if (entry.collection === "page-contact") return "/dang-ky-hoc";
+  if (entry.collection === "page-classes") return "/lop-hoc";
+  if (entry.collection === "page-products") return "/sao-va-phu-kien";
+  if (entry.collection === "page-courses") return "/khoa-hoc-quay-san";
+  if (entry.collection === "page-articles") return "/bai-viet";
   if (entry.collection === "course-items") return `/khoa-hoc/${entry.slug}`;
+  if (entry.collection === "curriculums") return `/giao-trinh/${entry.slug}`;
+  if (entry.collection === "sheets") return `/sheet/${entry.slug}`;
+  if (entry.collection === "materials") return entry.tag.startsWith("sheet:") ? `/sheet/${entry.slug}` : `/giao-trinh/${entry.slug}`;
+  if (entry.collection === "single-videos") return `/video/${entry.slug}`;
+  if (entry.collection === "articles") return `/bai-viet/${entry.slug}`;
+  if (entry.collection === "flute-tabs") return `/cam-am/${entry.slug}`;
   return "";
 }
 
@@ -91,6 +103,297 @@ async function prepareImage(file: File) {
   return new File([blob], `${file.name.replace(/\.[^.]+$/, "")}.jpg`, { type: "image/jpeg" });
 }
 
+type ContactFields = {
+  blockTitle: string;
+  blockDesc: string;
+  address: string;
+  email: string;
+};
+
+function parseContactToFields(content: string): ContactFields {
+  const sections: Record<string, string> = {};
+  if (content && content.includes("[") && content.includes("]")) {
+    let current = "";
+    for (const line of content.split("\n")) {
+      const match = line.trim().match(/^\[([A-ZÀ-Ỹ0-9\s_]+)\]$/i);
+      if (match) {
+        current = match[1].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9]/g, "_");
+        if (sections[current] === undefined) sections[current] = "";
+      } else if (current) {
+        sections[current] += (sections[current] ? "\n" : "") + line;
+      }
+    }
+    return {
+      blockTitle: sections["tieu_de_khoi"] !== undefined ? sections["tieu_de_khoi"] : (sections["title"] !== undefined ? sections["title"] : "Để tiếng sáo cất lời."),
+      blockDesc: sections["mo_ta_khoi"] !== undefined ? sections["mo_ta_khoi"] : (sections["desc"] !== undefined ? sections["desc"] : "Học tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài."),
+      address: sections["dia_chi"] !== undefined ? sections["dia_chi"] : (sections["address"] !== undefined ? sections["address"] : "106/72 Hòa Bình, P. Tân Phú, TP.HCM"),
+      email: sections["email"] !== undefined ? sections["email"] : "van17071999@gmail.com",
+    };
+  }
+  const lines = content ? content.split(/\n/) : [];
+  return {
+    blockTitle: lines[0] ?? "Để tiếng sáo cất lời.",
+    blockDesc: lines[1] ?? "Học tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài.",
+    address: lines[2] ?? "106/72 Hòa Bình, P. Tân Phú, TP.HCM",
+    email: lines[3] ?? "van17071999@gmail.com",
+  };
+}
+
+function assembleContactFields(fields: ContactFields): string {
+  return [
+    `[TIÊU ĐỀ KHỐI]\n${fields.blockTitle}`,
+    `[MÔ TẢ KHỐI]\n${fields.blockDesc}`,
+    `[ĐỊA CHỈ]\n${fields.address}`,
+    `[EMAIL]\n${fields.email}`,
+  ].join("\n\n");
+}
+
+type ClassDetailFields = {
+  headline: string;
+  intro: string;
+  learn: string;
+  stage1: string;
+  stage2: string;
+  stage3: string;
+  stage4: string;
+  quote: string;
+  formats: string;
+  schedule: string;
+};
+
+function parseClassContentToFields(content: string, excerpt: string): ClassDetailFields {
+  const sections: Record<string, string> = {};
+  let current = "";
+
+  if (content && content.includes("[") && content.includes("]")) {
+    const lines = content.split("\n");
+    for (const line of lines) {
+      const match = line.trim().match(/^\[([A-ZÀ-Ỹ0-9\s_]+)\]$/i);
+      if (match) {
+        current = match[1].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9]/g, "_");
+        if (sections[current] === undefined) sections[current] = "";
+      } else if (current) {
+        sections[current] += (sections[current] ? "\n" : "") + line;
+      }
+    }
+  }
+
+  const rawPath = sections["lo_trinh_hoc"] ?? sections["lo_trinh"] ?? sections["path"] ?? "";
+  const pathLines = rawPath.split(/\n/);
+
+  return {
+    headline: sections["tieu_de_bai"] ?? sections["headline"] ?? "Một lộ trình rõ ràng để chơi nhạc bằng chính cảm xúc của bạn.",
+    intro: sections["gioi_thieu"] ?? sections["intro"] ?? excerpt ?? "",
+    learn: sections["ban_se_hoc_duoc_gi"] ?? sections["hoc_gi"] ?? sections["learn"] ?? (!content.includes("[") ? content : ""),
+    stage1: pathLines[0] ?? "Giai đoạn 1 · Làm quen & tạo tiếng",
+    stage2: pathLines[1] ?? "Giai đoạn 2 · Nốt nhạc & nhịp điệu",
+    stage3: pathLines[2] ?? "Giai đoạn 3 · Kỹ thuật biểu cảm",
+    stage4: pathLines[3] ?? "Giai đoạn 4 · Hoàn thiện tác phẩm",
+    quote: sections["trich_dan"] ?? sections["quote"] ?? "Học đúng kỹ thuật để tự do thể hiện cảm xúc — đó là nền tảng của mỗi chương trình giảng dạy.",
+    formats: sections["hinh_thuc_hoc"] ?? sections["hinh_thuc"] ?? "Trực tiếp tại trung tâm\nGia sư tại nhà\nOnline 1 kèm 1",
+    schedule: sections["thoi_gian"] ?? sections["schedule"] ?? "Linh động theo lịch học viên",
+  };
+}
+
+function assembleFieldsToContent(fields: ClassDetailFields): string {
+  const pathCombined = [fields.stage1, fields.stage2, fields.stage3, fields.stage4].join("\n");
+  return [
+    `[TIÊU ĐỀ BÀI]\n${fields.headline}`,
+    `[GIỚI THIỆU]\n${fields.intro}`,
+    `[BẠN SẼ HỌC ĐƯỢC GÌ]\n${fields.learn}`,
+    `[LỘ TRÌNH HỌC]\n${pathCombined}`,
+    `[TRÍCH DẪN]\n${fields.quote}`,
+    `[HÌNH THỨC HỌC]\n${fields.formats}`,
+    `[THỜI GIAN]\n${fields.schedule}`,
+  ].join("\n\n");
+}
+
+function PriceVoucherEditor({
+  value,
+  onChange,
+  label = "Giá bán & Voucher Khuyến mãi",
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  label?: string;
+}) {
+  const info = parsePrice(value);
+  const isContact = info.isContact;
+  const originalPriceStr = info.originalPrice;
+  const discountPercent = info.discountPercent;
+  const salePriceStr = info.salePrice;
+
+  function handleOriginalPriceChange(newOrig: string) {
+    if (newOrig.toLowerCase().includes("liên hệ")) {
+      onChange("Liên hệ");
+      return;
+    }
+    const origDigits = newOrig.replace(/\D/g, "");
+    if (!origDigits) {
+      onChange(newOrig);
+      return;
+    }
+    const num = Number.parseInt(origDigits, 10);
+    const formattedOrig = num.toLocaleString("vi-VN") + "đ";
+
+    if (discountPercent > 0) {
+      const saleNum = Math.round(num * (1 - discountPercent / 100));
+      onChange(`${formattedOrig} | ${saleNum.toLocaleString("vi-VN")}đ`);
+    } else {
+      onChange(formattedOrig);
+    }
+  }
+
+  function handleVoucherChange(pct: number) {
+    if (isContact) return;
+    const origDigits = originalPriceStr.replace(/\D/g, "");
+    if (!origDigits) return;
+    const origNum = Number.parseInt(origDigits, 10);
+    const formattedOrig = origNum.toLocaleString("vi-VN") + "đ";
+
+    if (pct <= 0) {
+      onChange(formattedOrig);
+    } else {
+      const saleNum = Math.round(origNum * (1 - pct / 100));
+      onChange(`${formattedOrig} | ${saleNum.toLocaleString("vi-VN")}đ`);
+    }
+  }
+
+  function handleSalePriceChange(newSale: string) {
+    const origDigits = originalPriceStr.replace(/\D/g, "");
+    const saleDigits = newSale.replace(/\D/g, "");
+    if (!origDigits || !saleDigits) {
+      onChange(newSale ? `${originalPriceStr} | ${newSale}` : originalPriceStr);
+      return;
+    }
+    const origNum = Number.parseInt(origDigits, 10);
+    const saleNum = Number.parseInt(saleDigits, 10);
+    const formattedOrig = origNum.toLocaleString("vi-VN") + "đ";
+    const formattedSale = saleNum.toLocaleString("vi-VN") + "đ";
+
+    if (saleNum >= origNum || saleNum <= 0) {
+      onChange(formattedOrig);
+    } else {
+      onChange(`${formattedOrig} | ${formattedSale}`);
+    }
+  }
+
+  return (
+    <div style={{ background: "#f8fafc", padding: "16px 18px", borderRadius: 12, border: "1px solid #e2e8f0", display: "grid", gap: 14 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#1e293b" }}>{label}</span>
+        {info.hasDiscount && (
+          <span style={{ padding: "2px 8px", background: "#fee2e2", color: "#b91c1c", borderRadius: 20, fontSize: 11, fontWeight: 800 }}>
+            Đang áp dụng Voucher -{discountPercent}%
+          </span>
+        )}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 600, color: "#475569" }}>
+          <span>1. Giá gốc (Niêm yết) *</span>
+          <input
+            value={originalPriceStr}
+            onChange={(e) => handleOriginalPriceChange(e.target.value)}
+            placeholder="Ví dụ: 399.000đ hoặc Liên hệ"
+            style={{ height: 42, padding: "0 12px", border: "1px solid #cbd5e1", borderRadius: 8, fontSize: 14, background: "#fff" }}
+          />
+        </label>
+
+        <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 600, color: "#475569" }}>
+          <span>2. Giá sau giảm (Khuyến mãi)</span>
+          <input
+            disabled={isContact}
+            value={info.hasDiscount ? salePriceStr : ""}
+            onChange={(e) => handleSalePriceChange(e.target.value)}
+            placeholder={isContact ? "Để trống khi là Liên hệ" : "Tự tính theo Voucher %"}
+            style={{ height: 42, padding: "0 12px", border: "1px solid #cbd5e1", borderRadius: 8, fontSize: 14, background: isContact ? "#f1f5f9" : "#fff" }}
+          />
+        </label>
+      </div>
+
+      <div>
+        <span style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#475569", marginBottom: 6 }}>
+          3. Cài đặt Voucher giảm giá (%):
+        </span>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+          {[
+            { label: "0% (Không giảm)", pct: 0 },
+            { label: "10%", pct: 10 },
+            { label: "15%", pct: 15 },
+            { label: "20%", pct: 20 },
+            { label: "25%", pct: 25 },
+            { label: "30%", pct: 30 },
+            { label: "40%", pct: 40 },
+            { label: "50%", pct: 50 },
+            { label: "70%", pct: 70 },
+          ].map((item) => {
+            const isSelected = discountPercent === item.pct;
+            return (
+              <button
+                key={item.label}
+                type="button"
+                style={{
+                  padding: "5px 11px",
+                  borderRadius: 6,
+                  border: isSelected ? "1.5px solid #b91c1c" : "1px solid #cbd5e1",
+                  background: isSelected ? "#fee2e2" : "#fff",
+                  color: isSelected ? "#991b1b" : "#334155",
+                  fontWeight: isSelected ? 800 : 500,
+                  fontSize: 12,
+                  cursor: "pointer",
+                }}
+                onClick={() => handleVoucherChange(item.pct)}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+        <small style={{ color: "#64748b", marginRight: 2 }}>Giá gốc nhanh:</small>
+        {["Liên hệ", "99.000đ", "199.000đ", "299.000đ", "399.000đ", "499.000đ", "900.000đ", "1.500.000đ", "Từ 2.000.000đ"].map((preset) => (
+          <button
+            key={preset}
+            type="button"
+            style={{
+              padding: "2px 8px",
+              background: originalPriceStr === preset ? "#fef2f2" : "#fff",
+              color: originalPriceStr === preset ? "#991b1b" : "#475569",
+              border: "1px solid #e2e8f0",
+              borderRadius: 4,
+              fontSize: 11,
+              cursor: "pointer",
+            }}
+            onClick={() => handleOriginalPriceChange(preset)}
+          >
+            {preset}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ marginTop: 2, padding: "10px 14px", background: "#fff", border: "1px dashed #cbd5e1", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+        <span style={{ fontSize: 12, color: "#64748b" }}>Xem trước hiển thị trên web:</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {isContact ? (
+            <strong style={{ color: "#7c1c38", fontSize: 15 }}>Liên hệ</strong>
+          ) : info.hasDiscount ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ textDecoration: "line-through", color: "#94a3b8", fontSize: 13 }}>{info.originalPrice}</span>
+              <span style={{ padding: "1px 5px", background: "#fee2e2", color: "#b91c1c", fontSize: 10, fontWeight: 800, borderRadius: 4 }}>-{info.discountPercent}%</span>
+              <strong style={{ color: "#b91c1c", fontSize: 16, fontWeight: 800 }}>{info.salePrice}</strong>
+            </div>
+          ) : (
+            <strong style={{ color: "#7c1c38", fontSize: 15 }}>{info.originalPrice}</strong>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ContentAdmin() {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [password, setPassword] = useState("");
@@ -101,13 +404,296 @@ export default function ContentAdmin() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [navOpen, setNavOpen] = useState(false);
+  const [productGroupFilter, setProductGroupFilter] = useState<string>("all");
+  const [courseGroupFilter, setCourseGroupFilter] = useState<string>("all");
+  const [videoDisciplineFilter, setVideoDisciplineFilter] = useState<string>("all");
+  const [curriculumDisciplineFilter, setCurriculumDisciplineFilter] = useState<string>("all");
+  const [sheetDisciplineFilter, setSheetDisciplineFilter] = useState<string>("all");
 
-  const activeMeta = [...collections, ...singletons].find((item) => item.key === section)!;
+  const [currentPass, setCurrentPass] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [confirmPass, setConfirmPass] = useState("");
+  const [passBusy, setPassBusy] = useState(false);
+  const [passNotice, setPassNotice] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+
+  async function handleChangePassword(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setPassNotice(null);
+    if (!newPass || newPass.length < 4) {
+      setPassNotice({ type: "error", msg: "Mật khẩu mới phải có tối thiểu 4 ký tự." });
+      return;
+    }
+    if (newPass !== confirmPass) {
+      setPassNotice({ type: "error", msg: "Mật khẩu mới và Nhập lại mật khẩu không khớp nhau." });
+      return;
+    }
+    setPassBusy(true);
+    try {
+      const response = await fetch("/api/cms/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword: currentPass, newPassword: newPass }),
+      });
+      const data = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string; message?: string };
+      if (!response.ok) {
+        setPassNotice({ type: "error", msg: data.error || "Không thể đổi mật khẩu. Vui lòng kiểm tra lại mật khẩu hiện tại." });
+        return;
+      }
+      setPassNotice({ type: "success", msg: "Đổi mật khẩu quản trị thành công! Hãy ghi nhớ mật khẩu mới này." });
+      setCurrentPass("");
+      setNewPass("");
+      setConfirmPass("");
+    } catch {
+      setPassNotice({ type: "error", msg: "Lỗi kết nối máy chủ. Vui lòng thử lại." });
+    } finally {
+      setPassBusy(false);
+    }
+  }
+
+  const activeMeta = [...collections, ...singletons].find((item) => item.key === section) || singletons[0];
   const isSingleton = singletons.some((item) => item.key === section);
-  const sectionEntries = useMemo(
-    () => entries.filter((entry) => entry.collection === section).sort((a, b) => a.sortOrder - b.sortOrder),
-    [entries, section],
+
+  const productGroups = useMemo(
+    () => entries.filter((e) => e.collection === "product-groups").sort((a, b) => a.sortOrder - b.sortOrder),
+    [entries],
   );
+
+  const courseGroups = useMemo(
+    () => entries.filter((e) => e.collection === "course-groups").sort((a, b) => a.sortOrder - b.sortOrder),
+    [entries],
+  );
+
+  const videoDisciplinesList = useMemo(() => [
+    { slug: "sao-truc", name: "Sáo trúc Việt Nam" },
+    { slug: "sao-dizi", name: "Sáo Dizi" },
+    { slug: "sao-meo", name: "Sáo mèo" },
+    { slug: "tieu-xiao", name: "Tiêu & Xiao" },
+    { slug: "recorder", name: "Sáo Recorder" },
+    { slug: "flute", name: "Flute" },
+    { slug: "sao-hmong", name: "Sáo H’Mông" },
+    ...courseGroups.filter((cg) => !["sao-truc", "sao-dizi", "sao-meo", "recorder", "flute"].includes(cg.slug)).map((cg) => ({ slug: cg.slug, name: cg.title })),
+  ], [courseGroups]);
+
+  const defaultDisciplinesList = useMemo(() => [
+    { slug: "sao-truc", name: "Sáo trúc Việt Nam" },
+    { slug: "sao-dizi", name: "Sáo Dizi" },
+    { slug: "sao-recorder", name: "Sáo Recorder" },
+    { slug: "tieu-xiao", name: "Tiêu & Xiao" },
+    { slug: "flute", name: "Flute" },
+    { slug: "sao-meo", name: "Sáo mèo" },
+    { slug: "sao-hmong", name: "Sáo H’Mông" },
+    ...courseGroups.filter((cg) => !["sao-truc", "sao-dizi", "sao-meo", "recorder", "flute"].includes(cg.slug)).map((cg) => ({ slug: cg.slug, name: cg.title })),
+  ], [courseGroups]);
+
+  const sectionEntries = useMemo(() => {
+    let list = entries.filter((entry) => entry.collection === section);
+    if (section === "product-items" && productGroupFilter !== "all") {
+      list = list.filter((entry) => entry.tag === productGroupFilter);
+    }
+    if (section === "course-items" && courseGroupFilter !== "all") {
+      list = list.filter((entry) => entry.tag === courseGroupFilter);
+    }
+    if (section === "single-videos" && videoDisciplineFilter !== "all") {
+      list = list.filter((entry) => entry.tag === videoDisciplineFilter || slugify(entry.tag) === videoDisciplineFilter);
+    }
+    if (section === "curriculums") {
+      list = entries.filter((entry) => entry.collection === "curriculums" || (entry.collection === "materials" && (entry.tag.startsWith("giao-trinh:") || !entry.tag.startsWith("sheet:"))));
+      if (curriculumDisciplineFilter !== "all") {
+        list = list.filter((entry) => {
+          const normTag = entry.tag.replace(/^giao-trinh:/, "");
+          return normTag === curriculumDisciplineFilter || slugify(normTag) === curriculumDisciplineFilter;
+        });
+      }
+    }
+    if (section === "sheets") {
+      list = entries.filter((entry) => entry.collection === "sheets" || (entry.collection === "materials" && entry.tag.startsWith("sheet:")));
+      if (sheetDisciplineFilter !== "all") {
+        list = list.filter((entry) => {
+          const normTag = entry.tag.replace(/^sheet:/, "");
+          return normTag === sheetDisciplineFilter || slugify(normTag) === sheetDisciplineFilter;
+        });
+      }
+    }
+    return list.sort((a, b) => a.sortOrder - b.sortOrder);
+  }, [entries, section, productGroupFilter, courseGroupFilter, videoDisciplineFilter, curriculumDisciplineFilter, sheetDisciplineFilter]);
+
+  const classFields = useMemo(() => {
+    if (!draft || draft.collection !== "class-details") return null;
+    return parseClassContentToFields(draft.content, draft.excerpt);
+  }, [draft?.content, draft?.excerpt, draft?.collection]);
+
+  function updateClassField(field: keyof ClassDetailFields, value: string) {
+    if (!draft || !classFields) return;
+    const nextFields = { ...classFields, [field]: value };
+    const assembled = assembleFieldsToContent(nextFields);
+    setDraft({ ...draft, content: assembled });
+  }
+
+  const contactFields = useMemo(() => {
+    if (!draft || draft.collection !== "page-contact") return null;
+    return parseContactToFields(draft.content);
+  }, [draft?.content, draft?.collection]);
+
+  function updateContactField(field: keyof ContactFields, value: string) {
+    if (!draft || !contactFields) return;
+    const nextFields = { ...contactFields, [field]: value };
+    const assembled = assembleContactFields(nextFields);
+    setDraft({ ...draft, content: assembled });
+  }
+
+  function createProductForGroup(groupSlug: string) {
+    setSection("product-items");
+    setProductGroupFilter(groupSlug);
+    const existing = entries.filter((e) => e.collection === "product-items");
+    const maxOrder = existing.length ? Math.max(...existing.map((e) => e.sortOrder)) : 0;
+    setDraft({
+      id: `entry-${Date.now()}`,
+      collection: "product-items",
+      title: "",
+      slug: "",
+      publishedAt: new Date().toISOString().slice(0, 10),
+      excerpt: "",
+      imageUrl: "",
+      tag: groupSlug,
+      price: "Liên hệ",
+      content: "",
+      visible: true,
+      sortOrder: maxOrder + 1,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  function createCourseForGroup(groupSlug: string) {
+    setSection("course-items");
+    setCourseGroupFilter(groupSlug);
+    const existing = entries.filter((e) => e.collection === "course-items");
+    const maxOrder = existing.length ? Math.max(...existing.map((e) => e.sortOrder)) : 0;
+    setDraft({
+      id: `entry-${Date.now()}`,
+      collection: "course-items",
+      title: "",
+      slug: "",
+      publishedAt: new Date().toISOString().slice(0, 10),
+      excerpt: "",
+      imageUrl: "",
+      tag: groupSlug,
+      price: "399.000đ",
+      content: "Video bài giảng HD chi tiết từng kỹ thuật\nSheet nhạc và tài liệu PDF đính kèm\nHọc mọi lúc, xem lại trọn đời trên mọi thiết bị\nHỗ trợ giải đáp thắc mắc từ giảng viên",
+      visible: true,
+      sortOrder: maxOrder + 1,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  function createVideoForDiscipline(discSlug: string) {
+    setSection("single-videos");
+    setVideoDisciplineFilter(discSlug);
+    const existing = entries.filter((e) => e.collection === "single-videos");
+    const maxOrder = existing.length ? Math.max(...existing.map((e) => e.sortOrder)) : 0;
+    setDraft({
+      id: `entry-${Date.now()}`,
+      collection: "single-videos",
+      title: "",
+      slug: "",
+      publishedAt: new Date().toISOString().slice(0, 10),
+      excerpt: "Video hướng dẫn từng câu, sheet nhạc, ngón bấm và kỹ thuật.",
+      imageUrl: "",
+      tag: discSlug,
+      price: "99.000đ",
+      content: "Hướng dẫn chia câu và lấy hơi\nSheet nhạc và sơ đồ thế bấm\nPhân tích kỹ thuật rung hơi, luyến láy\nVideo HD xem lại trọn đời",
+      visible: true,
+      sortOrder: maxOrder + 1,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  function createCurriculumForDiscipline(discSlug: string) {
+    setSection("curriculums");
+    setCurriculumDisciplineFilter(discSlug);
+    const existing = entries.filter((e) => e.collection === "curriculums" || (e.collection === "materials" && (e.tag.startsWith("giao-trinh:") || !e.tag.startsWith("sheet:"))));
+    const maxOrder = existing.length ? Math.max(...existing.map((e) => e.sortOrder)) : 0;
+    setDraft({
+      id: `entry-${Date.now()}`,
+      collection: "curriculums",
+      title: "",
+      slug: "",
+      publishedAt: new Date().toISOString().slice(0, 10),
+      excerpt: "Lộ trình đào tạo chuẩn, bài bản từ căn bản đến nâng cao.",
+      imageUrl: "",
+      tag: discSlug,
+      price: "249.000đ",
+      content: "Chương 1 · Tư thế, khẩu hình và cột hơi nền tảng\nChương 2 · Hệ thống ngón bấm và đọc bản nhạc chuẩn\nChương 3 · Kỹ thuật rung hơi, luyến láy và phát triển sắc thái\nChương 4 · Phân tích và hoàn thiện các tác phẩm biểu diễn\nĐính kèm file PDF chất lượng cao và video thị phạm",
+      visible: true,
+      sortOrder: maxOrder + 1,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  function createSheetForDiscipline(discSlug: string) {
+    setSection("sheets");
+    setSheetDisciplineFilter(discSlug);
+    const existing = entries.filter((e) => e.collection === "sheets" || (e.collection === "materials" && e.tag.startsWith("sheet:")));
+    const maxOrder = existing.length ? Math.max(...existing.map((e) => e.sortOrder)) : 0;
+    setDraft({
+      id: `entry-${Date.now()}`,
+      collection: "sheets",
+      title: "",
+      slug: "",
+      publishedAt: new Date().toISOString().slice(0, 10),
+      excerpt: "Tone C5 · Ký âm nốt nhạc chuẩn và sơ đồ ngón bấm.",
+      imageUrl: "",
+      tag: discSlug,
+      price: "79.000đ",
+      content: "Bản ký âm 5 dòng kẻ chuẩn\nKèm sơ đồ ngón bấm và ký hiệu lấy hơi\nĐánh dấu vị trí xử lý luyến láy, rung hơi\nFile PDF độ phân giải cao sẵn sàng in ấn",
+      visible: true,
+      sortOrder: maxOrder + 1,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  async function moveEntry(entry: CmsEntry, direction: "up" | "down") {
+    const currentList = [...sectionEntries];
+    const index = currentList.findIndex((e) => e.id === entry.id);
+    if (index < 0) return;
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= currentList.length) return;
+
+    const temp = currentList[index];
+    currentList[index] = currentList[targetIndex];
+    currentList[targetIndex] = temp;
+
+    const updatedList = currentList.map((item, idx) => ({
+      ...item,
+      sortOrder: idx + 1,
+      updatedAt: new Date().toISOString(),
+    }));
+
+    setEntries((prev) =>
+      prev.map((e) => {
+        const match = updatedList.find((u) => u.id === e.id);
+        return match || e;
+      })
+    );
+
+    setBusy(true);
+    try {
+      await Promise.all(
+        updatedList.map((item) =>
+          fetch("/api/cms/admin", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(item),
+          })
+        )
+      );
+      setNotice(`Đã chuyển "${entry.title}" ${direction === "up" ? "lên trên" : "xuống dưới"}.`);
+    } catch {
+      setNotice("Lỗi khi lưu vị trí mới.");
+      await load();
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function load() {
     let response = await fetch("/api/cms/admin", { credentials: "same-origin" });
@@ -128,6 +714,19 @@ export default function ContentAdmin() {
     if (response.ok) data = (await response.json()) as { entries: CmsEntry[] };
     setEntries(data.entries);
     setAuthenticated(true);
+
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const reqCollection = urlParams.get("collection");
+      const reqSlug = urlParams.get("slug");
+      if (reqCollection) {
+        setSection(reqCollection);
+        if (reqSlug) {
+          const match = data.entries.find((item) => item.collection === reqCollection && item.slug === reqSlug);
+          if (match) setDraft(match);
+        }
+      }
+    }
   }
 
   useEffect(() => {
@@ -135,7 +734,6 @@ export default function ContentAdmin() {
   }, []);
 
   useEffect(() => {
-    setDraft(null);
     setNotice("");
   }, [section]);
 
@@ -169,6 +767,23 @@ export default function ContentAdmin() {
         ? sectionEntries.find((entry) => entry.slug === "payment") || sectionEntries[0]
         : sectionEntries[0];
       setDraft({ ...preferredEntry });
+      return;
+    }
+    if (section === "page-contact") {
+      setDraft({
+        id: "page-contact",
+        collection: "page-contact",
+        title: "Đăng ký lớp học & Tư vấn",
+        slug: "dang-ky-hoc",
+        publishedAt: new Date().toISOString().slice(0, 10),
+        excerpt: "Để lại thông tin, Sáo Trúc Âu Cơ sẽ liên hệ tư vấn lớp học, chọn sáo hoặc dịch vụ phù hợp.",
+        imageUrl: "/hero-flute.webp",
+        tag: "BẮT ĐẦU HÀNH TRÌNH",
+        price: "0374 261 368",
+        content: "[TIÊU ĐỀ KHỐI]\nĐể tiếng sáo cất lời.\n\n[MÔ TẢ KHỐI]\nHọc tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài.\n\n[ĐỊA CHỈ]\n106/72 Hòa Bình, P. Tân Phú, TP.HCM\n\n[EMAIL]\nvan17071999@gmail.com",
+        visible: true,
+        sortOrder: 1,
+      });
       return;
     }
     setDraft(emptyEntry(section));
@@ -258,7 +873,7 @@ export default function ContentAdmin() {
     return <main className="admin-login-shell">
       <section className="admin-login-card">
         <BrandLogo className="admin-login-mark" size={52} radius={15} />
-        <p>HỒNG VIỆT SÁO TRÚC</p>
+        <p>SÁO TRÚC ÂU CƠ</p>
         <h1>Quản trị nội dung</h1>
         <span>Đăng nhập để chỉnh sửa nội dung đang hiển thị trên website.</span>
         <form onSubmit={login}>
@@ -282,11 +897,23 @@ export default function ContentAdmin() {
 
   return <main className="admin-shell">
     <aside className={navOpen ? "admin-sidebar open" : "admin-sidebar"}>
-      <div className="admin-brand"><BrandLogo size={35} radius={9} /><span><strong>Hồng Việt</strong><small>Quản trị nội dung</small></span></div>
+      <div className="admin-brand"><BrandLogo size={35} radius={9} /><span><strong>Sáo Trúc Âu Cơ</strong><small>Quản trị nội dung</small></span></div>
       <button className="admin-nav-close" onClick={() => setNavOpen(false)}>×</button>
       <a className="admin-dashboard-link" href="/" target="_blank" rel="noreferrer">↗ Xem website</a>
       <p className="admin-nav-title">BỘ SƯU TẬP</p>
-      <nav>{collections.map((item) => <button className={section === item.key ? "active" : ""} key={item.key} onClick={() => { setSection(item.key); setNavOpen(false); }}><span>{item.label}</span><small>{entries.filter((entry) => entry.collection === item.key).length}</small></button>)}</nav>
+      <nav>{collections.map((item) => {
+        const count = item.key === "curriculums"
+          ? entries.filter((e) => e.collection === "curriculums" || (e.collection === "materials" && (e.tag.startsWith("giao-trinh:") || !e.tag.startsWith("sheet:")))).length
+          : item.key === "sheets"
+          ? entries.filter((e) => e.collection === "sheets" || (e.collection === "materials" && e.tag.startsWith("sheet:"))).length
+          : entries.filter((e) => e.collection === item.key).length;
+        return (
+          <button className={section === item.key ? "active" : ""} key={item.key} onClick={() => { setSection(item.key); setNavOpen(false); }}>
+            <span>{item.label}</span>
+            <small>{count}</small>
+          </button>
+        );
+      })}</nav>
       <p className="admin-nav-title">TRANG ĐƠN</p>
       <nav>{singletons.map((item) => <button className={section === item.key ? "active" : ""} key={item.key} onClick={() => { setSection(item.key); setNavOpen(false); }}><span>{item.label}</span></button>)}</nav>
       <button className="admin-logout" onClick={logout}>Đăng xuất</button>
@@ -296,18 +923,499 @@ export default function ContentAdmin() {
       <header className="admin-topbar">
         <button className="admin-menu" onClick={() => setNavOpen(true)}>☰</button>
         <div><small>{isSingleton ? "TRANG ĐƠN" : "BỘ SƯU TẬP"}</small><h1>{activeMeta.label}</h1><p>{activeMeta.note}</p></div>
-        {!draft && <button className="admin-primary" onClick={startCreate}>{isSingleton && sectionEntries.length ? "Chỉnh sửa" : "+ Tạo mới"}</button>}
+        {!draft && section !== "change-password" && <button className="admin-primary" onClick={startCreate}>{isSingleton && sectionEntries.length ? "Chỉnh sửa" : "+ Tạo mới"}</button>}
       </header>
 
       {notice && <div className="admin-notice" role="status">{notice}</div>}
 
-      {!draft ? <div className="admin-list-panel">
-        {sectionEntries.length ? <div className="admin-entry-list">{sectionEntries.map((entry) => <article key={entry.id}>
-          <div className="admin-entry-image">{entry.imageUrl ? <img src={entry.imageUrl} alt="" /> : <span>♪</span>}</div>
-          <div><small>{entry.tag || activeMeta.label} · {entry.publishedAt || "Chưa đặt ngày"}</small><h2>{entry.title}</h2><p>{entry.excerpt || "Chưa có mô tả ngắn"}</p></div>
-          <span className={entry.visible ? "status visible" : "status"}>{entry.visible ? "Đang hiển thị" : "Đang ẩn"}</span>
-          <div className="admin-row-actions">{entryHref(entry) && <a href={entryHref(entry)} target="_blank" rel="noreferrer">Xem trang</a>}<button onClick={() => setDraft({ ...entry })}>Sửa</button><button className="danger" onClick={() => void remove(entry)}>Xóa</button></div>
-        </article>)}</div> : <div className="admin-empty"><b>✦</b><h2>Chưa có nội dung</h2><p>Tạo nội dung đầu tiên cho mục {activeMeta.label}.</p><button className="admin-primary" onClick={startCreate}>+ Tạo nội dung</button></div>}
+      {section === "change-password" ? (
+        <div style={{ padding: "30px 34px", maxWidth: 620 }}>
+          <div style={{ background: "#fff", padding: "28px 30px", border: "1px solid var(--admin-line)", borderRadius: 14, boxShadow: "0 4px 16px rgba(0,0,0,0.03)" }}>
+            <h2 style={{ margin: "0 0 6px", color: "#1e293b", fontSize: 20 }}>Đổi mật khẩu trang quản trị</h2>
+            <p style={{ margin: "0 0 22px", color: "#64748b", fontSize: 13, lineHeight: 1.5 }}>
+              Mật khẩu mới sẽ áp dụng ngay lập tức cho các lần đăng nhập tiếp theo vào trang <b>/quan-tri</b>.
+            </p>
+
+            {passNotice && (
+              <div style={{ marginBottom: 20, padding: "12px 16px", borderRadius: 8, background: passNotice.type === "success" ? "#ecfdf5" : "#fef2f2", color: passNotice.type === "success" ? "#065f46" : "#991b1b", border: `1px solid ${passNotice.type === "success" ? "#a7f3d0" : "#fecaca"}`, fontSize: 13, fontWeight: 600 }}>
+                {passNotice.msg}
+              </div>
+            )}
+
+            <form onSubmit={handleChangePassword} style={{ display: "grid", gap: 16 }}>
+              <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700, color: "#334155" }}>
+                <span>Mật khẩu hiện tại *</span>
+                <input
+                  required
+                  type="password"
+                  value={currentPass}
+                  onChange={(e) => setCurrentPass(e.target.value)}
+                  placeholder="Nhập mật khẩu quản trị hiện tại"
+                  style={{ height: 44, padding: "0 14px", border: "1px solid #cbd5e1", borderRadius: 8, fontSize: 15 }}
+                />
+              </label>
+
+              <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700, color: "#334155" }}>
+                <span>Mật khẩu mới *</span>
+                <input
+                  required
+                  type="password"
+                  value={newPass}
+                  onChange={(e) => setNewPass(e.target.value)}
+                  placeholder="Nhập mật khẩu mới (tối thiểu 4 ký tự)"
+                  style={{ height: 44, padding: "0 14px", border: "1px solid #cbd5e1", borderRadius: 8, fontSize: 15 }}
+                />
+              </label>
+
+              <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 700, color: "#334155" }}>
+                <span>Xác nhận mật khẩu mới *</span>
+                <input
+                  required
+                  type="password"
+                  value={confirmPass}
+                  onChange={(e) => setConfirmPass(e.target.value)}
+                  placeholder="Nhập lại mật khẩu mới"
+                  style={{ height: 44, padding: "0 14px", border: "1px solid #cbd5e1", borderRadius: 8, fontSize: 15 }}
+                />
+              </label>
+
+              <button
+                type="submit"
+                disabled={passBusy}
+                className="admin-primary"
+                style={{ height: 46, fontSize: 14, marginTop: 8, borderRadius: 8 }}
+              >
+                {passBusy ? "Đang xử lý…" : "Cập nhật mật khẩu quản trị"}
+              </button>
+            </form>
+          </div>
+        </div>
+      ) : !draft ? <div className="admin-list-panel">
+        {section === "product-items" && productGroups.length > 0 && (
+          <div style={{ marginBottom: 18, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#475569" }}>Lọc theo nhóm:</span>
+            <button
+              type="button"
+              style={{
+                padding: "6px 12px",
+                borderRadius: 20,
+                border: "1px solid",
+                borderColor: productGroupFilter === "all" ? "#7c1c38" : "#cbd5e1",
+                background: productGroupFilter === "all" ? "#7c1c38" : "#fff",
+                color: productGroupFilter === "all" ? "#fff" : "#334155",
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+              onClick={() => setProductGroupFilter("all")}
+            >
+              Tất cả ({entries.filter((e) => e.collection === "product-items").length})
+            </button>
+            {productGroups.map((g) => {
+              const count = entries.filter((e) => e.collection === "product-items" && e.tag === g.slug).length;
+              return (
+                <button
+                  key={g.slug}
+                  type="button"
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: 20,
+                    border: "1px solid",
+                    borderColor: productGroupFilter === g.slug ? "#7c1c38" : "#cbd5e1",
+                    background: productGroupFilter === g.slug ? "#7c1c38" : "#fff",
+                    color: productGroupFilter === g.slug ? "#fff" : "#334155",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setProductGroupFilter(g.slug)}
+                >
+                  {g.title} ({count})
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {section === "course-items" && courseGroups.length > 0 && (
+          <div style={{ marginBottom: 18, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#475569" }}>Lọc theo nhóm khóa học:</span>
+            <button
+              type="button"
+              style={{
+                padding: "6px 12px",
+                borderRadius: 20,
+                border: "1px solid",
+                borderColor: courseGroupFilter === "all" ? "#7c1c38" : "#cbd5e1",
+                background: courseGroupFilter === "all" ? "#7c1c38" : "#fff",
+                color: courseGroupFilter === "all" ? "#fff" : "#334155",
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+              onClick={() => setCourseGroupFilter("all")}
+            >
+              Tất cả ({entries.filter((e) => e.collection === "course-items").length})
+            </button>
+            {courseGroups.map((g) => {
+              const count = entries.filter((e) => e.collection === "course-items" && e.tag === g.slug).length;
+              return (
+                <button
+                  key={g.slug}
+                  type="button"
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: 20,
+                    border: "1px solid",
+                    borderColor: courseGroupFilter === g.slug ? "#7c1c38" : "#cbd5e1",
+                    background: courseGroupFilter === g.slug ? "#7c1c38" : "#fff",
+                    color: courseGroupFilter === g.slug ? "#fff" : "#334155",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setCourseGroupFilter(g.slug)}
+                >
+                  {g.title} ({count})
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {section === "single-videos" && (
+          <div style={{ marginBottom: 18, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#475569" }}>Lọc theo bộ môn video:</span>
+            <button
+              type="button"
+              style={{
+                padding: "6px 12px",
+                borderRadius: 20,
+                border: "1px solid",
+                borderColor: videoDisciplineFilter === "all" ? "#7c1c38" : "#cbd5e1",
+                background: videoDisciplineFilter === "all" ? "#7c1c38" : "#fff",
+                color: videoDisciplineFilter === "all" ? "#fff" : "#334155",
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+              onClick={() => setVideoDisciplineFilter("all")}
+            >
+              Tất cả ({entries.filter((e) => e.collection === "single-videos").length})
+            </button>
+            {videoDisciplinesList.map((d) => {
+              const count = entries.filter((e) => e.collection === "single-videos" && (e.tag === d.slug || slugify(e.tag) === d.slug)).length;
+              return (
+                <button
+                  key={d.slug}
+                  type="button"
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: 20,
+                    border: "1px solid",
+                    borderColor: videoDisciplineFilter === d.slug ? "#7c1c38" : "#cbd5e1",
+                    background: videoDisciplineFilter === d.slug ? "#7c1c38" : "#fff",
+                    color: videoDisciplineFilter === d.slug ? "#fff" : "#334155",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setVideoDisciplineFilter(d.slug)}
+                >
+                  {d.name} ({count})
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {section === "curriculums" && (
+          <div style={{ marginBottom: 18, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#475569" }}>Lọc theo bộ môn giáo trình:</span>
+            <button
+              type="button"
+              style={{
+                padding: "6px 12px",
+                borderRadius: 20,
+                border: "1px solid",
+                borderColor: curriculumDisciplineFilter === "all" ? "#7c1c38" : "#cbd5e1",
+                background: curriculumDisciplineFilter === "all" ? "#7c1c38" : "#fff",
+                color: curriculumDisciplineFilter === "all" ? "#fff" : "#334155",
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+              onClick={() => setCurriculumDisciplineFilter("all")}
+            >
+              Tất cả ({entries.filter((e) => e.collection === "curriculums" || (e.collection === "materials" && (e.tag.startsWith("giao-trinh:") || !e.tag.startsWith("sheet:")))).length})
+            </button>
+            {defaultDisciplinesList.map((d) => {
+              const count = entries.filter((e) => (e.collection === "curriculums" || (e.collection === "materials" && (e.tag.startsWith("giao-trinh:") || !e.tag.startsWith("sheet:")))) && (e.tag.replace(/^giao-trinh:/, "") === d.slug || slugify(e.tag.replace(/^giao-trinh:/, "")) === d.slug)).length;
+              return (
+                <button
+                  key={d.slug}
+                  type="button"
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: 20,
+                    border: "1px solid",
+                    borderColor: curriculumDisciplineFilter === d.slug ? "#7c1c38" : "#cbd5e1",
+                    background: curriculumDisciplineFilter === d.slug ? "#7c1c38" : "#fff",
+                    color: curriculumDisciplineFilter === d.slug ? "#fff" : "#334155",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setCurriculumDisciplineFilter(d.slug)}
+                >
+                  {d.name} ({count})
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {section === "sheets" && (
+          <div style={{ marginBottom: 18, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#475569" }}>Lọc theo bộ môn sheet:</span>
+            <button
+              type="button"
+              style={{
+                padding: "6px 12px",
+                borderRadius: 20,
+                border: "1px solid",
+                borderColor: sheetDisciplineFilter === "all" ? "#7c1c38" : "#cbd5e1",
+                background: sheetDisciplineFilter === "all" ? "#7c1c38" : "#fff",
+                color: sheetDisciplineFilter === "all" ? "#fff" : "#334155",
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+              onClick={() => setSheetDisciplineFilter("all")}
+            >
+              Tất cả ({entries.filter((e) => e.collection === "sheets" || (e.collection === "materials" && e.tag.startsWith("sheet:"))).length})
+            </button>
+            {defaultDisciplinesList.map((d) => {
+              const count = entries.filter((e) => (e.collection === "sheets" || (e.collection === "materials" && e.tag.startsWith("sheet:"))) && (e.tag.replace(/^sheet:/, "") === d.slug || slugify(e.tag.replace(/^sheet:/, "")) === d.slug)).length;
+              return (
+                <button
+                  key={d.slug}
+                  type="button"
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: 20,
+                    border: "1px solid",
+                    borderColor: sheetDisciplineFilter === d.slug ? "#7c1c38" : "#cbd5e1",
+                    background: sheetDisciplineFilter === d.slug ? "#7c1c38" : "#fff",
+                    color: sheetDisciplineFilter === d.slug ? "#fff" : "#334155",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setSheetDisciplineFilter(d.slug)}
+                >
+                  {d.name} ({count})
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {sectionEntries.length ? <div className="admin-entry-list">{sectionEntries.map((entry, index) => {
+          const parentProductGroup = section === "product-items" ? productGroups.find((g) => g.slug === entry.tag) : null;
+          const parentCourseGroup = section === "course-items" ? courseGroups.find((g) => g.slug === entry.tag) : null;
+          const videoDiscipline = section === "single-videos" ? videoDisciplinesList.find((d) => d.slug === entry.tag || slugify(d.slug) === slugify(entry.tag)) : null;
+          const curriculumDiscipline = section === "curriculums" ? defaultDisciplinesList.find((d) => d.slug === entry.tag.replace(/^giao-trinh:/, "") || slugify(d.slug) === slugify(entry.tag.replace(/^giao-trinh:/, ""))) : null;
+          const sheetDiscipline = section === "sheets" ? defaultDisciplinesList.find((d) => d.slug === entry.tag.replace(/^sheet:/, "") || slugify(d.slug) === slugify(entry.tag.replace(/^sheet:/, ""))) : null;
+
+          const childProducts = section === "product-groups" ? entries.filter((p) => p.collection === "product-items" && p.tag === entry.slug) : [];
+          const childCourses = section === "course-groups" ? entries.filter((c) => c.collection === "course-items" && c.tag === entry.slug) : [];
+
+          return (
+            <article key={entry.id} style={{ display: "grid", gap: 14 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "42px 75px minmax(200px, 1fr) auto auto", alignItems: "center", gap: 14 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 3, alignItems: "center" }}>
+                  <button
+                    type="button"
+                    title="Đẩy lên trên"
+                    disabled={busy || index === 0}
+                    style={{
+                      width: 28,
+                      height: 26,
+                      padding: 0,
+                      display: "grid",
+                      placeItems: "center",
+                      background: index === 0 ? "#f8fafc" : "#fff",
+                      color: index === 0 ? "#cbd5e1" : "#7c1c38",
+                      border: "1px solid #cbd5e1",
+                      borderRadius: 4,
+                      fontSize: 12,
+                      fontWeight: 800,
+                      cursor: index === 0 ? "not-allowed" : "pointer",
+                    }}
+                    onClick={() => void moveEntry(entry, "up")}
+                  >
+                    ▲
+                  </button>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: "#475569" }} title={`Vị trí: ${index + 1}`}>
+                    #{index + 1}
+                  </span>
+                  <button
+                    type="button"
+                    title="Đẩy xuống dưới"
+                    disabled={busy || index === sectionEntries.length - 1}
+                    style={{
+                      width: 28,
+                      height: 26,
+                      padding: 0,
+                      display: "grid",
+                      placeItems: "center",
+                      background: index === sectionEntries.length - 1 ? "#f8fafc" : "#fff",
+                      color: index === sectionEntries.length - 1 ? "#cbd5e1" : "#7c1c38",
+                      border: "1px solid #cbd5e1",
+                      borderRadius: 4,
+                      fontSize: 12,
+                      fontWeight: 800,
+                      cursor: index === sectionEntries.length - 1 ? "not-allowed" : "pointer",
+                    }}
+                    onClick={() => void moveEntry(entry, "down")}
+                  >
+                    ▼
+                  </button>
+                </div>
+                <div className="admin-entry-image" style={{ width: 75, height: 95, borderRadius: 8, overflow: "hidden" }}>
+                  {entry.imageUrl ? <img src={entry.imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span>♪</span>}
+                </div>
+                <div>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 4 }}>
+                    <small style={{ color: "#64748b" }}>{entry.publishedAt || "Chưa đặt ngày"}</small>
+                    {parentProductGroup && (
+                      <span style={{ padding: "1px 8px", background: "#f1f5f9", color: "#475569", borderRadius: 12, fontSize: 11, fontWeight: 700 }}>
+                        Nhóm: {parentProductGroup.title}
+                      </span>
+                    )}
+                    {parentCourseGroup && (
+                      <span style={{ padding: "1px 8px", background: "#f1f5f9", color: "#475569", borderRadius: 12, fontSize: 11, fontWeight: 700 }}>
+                        Bộ môn: {parentCourseGroup.title}
+                      </span>
+                    )}
+                    {videoDiscipline && (
+                      <span style={{ padding: "1px 8px", background: "#fef3c7", color: "#92400e", borderRadius: 12, fontSize: 11, fontWeight: 700 }}>
+                        Bộ môn: {videoDiscipline.name}
+                      </span>
+                    )}
+                    {curriculumDiscipline && (
+                      <span style={{ padding: "1px 8px", background: "#fef3c7", color: "#92400e", borderRadius: 12, fontSize: 11, fontWeight: 700 }}>
+                        Bộ môn: {curriculumDiscipline.name}
+                      </span>
+                    )}
+                    {sheetDiscipline && (
+                      <span style={{ padding: "1px 8px", background: "#ecfdf5", color: "#065f46", borderRadius: 12, fontSize: 11, fontWeight: 700 }}>
+                        Bộ môn: {sheetDiscipline.name}
+                      </span>
+                    )}
+                    {section !== "product-items" && section !== "course-items" && section !== "single-videos" && section !== "curriculums" && section !== "sheets" && entry.tag && (
+                      <span style={{ padding: "1px 8px", background: "#f1f5f9", color: "#475569", borderRadius: 12, fontSize: 11 }}>
+                        {entry.tag}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <h2 style={{ margin: 0, fontSize: 18 }}>{entry.title}</h2>
+                    {entry.price && !["class-details", "hero-slides", "social-links", "flute-tabs", "free-guides"].includes(section) && (
+                      <span style={{ padding: "2px 8px", background: entry.price.toLowerCase().includes("liên hệ") ? "#fef3c7" : "#ecfdf5", color: entry.price.toLowerCase().includes("liên hệ") ? "#92400e" : "#065f46", border: "1px solid rgba(0,0,0,0.06)", borderRadius: 6, fontSize: 12, fontWeight: 700 }}>
+                        {entry.price}
+                      </span>
+                    )}
+                  </div>
+                  <p style={{ margin: "4px 0 0", color: "#64748b", fontSize: 13 }}>{entry.excerpt || "Chưa có mô tả ngắn"}</p>
+                </div>
+                <span className={entry.visible ? "status visible" : "status"}>{entry.visible ? "Đang hiển thị" : "Đang ẩn"}</span>
+                <div className="admin-row-actions">
+                  {entryHref(entry) && <a href={entryHref(entry)} target="_blank" rel="noreferrer">Xem trang</a>}
+                  <button onClick={() => setDraft({ ...entry })}>Sửa</button>
+                  <button className="danger" onClick={() => void remove(entry)}>Xóa</button>
+                </div>
+              </div>
+
+              {section === "product-groups" && (
+                <div style={{ marginTop: 4, padding: "12px 16px", background: "#faf8f5", borderRadius: 8, border: "1px solid #e8e2d8" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
+                    <span style={{ fontWeight: 700, color: "#5c1d2e", fontSize: 13 }}>
+                      Danh sách sản phẩm thuộc nhóm này ({childProducts.length}):
+                    </span>
+                    <button
+                      type="button"
+                      style={{ padding: "6px 14px", background: "#7c1c38", color: "#fff", border: 0, borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                      onClick={() => createProductForGroup(entry.slug)}
+                    >
+                      + Thêm sản phẩm vào nhóm "{entry.title}"
+                    </button>
+                  </div>
+                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                    {childProducts.map((p) => (
+                      <span key={p.id} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 10px", background: "#fff", border: "1px solid #dcd3c5", borderRadius: 6, fontSize: 13 }}>
+                        {p.imageUrl && <img src={p.imageUrl} alt="" style={{ width: 22, height: 28, objectFit: "cover", borderRadius: 4 }} />}
+                        <b>{p.title}</b>
+                        <span style={{ color: p.price.toLowerCase().includes("liên hệ") ? "#b45309" : "#047857", fontWeight: 700, fontSize: 12 }}>
+                          {p.price}
+                        </span>
+                        <button
+                          type="button"
+                          style={{ border: 0, background: "none", color: "#315fe8", cursor: "pointer", fontSize: 12, padding: "0 2px", fontWeight: 700 }}
+                          onClick={() => { setSection("product-items"); setDraft(p); }}
+                        >
+                          ✎ Sửa
+                        </button>
+                      </span>
+                    ))}
+                    {childProducts.length === 0 && (
+                      <small style={{ color: "#8a7e72" }}>Chưa có sản phẩm nào. Bấm nút bên phải để thêm sản phẩm đầu tiên cho nhóm này.</small>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {section === "course-groups" && (
+                <div style={{ marginTop: 4, padding: "12px 16px", background: "#faf8f5", borderRadius: 8, border: "1px solid #e8e2d8" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
+                    <span style={{ fontWeight: 700, color: "#5c1d2e", fontSize: 13 }}>
+                      Các khóa học con thuộc bộ môn này ({childCourses.length}):
+                    </span>
+                    <button
+                      type="button"
+                      style={{ padding: "6px 14px", background: "#7c1c38", color: "#fff", border: 0, borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                      onClick={() => createCourseForGroup(entry.slug)}
+                    >
+                      + Thêm khóa học cho "{entry.title}"
+                    </button>
+                  </div>
+                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                    {childCourses.map((c) => (
+                      <span key={c.id} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 10px", background: "#fff", border: "1px solid #dcd3c5", borderRadius: 6, fontSize: 13 }}>
+                        {c.imageUrl && <img src={c.imageUrl} alt="" style={{ width: 22, height: 28, objectFit: "cover", borderRadius: 4 }} />}
+                        <b>{c.title}</b>
+                        <span style={{ color: c.price.toLowerCase().includes("liên hệ") ? "#b45309" : "#047857", fontWeight: 700, fontSize: 12 }}>
+                          {c.price}
+                        </span>
+                        <button
+                          type="button"
+                          style={{ border: 0, background: "none", color: "#315fe8", cursor: "pointer", fontSize: 12, padding: "0 2px", fontWeight: 700 }}
+                          onClick={() => { setSection("course-items"); setDraft(c); }}
+                        >
+                          ✎ Sửa
+                        </button>
+                      </span>
+                    ))}
+                    {childCourses.length === 0 && (
+                      <small style={{ color: "#8a7e72" }}>Chưa có khóa học nào. Bấm nút bên phải để thêm khóa học đầu tiên cho bộ môn này.</small>
+                    )}
+                  </div>
+                </div>
+              )}
+            </article>
+          );
+        })}</div> : <div className="admin-empty"><b>✦</b><h2>Chưa có nội dung</h2><p>Tạo nội dung đầu tiên cho mục {activeMeta.label}.</p><button className="admin-primary" onClick={startCreate}>+ Tạo nội dung</button></div>}
       </div> : <form className="admin-editor" onSubmit={save}>
         <div className="admin-editor-head"><button type="button" onClick={() => setDraft(null)}>← Danh sách</button><div><small>{draft.id ? "CHỈNH SỬA" : "TẠO MỚI"}</small><h2>{draft.title || activeMeta.label}</h2>{entryHref(draft) && <a className="admin-page-url" href={entryHref(draft)} target="_blank" rel="noreferrer">saotrucauco.com{entryHref(draft)} ↗</a>}</div><button className="admin-primary" disabled={busy}>{busy ? "Đang lưu…" : "Lưu nội dung"}</button></div>
         <div className="admin-form-grid">
@@ -315,11 +1423,513 @@ export default function ContentAdmin() {
           <label className="wide slug-field">Slug (đường dẫn, không dấu) *<span><input required pattern="[a-z0-9-]+" value={draft.slug} onChange={(event) => setDraft({ ...draft, slug: slugify(event.target.value) })} /><button type="button" onClick={() => setDraft({ ...draft, slug: slugify(draft.title) })}>Tạo lại</button></span></label>
           <label>Ngày đăng<input type="date" value={draft.publishedAt} onChange={(event) => setDraft({ ...draft, publishedAt: event.target.value })} /></label>
           <label>Thứ tự hiển thị<input type="number" min="0" value={draft.sortOrder} onChange={(event) => setDraft({ ...draft, sortOrder: Number(event.target.value) })} /></label>
-          <label>{isPaymentSettings ? "Ngân hàng" : fieldMeta.tagLabel || "Phân loại / nhãn"}<input required={isPaymentSettings || ["product-items", "course-items", "single-videos", "materials"].includes(section)} value={draft.tag} onChange={(event) => setDraft({ ...draft, tag: event.target.value })} placeholder={isPaymentSettings ? "Ví dụ: STB · Sacombank" : fieldMeta.tagPlaceholder || "Ví dụ: Kỹ thuật"} /></label>
-          <label>{isPaymentSettings ? "Số tài khoản *" : fieldMeta.priceLabel || "Giá / thông tin phụ"}<input required={isPaymentSettings} inputMode={isPaymentSettings ? "numeric" : undefined} value={draft.price} onChange={(event) => setDraft({ ...draft, price: event.target.value })} placeholder={isPaymentSettings ? "Nhập số tài khoản" : "Ví dụ: 399.000đ hoặc Liên hệ"} /></label>
-          <label className="wide">{isPaymentSettings ? "Tên chủ tài khoản" : fieldMeta.excerptLabel || "Mô tả ngắn"}<textarea rows={3} value={draft.excerpt} onChange={(event) => setDraft({ ...draft, excerpt: event.target.value })} /></label>
-          <label className="wide">{isPaymentSettings ? "Ảnh mã QR dùng chung" : "Ảnh bìa"}<div className="admin-upload"><input value={draft.imageUrl} onChange={(event) => setDraft({ ...draft, imageUrl: event.target.value })} placeholder={isPaymentSettings ? "Tự tạo theo số tài khoản hoặc tải ảnh QR lên" : "Dán URL ảnh hoặc tải ảnh lên"} /><span><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file); }} />Chọn ảnh</span></div>{draft.imageUrl && <img className="admin-cover-preview" src={draft.imageUrl} alt={isPaymentSettings ? "Xem trước mã QR" : "Xem trước ảnh bìa"} />}</label>
-          <label className="wide">{fieldMeta.contentLabel || "Nội dung"}<textarea className="content-editor" rows={12} value={draft.content} onChange={(event) => setDraft({ ...draft, content: event.target.value })} placeholder={section.includes("packages") || section === "class-details" ? "Mỗi dòng là một ý hiển thị trên website." : "Nhập nội dung chi tiết."} /></label>
+          
+          {section === "product-items" ? (
+            <label>
+              <span>Thuộc nhóm sản phẩm nào? *</span>
+              <select
+                required
+                value={draft.tag}
+                onChange={(event) => setDraft({ ...draft, tag: event.target.value })}
+                style={{ height: 42, padding: "0 12px", border: "1px solid #ccd2dc", borderRadius: 8, background: "#fff", color: "#20242b", fontSize: 14 }}
+              >
+                <option value="">-- Chọn nhóm sản phẩm --</option>
+                {productGroups.map((group) => (
+                  <option key={group.slug} value={group.slug}>
+                    {group.title} ({group.slug})
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : section === "course-items" ? (
+            <label>
+              <span>Thuộc nhóm khóa học / Bộ môn nào? *</span>
+              <select
+                required
+                value={draft.tag}
+                onChange={(event) => setDraft({ ...draft, tag: event.target.value })}
+                style={{ height: 42, padding: "0 12px", border: "1px solid #ccd2dc", borderRadius: 8, background: "#fff", color: "#20242b", fontSize: 14 }}
+              >
+                <option value="">-- Chọn nhóm khóa học --</option>
+                {courseGroups.map((group) => (
+                  <option key={group.slug} value={group.slug}>
+                    {group.title} ({group.slug})
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : section === "single-videos" ? (
+            <label>
+              <span>Thuộc bộ môn / nhạc cụ nào? *</span>
+              <select
+                required
+                value={draft.tag}
+                onChange={(event) => setDraft({ ...draft, tag: event.target.value })}
+                style={{ height: 42, padding: "0 12px", border: "1px solid #ccd2dc", borderRadius: 8, background: "#fff", color: "#20242b", fontSize: 14 }}
+              >
+                <option value="">-- Chọn bộ môn --</option>
+                {videoDisciplinesList.map((d) => (
+                  <option key={d.slug} value={d.slug}>
+                    {d.name} ({d.slug})
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : section === "curriculums" || section === "sheets" ? (
+            <label>
+              <span>Thuộc bộ môn / nhạc cụ nào? *</span>
+              <select
+                required
+                value={draft.tag.replace(/^(giao-trinh|sheet):/, "")}
+                onChange={(event) => setDraft({ ...draft, tag: event.target.value })}
+                style={{ height: 42, padding: "0 12px", border: "1px solid #ccd2dc", borderRadius: 8, background: "#fff", color: "#20242b", fontSize: 14 }}
+              >
+                <option value="">-- Chọn bộ môn --</option>
+                {defaultDisciplinesList.map((d) => (
+                  <option key={d.slug} value={d.slug}>
+                    {d.name} ({d.slug})
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : (
+            <label>{isPaymentSettings ? "Ngân hàng" : fieldMeta.tagLabel || "Phân loại / nhãn"}<input required={isPaymentSettings} value={draft.tag} onChange={(event) => setDraft({ ...draft, tag: event.target.value })} placeholder={isPaymentSettings ? "Ví dụ: STB · Sacombank" : fieldMeta.tagPlaceholder || "Ví dụ: Kỹ thuật"} /></label>
+          )}
+          
+          {isPaymentSettings ? (
+            <div className="wide" style={{ display: "grid", gap: 18, borderTop: "2px solid #e2e8f0", paddingTop: 18 }}>
+              <div style={{ padding: "14px 18px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, fontSize: 13, color: "#166534", lineHeight: 1.6 }}>
+                <b style={{ fontSize: 14 }}>✦ CƠ CHẾ TỰ ĐỘNG TẠO MÃ QR THANH TOÁN (VIETQR):</b>
+                <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
+                  <li>Chỉ cần nhập <b>Ngân hàng</b>, <b>Số tài khoản</b> và <b>Tên chủ tài khoản</b> bên dưới.</li>
+                  <li>Khi khách hàng bấm mua bất kỳ <b>Khóa học</b>, <b>Video từng bài</b> hoặc <b>Giáo trình/Sheet</b>, hệ thống sẽ <b>tự động nạp đúng số tiền</b> và <b>nội dung chuyển khoản</b> tương ứng vào mã QR.</li>
+                </ul>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <label>
+                  <span>Ngân hàng thụ hưởng *</span>
+                  <input
+                    required
+                    value={draft.tag}
+                    onChange={(event) => setDraft({ ...draft, tag: event.target.value })}
+                    placeholder="Ví dụ: STB · Sacombank"
+                  />
+                  <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 6 }}>
+                    <small style={{ color: "#64748b", width: "100%", marginBottom: 2 }}>Chọn nhanh ngân hàng:</small>
+                    {[
+                      { code: "STB · Sacombank", name: "Sacombank" },
+                      { code: "MB · MBBank", name: "MB Bank" },
+                      { code: "VCB · Vietcombank", name: "Vietcombank" },
+                      { code: "TCB · Techcombank", name: "Techcombank" },
+                      { code: "VPB · VPBank", name: "VPBank" },
+                      { code: "ACB · Á Châu", name: "ACB" },
+                      { code: "TPB · TPBank", name: "TPBank" },
+                      { code: "BIDV · BIDV", name: "BIDV" },
+                      { code: "CTG · VietinBank", name: "VietinBank" },
+                      { code: "VBA · Agribank", name: "Agribank" },
+                    ].map((b) => (
+                      <button
+                        key={b.code}
+                        type="button"
+                        style={{
+                          padding: "2px 8px",
+                          background: draft.tag.includes(b.name) ? "#eff6ff" : "#f8fafc",
+                          color: draft.tag.includes(b.name) ? "#1d4ed8" : "#475569",
+                          border: `1px solid ${draft.tag.includes(b.name) ? "#93c5fd" : "#cbd5e1"}`,
+                          borderRadius: 4,
+                          fontSize: 11,
+                          cursor: "pointer",
+                        }}
+                        onClick={() => setDraft({ ...draft, tag: b.code })}
+                      >
+                        {b.name}
+                      </button>
+                    ))}
+                  </div>
+                </label>
+
+                <label>
+                  <span>Số tài khoản ngân hàng *</span>
+                  <input
+                    required
+                    inputMode="numeric"
+                    value={draft.price}
+                    onChange={(event) => setDraft({ ...draft, price: event.target.value })}
+                    placeholder="Nhập số tài khoản ngân hàng"
+                    style={{ fontSize: 16, fontWeight: 700, letterSpacing: "0.05em" }}
+                  />
+                  <small style={{ color: "#64748b", marginTop: 4 }}>
+                    Số tài khoản nhận tiền chuyển khoản của bạn
+                  </small>
+                </label>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <label>
+                  <span>Tên chủ tài khoản (viết hoa không dấu) *</span>
+                  <input
+                    required
+                    value={draft.excerpt}
+                    onChange={(event) => setDraft({ ...draft, excerpt: event.target.value.toUpperCase() })}
+                    placeholder="Ví dụ: QUACH HA VAN"
+                    style={{ fontWeight: 700 }}
+                  />
+                </label>
+
+                <label>
+                  <span>Ảnh mã QR tùy chỉnh (tùy chọn)</span>
+                  <div className="admin-upload">
+                    <input
+                      value={draft.imageUrl}
+                      onChange={(event) => setDraft({ ...draft, imageUrl: event.target.value })}
+                      placeholder="Để trống sẽ tự tạo QR tự động theo VietQR"
+                    />
+                    <span>
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,image/gif"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          if (file) void uploadImage(file);
+                        }}
+                      />
+                      Tải ảnh lên
+                    </span>
+                  </div>
+                </label>
+              </div>
+
+              <div style={{ padding: "16px 20px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, display: "flex", gap: 24, alignItems: "center", flexWrap: "wrap" }}>
+                <img
+                  src={buildVietQrUrl({
+                    bank: draft.tag,
+                    account: draft.price,
+                    accountName: draft.excerpt,
+                    amount: "399000",
+                    memo: "KHOA_HOC_SAO_TRUC",
+                    customImageUrl: draft.imageUrl,
+                  })}
+                  alt="Xem trước mã QR"
+                  style={{ width: 170, height: 170, objectFit: "contain", borderRadius: 8, background: "#fff", padding: 6, border: "1px solid #cbd5e1" }}
+                />
+                <div style={{ flex: 1, minWidth: 240, display: "grid", gap: 6 }}>
+                  <b style={{ color: "#1e293b", fontSize: 15 }}>✦ XEM TRƯỚC MÃ QR VIETQR VỚI SỐ TIỀN MẪU (399.000đ):</b>
+                  <p style={{ margin: 0, color: "#475569", fontSize: 13, lineHeight: 1.6 }}>
+                    • Ngân hàng: <b>{draft.tag || "(Chưa chọn)"}</b><br />
+                    • Số tài khoản: <b>{draft.price || "(Chưa nhập)"}</b><br />
+                    • Tên chủ tài khoản: <b>{draft.excerpt || "(Chưa nhập)"}</b><br />
+                    • Số tiền test thử: <b>399.000đ</b> <i>(Khi khách mua món nào, số tiền của món đó sẽ tự động điền vào)</i>
+                  </p>
+                  <small style={{ color: "#059669", fontWeight: 700 }}>
+                    ✓ Bạn có thể dùng App ngân hàng quét thử mã QR này ngay trên màn hình để kiểm tra!
+                  </small>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              {["product-items", "course-items", "curriculums", "sheets", "single-videos", "studio-packages", "booking-packages", "recording-instruments", "services"].includes(section) ? (
+                <div className="wide">
+                  <PriceVoucherEditor
+                    value={draft.price}
+                    onChange={(newVal) => setDraft({ ...draft, price: newVal })}
+                    label={fieldMeta.priceLabel || "Giá bán & Voucher Khuyến mãi"}
+                  />
+                </div>
+              ) : (
+                <label>
+                  <span>{fieldMeta.priceLabel || "Giá / Giá trị"}</span>
+                  <input
+                    value={draft.price}
+                    onChange={(event) => setDraft({ ...draft, price: event.target.value })}
+                    placeholder="Nhập giá trị"
+                  />
+                </label>
+              )}
+
+              <label className="wide">{fieldMeta.excerptLabel || "Mô tả ngắn"}<textarea rows={3} value={draft.excerpt} onChange={(event) => setDraft({ ...draft, excerpt: event.target.value })} /></label>
+              
+              <label className="wide">
+                <span>{"Ảnh bìa / Ảnh đại diện (Tối ưu dạng ảnh dọc 3:4)"}</span>
+                <div className="admin-upload">
+                  <input value={draft.imageUrl} onChange={(event) => setDraft({ ...draft, imageUrl: event.target.value })} placeholder={"Dán URL ảnh hoặc tải ảnh lên (tối ưu ảnh chụp dọc)"} />
+                  <span><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file); }} />Chọn ảnh</span>
+                </div>
+                {draft.imageUrl && (
+                  <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 14 }}>
+                    <img 
+                      className="admin-cover-preview" 
+                      src={draft.imageUrl} 
+                      alt={"Xem trước ảnh bìa"} 
+                      style={{ width: 130, height: 173, objectFit: "cover", borderRadius: 8, border: "1px solid #e2e8f0" }}
+                    />
+                    <small style={{ color: "#64748b" }}>
+                      ✓ Khung hiển thị chuẩn tỉ lệ ảnh dọc (3:4) cho sản phẩm & nhạc cụ
+                    </small>
+                  </div>
+                )}
+              </label>
+            </>
+          )}
+          
+          {draft.collection === "page-contact" && contactFields ? (
+            <div className="wide" style={{ display: "grid", gap: 18, borderTop: "2px solid #e2e8f0", paddingTop: 20, marginTop: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+                <div>
+                  <h3 style={{ margin: 0, color: "#7c1c38", fontSize: 16, fontWeight: 800 }}>✦ NỘI DUNG TRANG ĐĂNG KÝ HỌC & TƯ VẤN (/dang-ky-hoc)</h3>
+                  <small style={{ color: "#64748b" }}>Chỉnh sửa trực tiếp tiêu đề, thông tin liên hệ và biểu mẫu tư vấn</small>
+                </div>
+                <a href="/dang-ky-hoc" target="_blank" rel="noreferrer" style={{ fontSize: 12, fontWeight: 700, color: "#7c1c38", textDecoration: "underline" }}>
+                  Xem trang thực tế ↗
+                </a>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                <label>
+                  <span>Nhãn nhỏ trên cùng (Eyebrow) *</span>
+                  <input
+                    value={draft.tag}
+                    onChange={(e) => setDraft({ ...draft, tag: e.target.value })}
+                    placeholder="Ví dụ: BẮT ĐẦU HÀNH TRÌNH"
+                  />
+                </label>
+                <label>
+                  <span>Số điện thoại / Hotline / Zalo *</span>
+                  <input
+                    required
+                    value={draft.price}
+                    onChange={(e) => setDraft({ ...draft, price: e.target.value })}
+                    placeholder="Ví dụ: 0374 261 368"
+                    style={{ fontWeight: 700 }}
+                  />
+                </label>
+              </div>
+
+              <label className="wide">
+                <span>Tiêu đề chính trang (Headline lớn) *</span>
+                <input
+                  required
+                  value={draft.title}
+                  onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+                  placeholder="Ví dụ: Đăng ký lớp học & Tư vấn"
+                  style={{ fontSize: 16, fontWeight: 700 }}
+                />
+              </label>
+
+              <label className="wide">
+                <span>Mô tả ngắn dưới tiêu đề *</span>
+                <textarea
+                  rows={2}
+                  value={draft.excerpt}
+                  onChange={(e) => setDraft({ ...draft, excerpt: e.target.value })}
+                  placeholder="Ví dụ: Để lại thông tin, Sáo Trúc Âu Cơ sẽ liên hệ tư vấn lớp học, chọn sáo hoặc dịch vụ phù hợp."
+                />
+              </label>
+
+              <div style={{ padding: "16px 18px", background: "#fdf8f4", border: "1px solid #ead7c8", borderRadius: 10, display: "grid", gap: 14 }}>
+                <b style={{ color: "#7c1c38", fontSize: 14 }}>✦ KHỐI THÔNG TIN LIÊN HỆ BÊN TRÁI BIỂU MẪU:</b>
+                
+                <label className="wide">
+                  <span>Tiêu đề khối liên hệ *</span>
+                  <input
+                    value={contactFields.blockTitle}
+                    onChange={(e) => updateContactField("blockTitle", e.target.value)}
+                    placeholder="Ví dụ: Để tiếng sáo cất lời."
+                    style={{ fontWeight: 700 }}
+                  />
+                </label>
+
+                <label className="wide">
+                  <span>Lời giới thiệu & hình thức học *</span>
+                  <textarea
+                    rows={3}
+                    value={contactFields.blockDesc}
+                    onChange={(e) => updateContactField("blockDesc", e.target.value)}
+                    placeholder="Ví dụ: Học tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài."
+                  />
+                </label>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                  <label>
+                    <span>Địa chỉ trung tâm / Lớp học *</span>
+                    <input
+                      value={contactFields.address}
+                      onChange={(e) => updateContactField("address", e.target.value)}
+                      placeholder="Ví dụ: 106/72 Hòa Bình, P. Tân Phú, TP.HCM"
+                    />
+                  </label>
+                  <label>
+                    <span>Email nhận thông báo / liên hệ *</span>
+                    <input
+                      type="email"
+                      value={contactFields.email}
+                      onChange={(e) => updateContactField("email", e.target.value)}
+                      placeholder="Ví dụ: van17071999@gmail.com"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div style={{ padding: "16px 20px", background: "#fff", border: "1px solid #cbd5e1", borderRadius: 10 }}>
+                <small style={{ display: "block", color: "#475569", fontWeight: 800, letterSpacing: "0.08em", marginBottom: 12 }}>
+                  ✦ XEM TRƯỚC TRỰC TIẾP KHỐI LIÊN HỆ (LIVE PREVIEW):
+                </small>
+                <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 20, padding: 18, background: "#3d1020", color: "#fff", borderRadius: 10 }}>
+                  <div>
+                    <span style={{ fontSize: 10, color: "#dcb269", letterSpacing: "0.15em", textTransform: "uppercase" }}>THÔNG TIN LIÊN HỆ</span>
+                    <h3 style={{ margin: "8px 0", font: "400 24px Georgia,serif", color: "#fff5e5" }}>{contactFields.blockTitle}</h3>
+                    <p style={{ fontSize: 13, color: "#edd6d0", lineHeight: 1.6 }}>{contactFields.blockDesc}</p>
+                    <ul style={{ paddingLeft: 16, fontSize: 13, color: "#eedbd5", margin: "10px 0 0" }}>
+                      <li>{contactFields.address}</li>
+                      <li>Hotline / Zalo: <strong style={{ color: "#eed6a1" }}>{draft.price}</strong></li>
+                      <li>Email: {contactFields.email}</li>
+                    </ul>
+                  </div>
+                  <div style={{ background: "rgba(255,255,255,0.06)", padding: 14, borderRadius: 8, fontSize: 12, color: "#edd6d0", display: "flex", flexDirection: "column", justifyContent: "center", gap: 8 }}>
+                    <div style={{ padding: "8px 12px", background: "rgba(255,255,255,0.1)", borderRadius: 6 }}>Họ và tên: [Tên của bạn]</div>
+                    <div style={{ padding: "8px 12px", background: "rgba(255,255,255,0.1)", borderRadius: 6 }}>Số điện thoại / Zalo: [Số điện thoại]</div>
+                    <div style={{ padding: "8px 12px", background: "#8c1c38", borderRadius: 6, color: "#fff", textAlign: "center", fontWeight: 700 }}>GỬI YÊU CẦU ĐĂNG KÝ →</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : draft.collection === "class-details" && classFields ? (
+            <div className="wide" style={{ display: "grid", gap: 16, borderTop: "2px solid #e2e8f0", paddingTop: 20, marginTop: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <h3 style={{ margin: 0, color: "#7c1c38", fontSize: 16, fontWeight: 800 }}>✦ NỘI DUNG CHI TIẾT TRANG BỘ MÔN (/bo-mon/{draft.slug})</h3>
+                <small style={{ color: "#64748b" }}>Từng mục sẽ hiển thị trực tiếp trên trang giới thiệu</small>
+              </div>
+
+              <label className="wide">
+                <span>Tiêu đề bài viết (Headline lớn) *</span>
+                <input 
+                  value={classFields.headline} 
+                  onChange={(e) => updateClassField("headline", e.target.value)} 
+                  placeholder="Ví dụ: Một lộ trình rõ ràng để chơi nhạc bằng chính cảm xúc của bạn." 
+                />
+              </label>
+
+              <label className="wide">
+                <span>Đoạn văn giới thiệu chi tiết bộ môn</span>
+                <textarea 
+                  rows={4} 
+                  value={classFields.intro} 
+                  onChange={(e) => updateClassField("intro", e.target.value)} 
+                  placeholder="Đoạn văn mô tả chi tiết về bộ môn..." 
+                />
+              </label>
+
+              <label className="wide">
+                <span>Bạn sẽ học được gì? (Mỗi dòng một ý hiển thị dấu ✓)</span>
+                <textarea 
+                  rows={6} 
+                  value={classFields.learn} 
+                  onChange={(e) => updateClassField("learn", e.target.value)} 
+                  placeholder="Tư thế cầm sáo, khẩu hình và điểm đặt môi&#10;Kiểm soát cột hơi, cao độ và chất lượng âm thanh&#10;Ngón bấm, đánh lưỡi, rung hơi, láy và vuốt..." 
+                />
+              </label>
+
+              <div className="wide" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <label>
+                  <span>Lộ trình - Giai đoạn 1 (01)</span>
+                  <input value={classFields.stage1} onChange={(e) => updateClassField("stage1", e.target.value)} placeholder="Giai đoạn 1 · Làm quen & tạo tiếng" />
+                </label>
+                <label>
+                  <span>Lộ trình - Giai đoạn 2 (02)</span>
+                  <input value={classFields.stage2} onChange={(e) => updateClassField("stage2", e.target.value)} placeholder="Giai đoạn 2 · Nốt nhạc & nhịp điệu" />
+                </label>
+                <label>
+                  <span>Lộ trình - Giai đoạn 3 (03)</span>
+                  <input value={classFields.stage3} onChange={(e) => updateClassField("stage3", e.target.value)} placeholder="Giai đoạn 3 · Kỹ thuật biểu cảm" />
+                </label>
+                <label>
+                  <span>Lộ trình - Giai đoạn 4 (04)</span>
+                  <input value={classFields.stage4} onChange={(e) => updateClassField("stage4", e.target.value)} placeholder="Giai đoạn 4 · Hoàn thiện tác phẩm" />
+                </label>
+              </div>
+
+              <label className="wide">
+                <span>Câu trích dẫn / Châm ngôn truyền cảm hứng (Quote)</span>
+                <input 
+                  value={classFields.quote} 
+                  onChange={(e) => updateClassField("quote", e.target.value)} 
+                  placeholder="Ví dụ: Học đúng kỹ thuật để tự do thể hiện cảm xúc — đó là nền tảng của mỗi chương trình giảng dạy." 
+                />
+              </label>
+
+              <div className="wide" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <label>
+                  <span>Hình thức học (mỗi dòng một hình thức)</span>
+                  <textarea 
+                    rows={3} 
+                    value={classFields.formats} 
+                    onChange={(e) => updateClassField("formats", e.target.value)} 
+                    placeholder="Trực tiếp tại trung tâm&#10;Gia sư tại nhà&#10;Online 1 kèm 1" 
+                  />
+                </label>
+                <label>
+                  <span>Thời gian học</span>
+                  <input 
+                    value={classFields.schedule} 
+                    onChange={(e) => updateClassField("schedule", e.target.value)} 
+                    placeholder="Ví dụ: Linh động theo lịch học viên" 
+                  />
+                </label>
+              </div>
+            </div>
+          ) : draft.collection === "flute-tabs" ? (
+            <div className="wide" style={{ display: "grid", gap: 14 }}>
+              <div style={{ padding: "14px 18px", background: "#fef8ee", border: "1px solid #e8d7be", borderRadius: 8, fontSize: 13, color: "#613b19", lineHeight: 1.6 }}>
+                <b style={{ color: "#7c1c38", fontSize: 14 }}>💡 Hướng dẫn nhập cảm âm chuẩn (2 dòng):</b>
+                <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
+                  <li><b>Dòng 1:</b> Lời bài hát ở trên (Ví dụ: <code>Bèo dạt mây trôi chốn xa xôi</code>).</li>
+                  <li><b>Dòng 2:</b> Nốt cảm âm ở dưới (Ví dụ: <code>do2 re2 mi2 sol2 la2 sol2 mi2 re2 do2</code>).</li>
+                  <li><b>Tự động đổi quãng:</b> Gõ <code>re2</code>, <code>mi3</code>... website sẽ tự động chuyển thành <b>Rê²</b>, <b>Mi³</b> (dạng số mũ chuẩn).</li>
+                  <li><i>(Bạn cũng có thể viết trên cùng 1 dòng ngăn cách bằng dấu <code>|</code>: Lời bài hát | do2 re2 mi2)</i></li>
+                </ul>
+              </div>
+
+              <label className="wide">
+                <span>Lời bài hát & nốt cảm âm *</span>
+                <textarea
+                  className="content-editor"
+                  rows={12}
+                  value={draft.content}
+                  onChange={(event) => setDraft({ ...draft, content: event.target.value })}
+                  placeholder={"Bèo dạt mây trôi chốn xa xôi\ndo2 re2 mi2 sol2 la2 sol2 mi2 re2 do2\n\nAnh ơi em vẫn đợi cánh bèo dạt trôi\nla sol do2 re2 mi2 sol2 re2 do2 la sol"}
+                />
+              </label>
+
+              {draft.content && (
+                <div style={{ marginTop: 4, padding: "16px 20px", background: "#fdfaf4", border: "1px solid #e6dccf", borderRadius: 10 }}>
+                  <small style={{ display: "block", color: "#8c5625", fontWeight: 800, letterSpacing: "0.1em", marginBottom: 12 }}>
+                    ✦ XEM TRƯỚC HIỂN THỊ CẢM ÂM (LIVE PREVIEW):
+                  </small>
+                  <div style={{ display: "grid", gap: 10 }}>
+                    {parseFluteTab(draft.content).map((row, idx) => (
+                      <div key={idx} style={{ display: "grid", gridTemplateColumns: "32px 1fr", gap: 12, alignItems: "start", padding: "10px 14px", background: "#fff", border: "1px solid #eedec9", borderRadius: 8 }}>
+                        <span style={{ width: 28, height: 28, borderRadius: "50%", border: "1px solid #c89d55", display: "grid", placeItems: "center", fontSize: 11, fontWeight: 700, color: "#7c1c38" }}>
+                          {String(idx + 1).padStart(2, "0")}
+                        </span>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                          {row.lyric && <div style={{ color: "#3a2529", fontWeight: 600, fontSize: 15 }}>{row.lyric}</div>}
+                          {row.notes && (
+                            <div style={{ padding: "6px 12px", background: "#f6ebd9", color: "#7c1c38", fontWeight: 800, fontFamily: "monospace", fontSize: 15, borderRadius: 6, width: "fit-content" }}>
+                              {row.notes}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <label className="wide">{fieldMeta.contentLabel || "Nội dung"}<textarea className="content-editor" rows={12} value={draft.content} onChange={(event) => setDraft({ ...draft, content: event.target.value })} placeholder={section.includes("packages") ? "Mỗi dòng là một ý hiển thị trên website." : "Nhập nội dung chi tiết."} /></label>
+          )}
+
           <label className="admin-check wide"><input type="checkbox" checked={draft.visible} onChange={(event) => setDraft({ ...draft, visible: event.target.checked })} />Hiển thị trên website</label>
         </div>
         <footer><button type="button" onClick={() => setDraft(null)}>Hủy</button>{draft.id && <button type="button" className="danger" onClick={() => void remove(draft)}>Xóa nội dung</button>}<button className="admin-primary" disabled={busy}>{busy ? "Đang lưu…" : "Lưu nội dung"}</button></footer>
