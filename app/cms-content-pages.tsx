@@ -256,29 +256,238 @@ export function NewsIndex() {
   </main>;
 }
 
-function renderArticleFormatting(source: string): ReactNode[] {
+export function parseInlineArticleFormatting(source: string): ReactNode[] {
+  if (!source) return [];
+
+  const tokenPattern = /(?:<strong\s*>\s*<em\s*>([^]*?)<\/em\s*><\/strong\s*>|<b\s*>\s*<i\s*>([^]*?)<\/i\s*><\/b\s*>|<em\s*>\s*<strong\s*>([^]*?)<\/strong\s*><\/em\s*>|<i\s*>\s*<b\s*>([^]*?)<\/b\s*><\/i\s*>|<strong\s*>\s*<i\s*>([^]*?)<\/i\s*><\/strong\s*>|<b\s*>\s*<em\s*>([^]*?)<\/em\s*><\/b\s*>|\*\*\*([^\*\n]+?)\*\*\*|___([^_\n]+?)___|\*\*\_([^_\n]+?)\_\*\*|\*__([^_\n]+?)__\*|\_\_\*([^\*\n]+?)\*\_\_|\_\*\*([^\*\n]+?)\*\*\_|<strong\b[^>]*>([^]*?)<\/strong\s*>|<b\b[^>]*>([^]*?)<\/b\s*>|\*\*([^\*\n]+?)\*\*|__([^_\n]+?)__|`([^`\n]+?)`|<code\b[^>]*>([^]*?)<\/code\s*>|<em\b[^>]*>([^]*?)<\/em\s*>|<i\b[^>]*>([^]*?)<\/i\s*>|\*([^\*\n]+?)\*|_([^\s_][^_\n]*?[^\s_]|[^_\s])_|<u\b[^>]*>([^]*?)<\/u\s*>|<del\b[^>]*>([^]*?)<\/del\s*>|~~([^~\n]+?)~~|<a\b[^>]*href=["']([^"']+)["'][^>]*>([^]*?)<\/a\s*>|\[([^\]\n]+)\]\((https?:\/\/[^\s\)]+|\/[^\s\)]*)\)|(https?:\/\/[^\s<]+))/gi;
+
+  const result: ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = tokenPattern.exec(source)) !== null) {
+    const matchStart = match.index;
+    const matchEnd = tokenPattern.lastIndex;
+
+    if (matchStart > lastIndex) {
+      result.push(source.substring(lastIndex, matchStart));
+    }
+
+    const [
+      fullMatch,
+      strongEm1, strongEm2, strongEm3, strongEm4, strongEm5, strongEm6,
+      mdBI1, mdBI2, mdBI3, mdBI4, mdBI5, mdBI6,
+      htmlStrong1, htmlStrong2, mdBold1, mdBold2,
+      inlineCode1, inlineCode2,
+      htmlEm1, htmlEm2, mdItalic1, mdItalic2,
+      htmlUnderline, htmlDel, mdDel,
+      htmlLinkHref, htmlLinkText, mdLinkText, mdLinkHref, rawUrl
+    ] = match;
+
+    const boldItalicContent = strongEm1 || strongEm2 || strongEm3 || strongEm4 || strongEm5 || strongEm6 || mdBI1 || mdBI2 || mdBI3 || mdBI4 || mdBI5 || mdBI6;
+    const boldContent = htmlStrong1 || htmlStrong2 || mdBold1 || mdBold2;
+    const codeContent = inlineCode1 || inlineCode2;
+    const italicContent = htmlEm1 || htmlEm2 || mdItalic1 || mdItalic2;
+    const underlineContent = htmlUnderline;
+    const delContent = htmlDel || mdDel;
+
+    if (boldItalicContent !== undefined) {
+      result.push(
+        <strong key={`bi-${matchStart}`} className="article-strong-em">
+          <em>{parseInlineArticleFormatting(boldItalicContent)}</em>
+        </strong>
+      );
+    } else if (boldContent !== undefined) {
+      result.push(
+        <strong key={`b-${matchStart}`} className="article-strong">
+          {parseInlineArticleFormatting(boldContent)}
+        </strong>
+      );
+    } else if (italicContent !== undefined) {
+      result.push(
+        <em key={`i-${matchStart}`} className="article-em">
+          {parseInlineArticleFormatting(italicContent)}
+        </em>
+      );
+    } else if (codeContent !== undefined) {
+      result.push(
+        <code key={`code-${matchStart}`} className="article-inline-code">
+          {codeContent}
+        </code>
+      );
+    } else if (underlineContent !== undefined) {
+      result.push(
+        <u key={`u-${matchStart}`}>
+          {parseInlineArticleFormatting(underlineContent)}
+        </u>
+      );
+    } else if (delContent !== undefined) {
+      result.push(
+        <del key={`del-${matchStart}`}>
+          {parseInlineArticleFormatting(delContent)}
+        </del>
+      );
+    } else if (htmlLinkHref !== undefined && htmlLinkText !== undefined) {
+      result.push(
+        <a key={`a-${matchStart}`} href={htmlLinkHref} target={htmlLinkHref.startsWith("http") ? "_blank" : undefined} rel={htmlLinkHref.startsWith("http") ? "noopener noreferrer" : undefined} className="article-inline-link">
+          {parseInlineArticleFormatting(htmlLinkText)}
+        </a>
+      );
+    } else if (mdLinkHref !== undefined && mdLinkText !== undefined) {
+      result.push(
+        <a key={`a-${matchStart}`} href={mdLinkHref} target={mdLinkHref.startsWith("http") ? "_blank" : undefined} rel={mdLinkHref.startsWith("http") ? "noopener noreferrer" : undefined} className="article-inline-link">
+          {parseInlineArticleFormatting(mdLinkText)}
+        </a>
+      );
+    } else if (rawUrl !== undefined) {
+      result.push(
+        <a key={`url-${matchStart}`} href={rawUrl} target="_blank" rel="noopener noreferrer" className="article-inline-link">
+          {rawUrl}
+        </a>
+      );
+    } else {
+      result.push(fullMatch);
+    }
+
+    lastIndex = matchEnd;
+  }
+
+  if (lastIndex < source.length) {
+    result.push(source.substring(lastIndex));
+  }
+
+  return result;
+}
+
+export function renderArticleFormatting(source: string): ReactNode[] {
+  if (!source) return [];
+
   const normalized = source
-    .replace(/<br\s*\/?\s*>/gi, "\n")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<\/p>\s*<p[^>]*>/gi, "\n\n")
     .replace(/<\/?p[^>]*>/gi, "");
-  const pattern = /(<strong>[^]*?<\/strong>|<b>[^]*?<\/b>|<em>[^]*?<\/em>|<i>[^]*?<\/i>|\*\*\*[^]*?\*\*\*|\*\*[^]*?\*\*|__[^]*?__|\*[^*\n]+?\*|_[^_\n]+?_)/gi;
 
-  return normalized.split(pattern).filter(Boolean).map((part, index) => {
-    const strongEmphasis = part.match(/^\*\*\*([^]*)\*\*\*$/);
-    if (strongEmphasis) return <strong key={index}><em>{renderArticleFormatting(strongEmphasis[1])}</em></strong>;
+  const lines = normalized.split("\n");
+  const blocks: ReactNode[] = [];
 
-    const strong = part.match(/^<(?:strong|b)>([^]*)<\/(?:strong|b)>$/i)
-      || part.match(/^\*\*([^]*)\*\*$/)
-      || part.match(/^__([^]*)__$/);
-    if (strong) return <strong key={index}>{renderArticleFormatting(strong[1])}</strong>;
+  for (let i = 0; i < lines.length; i++) {
+    const rawLine = lines[i];
+    const trimmed = rawLine.trim();
 
-    const emphasis = part.match(/^<(?:em|i)>([^]*)<\/(?:em|i)>$/i)
-      || part.match(/^\*([^*\n]+)\*$/)
-      || part.match(/^_([^_\n]+)_$/);
-    if (emphasis) return <em key={index}>{renderArticleFormatting(emphasis[1])}</em>;
+    // 1. Empty line: preserves exact line spacing from editor!
+    if (trimmed === "") {
+      blocks.push(
+        <div key={`empty-${i}`} className="article-line-break" aria-hidden="true" />
+      );
+      continue;
+    }
 
-    return part;
-  });
+    // 2. Headings
+    const h1Match = trimmed.match(/^#\s+(.+)$/);
+    if (h1Match) {
+      blocks.push(
+        <h2 key={`h1-${i}`} className="article-heading article-h1">
+          {parseInlineArticleFormatting(h1Match[1])}
+        </h2>
+      );
+      continue;
+    }
+
+    const h2Match = trimmed.match(/^##\s+(.+)$/);
+    if (h2Match) {
+      blocks.push(
+        <h2 key={`h2-${i}`} className="article-heading article-h2">
+          {parseInlineArticleFormatting(h2Match[1])}
+        </h2>
+      );
+      continue;
+    }
+
+    const h3Match = trimmed.match(/^###\s+(.+)$/);
+    if (h3Match) {
+      blocks.push(
+        <h3 key={`h3-${i}`} className="article-heading article-h3">
+          {parseInlineArticleFormatting(h3Match[1])}
+        </h3>
+      );
+      continue;
+    }
+
+    const h4Match = trimmed.match(/^####\s+(.+)$/);
+    if (h4Match) {
+      blocks.push(
+        <h4 key={`h4-${i}`} className="article-heading article-h4">
+          {parseInlineArticleFormatting(h4Match[1])}
+        </h4>
+      );
+      continue;
+    }
+
+    // 3. Embedded Image ![alt](url)
+    const imgMatch = trimmed.match(/^!\[([^\]]*)\]\((https?:\/\/[^\s\)]+|\/[^\s\)]+)\)$/i);
+    if (imgMatch) {
+      blocks.push(
+        <figure key={`img-${i}`} className="article-embedded-figure">
+          <img src={imgMatch[2]} alt={imgMatch[1] || "Hình ảnh bài viết"} />
+          {imgMatch[1] && <figcaption>{imgMatch[1]}</figcaption>}
+        </figure>
+      );
+      continue;
+    }
+
+    // 4. Blockquote
+    const quoteMatch = rawLine.match(/^>\s*(.+)$/);
+    if (quoteMatch) {
+      blocks.push(
+        <blockquote key={`quote-${i}`} className="article-blockquote">
+          {parseInlineArticleFormatting(quoteMatch[1])}
+        </blockquote>
+      );
+      continue;
+    }
+
+    // 5. Bullet list item
+    const bulletMatch = rawLine.match(/^(\s*)(?:[-*•]|\+)\s+(.+)$/);
+    if (bulletMatch) {
+      const indent = bulletMatch[1].length > 0;
+      blocks.push(
+        <div key={`bullet-${i}`} className={`article-bullet-item ${indent ? "article-bullet-sub" : ""}`}>
+          <span className="article-bullet-dot">✦</span>
+          <div className="article-bullet-content">{parseInlineArticleFormatting(bulletMatch[2])}</div>
+        </div>
+      );
+      continue;
+    }
+
+    // 6. Numbered list item
+    const numMatch = rawLine.match(/^(\s*)(\d+)[.)]\s+(.+)$/);
+    if (numMatch) {
+      blocks.push(
+        <div key={`num-${i}`} className="article-num-item">
+          <span className="article-num-badge">{numMatch[2]}</span>
+          <div className="article-num-content">{parseInlineArticleFormatting(numMatch[3])}</div>
+        </div>
+      );
+      continue;
+    }
+
+    // 7. Divider
+    if (/^(\-{3,}|\*{3,}|_{3,})$/.test(trimmed)) {
+      blocks.push(<hr key={`hr-${i}`} className="article-divider" />);
+      continue;
+    }
+
+    // 8. Regular text line / paragraph
+    blocks.push(
+      <p key={`p-${i}`} className="article-paragraph">
+        {parseInlineArticleFormatting(rawLine)}
+      </p>
+    );
+  }
+
+  return blocks;
 }
 
 export function NewsDetail() {

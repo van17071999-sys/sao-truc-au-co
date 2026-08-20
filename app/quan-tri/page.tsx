@@ -1,8 +1,8 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import BrandLogo from "../brand-logo";
-import { parseFluteTab } from "../cms-content-pages";
+import { parseFluteTab, renderArticleFormatting } from "../cms-content-pages";
 import { buildVietQrUrl } from "../vietqr-helper";
 import { parsePrice } from "../price-helper";
 
@@ -1926,6 +1926,15 @@ export default function ContentAdmin() {
                 </div>
               )}
             </div>
+          ) : (draft.collection === "articles" || draft.collection === "curriculums" || draft.collection === "sheets" || draft.collection === "course-items") ? (
+            <ArticleContentEditor
+              value={draft.content}
+              onChange={(val) => setDraft({ ...draft, content: val })}
+              label={fieldMeta.contentLabel || (draft.collection === "articles" ? "Nội dung bài viết chi tiết *" : "Nội dung chi tiết *")}
+              placeholder={draft.collection === "articles" 
+                ? "Nhập nội dung bài viết...\n\n- In đậm: **chữ in đậm** hoặc bôi đen bấm nút [B]\n- In nghiêng: *chữ in nghiêng* hoặc bôi đen bấm nút [I]\n- Vừa đậm vừa nghiêng: ***chữ vừa đậm vừa nghiêng*** hoặc bấm [BI]\n- Khoảng cách xuống dòng (Enter) được giữ nguyên 100% khi hiển thị trên website."
+                : "Nhập nội dung chi tiết..."}
+            />
           ) : (
             <label className="wide">{fieldMeta.contentLabel || "Nội dung"}<textarea className="content-editor" rows={12} value={draft.content} onChange={(event) => setDraft({ ...draft, content: event.target.value })} placeholder={section.includes("packages") ? "Mỗi dòng là một ý hiển thị trên website." : "Nhập nội dung chi tiết."} /></label>
           )}
@@ -1936,4 +1945,269 @@ export default function ContentAdmin() {
       </form>}
     </section>
   </main>;
+}
+
+function ArticleContentEditor({
+  value,
+  onChange,
+  label = "Nội dung bài viết",
+  placeholder = "Nhập nội dung bài viết..."
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  label?: string;
+  placeholder?: string;
+}) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [showPreview, setShowPreview] = useState(true);
+
+  const wrapOrInsert = (prefix: string, suffix: string, defaultText: string) => {
+    const el = textareaRef.current;
+    if (!el) return;
+    const start = el.selectionStart || 0;
+    const end = el.selectionEnd || 0;
+    const currentVal = value || "";
+    const selected = currentVal.substring(start, end);
+    const textToInsert = selected ? `${prefix}${selected}${suffix}` : `${prefix}${defaultText}${suffix}`;
+    const nextVal = currentVal.substring(0, start) + textToInsert + currentVal.substring(end);
+    onChange(nextVal);
+
+    setTimeout(() => {
+      el.focus();
+      if (selected) {
+        el.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
+      } else {
+        el.setSelectionRange(start + prefix.length, start + prefix.length + defaultText.length);
+      }
+    }, 10);
+  };
+
+  const insertBlockPrefix = (prefix: string, defaultText: string) => {
+    const el = textareaRef.current;
+    if (!el) return;
+    const start = el.selectionStart || 0;
+    const end = el.selectionEnd || 0;
+    const currentVal = value || "";
+    const selected = currentVal.substring(start, end);
+
+    let nextVal = "";
+    if (selected) {
+      const lines = selected.split("\n");
+      const prefixed = lines.map((l) => l.startsWith(prefix) ? l : `${prefix}${l}`).join("\n");
+      nextVal = currentVal.substring(0, start) + prefixed + currentVal.substring(end);
+      onChange(nextVal);
+    } else {
+      const needLeadingNewline = start > 0 && currentVal[start - 1] !== "\n";
+      const textToInsert = (needLeadingNewline ? "\n" : "") + `${prefix}${defaultText}`;
+      nextVal = currentVal.substring(0, start) + textToInsert + currentVal.substring(end);
+      onChange(nextVal);
+    }
+
+    setTimeout(() => {
+      el.focus();
+    }, 10);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b") {
+      e.preventDefault();
+      if (e.shiftKey) {
+        wrapOrInsert("***", "***", "chữ vừa đậm vừa nghiêng");
+      } else {
+        wrapOrInsert("**", "**", "chữ in đậm");
+      }
+    } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "i") {
+      e.preventDefault();
+      wrapOrInsert("*", "*", "chữ in nghiêng");
+    }
+  };
+
+  return (
+    <div className="wide article-editor-wrapper">
+      <div className="article-editor-top">
+        <label className="article-editor-label">{label}</label>
+        <div className="article-editor-tabs">
+          <button
+            type="button"
+            className={`article-tab-btn ${!showPreview ? "active" : ""}`}
+            onClick={() => setShowPreview(false)}
+          >
+            ✏️ Soạn thảo
+          </button>
+          <button
+            type="button"
+            className={`article-tab-btn ${showPreview ? "active" : ""}`}
+            onClick={() => setShowPreview(true)}
+          >
+            👁️ Soạn thảo & Xem trước (Live)
+          </button>
+        </div>
+      </div>
+
+      {/* Formatting Toolbar */}
+      <div className="admin-article-toolbar" role="toolbar" aria-label="Công cụ định dạng bài viết">
+        <div className="admin-toolbar-group">
+          <button
+            type="button"
+            className="admin-tb-btn"
+            title="In đậm (Ctrl+B / Cmd+B)"
+            onClick={() => wrapOrInsert("**", "**", "chữ in đậm")}
+          >
+            <strong style={{ fontSize: 14 }}>B</strong> <span>Đậm</span>
+          </button>
+          <button
+            type="button"
+            className="admin-tb-btn"
+            title="In nghiêng (Ctrl+I / Cmd+I)"
+            onClick={() => wrapOrInsert("*", "*", "chữ in nghiêng")}
+          >
+            <em style={{ fontSize: 14, fontFamily: "serif" }}>I</em> <span>Nghiêng</span>
+          </button>
+          <button
+            type="button"
+            className="admin-tb-btn highlight-bi"
+            title="Vừa in nghiêng vừa in đậm (Ctrl+Shift+B)"
+            onClick={() => wrapOrInsert("***", "***", "chữ vừa đậm vừa nghiêng")}
+          >
+            <strong style={{ fontSize: 13 }}><em>BI</em></strong> <span>Đậm & Nghiêng</span>
+          </button>
+        </div>
+
+        <div className="admin-toolbar-divider" />
+
+        <div className="admin-toolbar-group">
+          <button
+            type="button"
+            className="admin-tb-btn"
+            title="Tiêu đề mục lớn (H2)"
+            onClick={() => insertBlockPrefix("## ", "Tiêu đề mục lớn")}
+          >
+            <span className="tb-tag">H2</span> <span>Tiêu đề lớn</span>
+          </button>
+          <button
+            type="button"
+            className="admin-tb-btn"
+            title="Tiêu đề mục phụ (H3)"
+            onClick={() => insertBlockPrefix("### ", "Tiêu đề mục vừa")}
+          >
+            <span className="tb-tag">H3</span> <span>Tiêu đề vừa</span>
+          </button>
+        </div>
+
+        <div className="admin-toolbar-divider" />
+
+        <div className="admin-toolbar-group">
+          <button
+            type="button"
+            className="admin-tb-btn"
+            title="Danh sách gạch đầu dòng"
+            onClick={() => insertBlockPrefix("- ", "Ý thứ nhất")}
+          >
+            <span>• Danh sách</span>
+          </button>
+          <button
+            type="button"
+            className="admin-tb-btn"
+            title="Danh sách đánh số"
+            onClick={() => insertBlockPrefix("1. ", "Bước thứ nhất")}
+          >
+            <span>1. Đánh số</span>
+          </button>
+          <button
+            type="button"
+            className="admin-tb-btn"
+            title="Trích dẫn hoặc lưu ý"
+            onClick={() => insertBlockPrefix("> ", "Đoạn trích dẫn hoặc lưu ý quan trọng")}
+          >
+            <span>❝ Trích dẫn</span>
+          </button>
+        </div>
+
+        <div className="admin-toolbar-divider" />
+
+        <div className="admin-toolbar-group">
+          <button
+            type="button"
+            className="admin-tb-btn"
+            title="Chèn liên kết web"
+            onClick={() => wrapOrInsert("[", "](https://saotrucauco.com)", "Tên liên kết")}
+          >
+            <span>🔗 Link</span>
+          </button>
+          <button
+            type="button"
+            className="admin-tb-btn"
+            title="Chèn hình ảnh"
+            onClick={() => wrapOrInsert("![", "](https://saotrucauco.com/logo.jpg)", "Mô tả hình ảnh")}
+          >
+            <span>🖼 Ảnh</span>
+          </button>
+          <button
+            type="button"
+            className="admin-tb-btn"
+            title="Xuống dòng / Tạo khoảng cách trống"
+            onClick={() => {
+              const el = textareaRef.current;
+              if (!el) return;
+              const start = el.selectionStart || 0;
+              const currentVal = value || "";
+              const nextVal = currentVal.substring(0, start) + "\n\n" + currentVal.substring(start);
+              onChange(nextVal);
+              setTimeout(() => {
+                el.focus();
+                el.setSelectionRange(start + 2, start + 2);
+              }, 10);
+            }}
+          >
+            <span>↵ Dòng trống</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Guide Card */}
+      <div className="admin-article-guide">
+        <div className="guide-icon">💡</div>
+        <div className="guide-text">
+          <b>Hướng dẫn định dạng văn bản & khoảng cách:</b>
+          <ul>
+            <li><b>In đậm:</b> Gõ <code>**chữ in đậm**</code> hoặc bôi đen rồi bấm nút <b>B</b>.</li>
+            <li><b>In nghiêng:</b> Gõ <code>*chữ in nghiêng*</code> hoặc bôi đen rồi bấm nút <i>I</i>.</li>
+            <li><b>Vừa đậm vừa nghiêng:</b> Gõ <code>***chữ vừa đậm vừa nghiêng***</code> hoặc bấm nút <b><i>BI</i></b>.</li>
+            <li><b>Khoảng cách dòng:</b> Mỗi lần nhấn Enter xuống dòng hoặc cách 1 dòng trống, hệ thống sẽ <b>giữ nguyên 100% khoảng cách</b> hiển thị trên website như lúc bạn nhập!</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* Panes */}
+      <div className={`admin-editor-panes ${showPreview ? "has-preview" : "no-preview"}`}>
+        <div className="editor-input-pane">
+          <textarea
+            ref={textareaRef}
+            className="content-editor article-textarea"
+            rows={15}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+          />
+        </div>
+
+        {showPreview && (
+          <div className="editor-live-pane">
+            <div className="live-pane-title">
+              <span className="live-indicator" />
+              <span>✦ XEM TRƯỚC HIỂN THỊ THỰC TẾ TRÊN WEBSITE (LIVE PREVIEW):</span>
+            </div>
+            <div className="live-preview-content article-formatted-content">
+              {value ? (
+                renderArticleFormatting(value)
+              ) : (
+                <div className="live-preview-empty">Nội dung xem trước sẽ xuất hiện tại đây khi bạn nhập văn bản…</div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
