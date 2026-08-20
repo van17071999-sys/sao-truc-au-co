@@ -32,6 +32,31 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+const defaultProductGroupSlugs: Record<string, string> = {
+  "Sáo ngang Việt Nam": "sao-ngang-viet-nam",
+  "Sáo Dizi Trung Quốc": "sao-dizi-trung-quoc",
+  "Sáo mèo": "sao-meo",
+  "Tiêu & Xiao": "tieu-xiao",
+  "Recorder": "recorder",
+  "Flute": "flute",
+  "Sáo dọc": "sao-doc",
+};
+
+const allInterestOptions = [
+  "Sáo trúc Việt Nam",
+  "Sáo Dizi Trung Quốc",
+  "Sáo Recorder",
+  "Động tiêu & Xiao",
+  "Flute phương Tây",
+  "Sáo H'Mông",
+  "Sáo mèo & Sáo bầu",
+  "Mua sáo & phụ kiện",
+  "Khóa học video quay sẵn",
+  "Sheet nhạc & giáo trình",
+  "Thu âm & quay MV",
+  "Booking biểu diễn",
+];
+
 export function ServicePageHeader() {
   const { t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -232,21 +257,6 @@ export function ContactPage() {
   const contactAddress = translate(parsedContact?.address || generalSettings?.content || "106/72 Hòa Bình, P. Tân Phú, TP.HCM");
   const contactPhone = pageContact?.price || generalSettings?.price || "0374 261 368";
   const contactEmail = parsedContact?.email || generalSettings?.tag || "van17071999@gmail.com";
-
-  const allInterestOptions = useMemo(() => [
-    "Sáo trúc Việt Nam",
-    "Sáo Dizi Trung Quốc",
-    "Sáo Recorder",
-    "Động tiêu & Xiao",
-    "Flute phương Tây",
-    "Sáo H'Mông",
-    "Sáo mèo & Sáo bầu",
-    "Mua sáo & phụ kiện",
-    "Khóa học video quay sẵn",
-    "Sheet nhạc & giáo trình",
-    "Thu âm & quay MV",
-    "Booking biểu diễn",
-  ], []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -483,16 +493,6 @@ export function ProductsPage() {
       { name: "Flute bạc", description: "Âm sắc dày và giàu cộng hưởng, dành cho người chơi chuyên sâu.", price: "Liên hệ" },
     ]},
   ];
-
-  const defaultProductGroupSlugs: Record<string, string> = {
-    "Sáo ngang Việt Nam": "sao-ngang-viet-nam",
-    "Sáo Dizi Trung Quốc": "sao-dizi-trung-quoc",
-    "Sáo mèo": "sao-meo",
-    "Tiêu & Xiao": "tieu-xiao",
-    "Recorder": "recorder",
-    "Flute": "flute",
-    "Sáo dọc": "sao-doc",
-  };
 
   const cmsProductGroups = visibleCollection("product-groups");
   const cmsProductItems = visibleCollection("product-items");

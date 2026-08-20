@@ -239,6 +239,31 @@ type CmsEntry = {
   sortOrder: number;
 };
 
+const defaultProductGroupSlugs: Record<string, string> = {
+  "Sáo ngang Việt Nam": "sao-ngang-viet-nam",
+  "Sáo Dizi Trung Quốc": "sao-dizi-trung-quoc",
+  "Sáo mèo": "sao-meo",
+  "Tiêu & Xiao": "tieu-xiao",
+  "Recorder": "recorder",
+  "Flute": "flute",
+  "Sáo dọc": "sao-doc",
+};
+
+const allInterestOptions = [
+  "Sáo trúc Việt Nam",
+  "Sáo Dizi Trung Quốc",
+  "Sáo Recorder",
+  "Động tiêu & Xiao",
+  "Flute phương Tây",
+  "Sáo H'Mông",
+  "Sáo mèo & Sáo bầu",
+  "Mua sáo & phụ kiện",
+  "Khóa học video quay sẵn",
+  "Sheet nhạc & giáo trình",
+  "Thu âm & quay MV",
+  "Booking biểu diễn",
+];
+
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -270,21 +295,6 @@ export default function Home() {
       if (requested) setSelectedDisciplines([requested]);
     }
   }, []);
-
-  const allInterestOptions = useMemo(() => [
-    "Sáo trúc Việt Nam",
-    "Sáo Dizi Trung Quốc",
-    "Sáo Recorder",
-    "Động tiêu & Xiao",
-    "Flute phương Tây",
-    "Sáo H'Mông",
-    "Sáo mèo & Sáo bầu",
-    "Mua sáo & phụ kiện",
-    "Khóa học video quay sẵn",
-    "Sheet nhạc & giáo trình",
-    "Thu âm & quay MV",
-    "Booking biểu diễn",
-  ], []);
 
   function toggleInterest(item: string) {
     setSelectedDisciplines((prev) => {
@@ -419,16 +429,6 @@ export default function Home() {
     learn: d.learn.map((pt) => translate(pt)),
     suitable: translate(d.suitable),
   }));
-
-  const defaultProductGroupSlugs: Record<string, string> = {
-    "Sáo ngang Việt Nam": "sao-ngang-viet-nam",
-    "Sáo Dizi Trung Quốc": "sao-dizi-trung-quoc",
-    "Sáo mèo": "sao-meo",
-    "Tiêu & Xiao": "tieu-xiao",
-    "Recorder": "recorder",
-    "Flute": "flute",
-    "Sáo dọc": "sao-doc",
-  };
 
   const cmsProductGroups = visibleCollection("product-groups");
   const cmsProductItems = visibleCollection("product-items");
