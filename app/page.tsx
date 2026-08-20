@@ -462,7 +462,7 @@ export default function Home() {
     ...cat,
     title: translate(cat.title),
     intro: translate(cat.intro),
-    products: cat.products.map((p) => ({
+    products: (cat.products || []).map((p) => ({
       ...p,
       name: translate(p.name),
       description: translate(p.description),
