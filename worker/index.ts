@@ -243,6 +243,10 @@ async function ensureCmsSchema(db: D1Database) {
       data BLOB NOT NULL,
       created_at TEXT NOT NULL
     )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS cms_deleted (
+      id TEXT PRIMARY KEY,
+      deleted_at TEXT NOT NULL
+    )`),
   ]);
 
   const now = new Date().toISOString();
@@ -254,6 +258,7 @@ async function ensureCmsSchema(db: D1Database) {
   for (let offset = 0; offset < seedStatements.length; offset += 12) {
     await db.batch(seedStatements.slice(offset, offset + 12));
   }
+  await db.prepare("DELETE FROM cms_entries WHERE id IN (SELECT id FROM cms_deleted)").run();
 }
 
 function requestHasSameOrigin(request: Request, url: URL) {
@@ -432,7 +437,11 @@ async function handleCms(request: Request, env: Env, url: URL): Promise<Response
   if (url.pathname === "/api/cms/admin" && request.method === "DELETE") {
     const id = (url.searchParams.get("id") ?? "").slice(0, 80);
     if (!id) return Response.json({ error: "Missing id" }, { status: 400 });
-    await env.DB.prepare("DELETE FROM cms_entries WHERE id = ?").bind(id).run();
+    const deletedAt = new Date().toISOString();
+    await env.DB.batch([
+      env.DB.prepare("INSERT OR REPLACE INTO cms_deleted (id, deleted_at) VALUES (?, ?)").bind(id, deletedAt),
+      env.DB.prepare("DELETE FROM cms_entries WHERE id = ?").bind(id),
+    ]);
     return Response.json({ ok: true });
   }
 
