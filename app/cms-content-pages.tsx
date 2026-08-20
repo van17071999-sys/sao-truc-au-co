@@ -503,7 +503,7 @@ export function NewsDetail() {
     <ContentHeader />
     {entries === null ? <p className="content-state content-detail-state">{t("Đang tải bài viết…", "Loading article…")}</p> : entry ? <>
       <section className="content-detail-hero"><p className="eyebrow">{translate(entry.tag) || t("BÀI VIẾT", "ARTICLE")}</p><h1>{translate(entry.title)}</h1><p>{translate(entry.excerpt)}</p><span>{entry.publishedAt ? new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN") : ""}</span></section>
-      <article className="content-detail-body prose-content">{entry.imageUrl && <img src={entry.imageUrl} alt={entry.title} />}<div className="article-formatted-content">{renderArticleFormatting(articleContent)}</div><div className="content-detail-actions"><Link href="/bai-viet">{t("← Tất cả bài viết", "← All Articles")}</Link><ShareButton title={translate(entry.title)} /></div></article>
+      <article className="content-detail-body prose-content">{entry.imageUrl && <img src={entry.imageUrl} alt={entry.title} onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }} />}<div className="article-formatted-content">{renderArticleFormatting(articleContent)}</div><div className="content-detail-actions"><Link href="/bai-viet">{t("← Tất cả bài viết", "← All Articles")}</Link><ShareButton title={translate(entry.title)} /></div></article>
     </> : <section className="content-state content-detail-state"><h1>{t("Không tìm thấy bài viết", "Article not found")}</h1><Link href="/bai-viet">{t("Quay lại danh sách bài viết", "Back to articles list")}</Link></section>}
     <ContentFooter />
   </main>;
@@ -581,7 +581,7 @@ export function SalesDetail({ collection, typeLabel, backHref, backLabel }: { co
                 </Link>
               </div>
             </div>
-            {entry.imageUrl && <img src={entry.imageUrl} alt={entry.title} />}
+            {entry.imageUrl && <img src={entry.imageUrl} alt={entry.title} onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }} />}
           </section>
 
           <article className="content-detail-body prose-content sales-detail-body">
