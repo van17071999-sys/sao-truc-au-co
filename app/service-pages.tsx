@@ -172,7 +172,7 @@ export function ClassesPage() {
 
       <section className="articles section" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px 60px" }}>
         <div className="articles-head"><div><p className="eyebrow">{t("KIẾN THỨC & CẢM HỨNG", "KNOWLEDGE & INSPIRATION")}</p><h2>{t("Bài viết mới", "Recent Articles")}</h2></div><p>{t("Những hướng dẫn ngắn gọn, dễ áp dụng để bạn hiểu nhạc cụ và luyện tập đúng cách.", "Concise, actionable guides to help you understand traditional instruments and practice effectively.")}</p></div>
-        <div className="article-grid">{articles.map((article, i) => <article key={article.title} className="article-card-item"><div className="article-visual"><span>0{i + 1}</span><b>♪</b></div><div className="article-body"><small>{article.tag} · {article.date}</small><h3>{article.title}</h3><p>{article.excerpt}</p><Link href={`/bai-viet/${article.slug}`} className="article-read-btn">{t("Đọc bài viết", "Read article")} <span>→</span></Link></div></article>)}</div>
+        <div className="article-grid">{articles.map((article, i) => <article key={article.title}><div className="article-visual"><span>0{i + 1}</span><b>♪</b></div><div className="article-body"><small>{article.tag} · {article.date}</small><h3>{article.title}</h3><p>{article.excerpt}</p><Link href={`/bai-viet/${article.slug}`}>{t("Đọc bài viết", "Read article")} <span>→</span></Link></div></article>)}</div>
       </section>
 
       <div style={{ textAlign: "center", paddingBottom: 40 }}>
