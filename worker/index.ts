@@ -247,6 +247,12 @@ async function ensureCmsSchema(db: D1Database) {
       id TEXT PRIMARY KEY,
       deleted_at TEXT NOT NULL
     )`),
+    db.prepare(`CREATE TRIGGER IF NOT EXISTS cms_entries_delete_tombstone
+      AFTER DELETE ON cms_entries
+      BEGIN
+        INSERT OR REPLACE INTO cms_deleted (id, deleted_at)
+        VALUES (OLD.id, CURRENT_TIMESTAMP);
+      END`),
   ]);
 
   const now = new Date().toISOString();
