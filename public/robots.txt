@@ -10,4 +10,13 @@ Allow: /icon-512.png
 Allow: /apple-touch-icon.png
 Allow: /logo.jpg
 
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Google-Favicon
+Allow: /
+
 Sitemap: https://saotrucauco.com/sitemap.xml
