@@ -306,19 +306,21 @@ footer{background:#fffaf1;border-color:var(--line);color:var(--muted)}footer p{c
   .header-cta{display:none}
 
   /* Hero on mobile */
-  .hero{min-height:auto;padding:120px 18px 45px 18px;position:relative;overflow:hidden}
+  .hero{min-height:auto;padding:120px clamp(20px,5vw,28px) 45px clamp(20px,5vw,28px);position:relative;overflow:hidden}
   .hero-image{background-position:50% 20%!important;background-size:cover!important}
   .hero-slide-1{background-position:50% 20%!important}
   .hero-slide-2{background-position:50% 22%!important}
   .hero-slide-3{background-position:50% 20%!important}
   .hero-slide-4{background-position:50% 20%!important}
   .hero-slide-5{background-position:50% 20%!important}
-  .hero-shade{background:linear-gradient(180deg,rgba(40,7,17,.72) 0%,rgba(48,10,21,.58) 32%,rgba(38,7,16,.86) 75%,rgba(22,4,9,.97) 100%),radial-gradient(circle at 50% 30%,rgba(0,0,0,.08),rgba(40,8,18,.75))!important}
-  .hero-content{max-width:100%;bottom:auto;position:relative;margin:0 auto}
-  .brand-slogan{font-size:clamp(16px,4.8vw,21px);gap:6px;margin-bottom:12px}
-  .hero h1{font-size:clamp(30px,7.5vw,42px);line-height:1.15;margin-bottom:16px}
-  .hero-copy{font-size:14px;line-height:1.6;margin-bottom:24px}
-  .hero-actions{display:flex;flex-direction:column;gap:12px;width:100%}
+  .hero-shade{background:linear-gradient(180deg,rgba(40,7,17,.75) 0%,rgba(48,10,21,.62) 32%,rgba(38,7,16,.88) 75%,rgba(22,4,9,.97) 100%),radial-gradient(circle at 50% 30%,rgba(0,0,0,.08),rgba(40,8,18,.75))!important}
+  .hero-content{max-width:100%;width:100%;bottom:auto;position:relative;margin:0 auto;padding:0;display:flex;flex-direction:column;align-items:center;text-align:center}
+  .brand-slogan{font-size:clamp(16px,4.8vw,21px);gap:6px;margin-bottom:12px;justify-content:center;text-align:center}
+  .hero .eyebrow{text-align:center;margin-bottom:8px}
+  .slide-count{margin:0 auto 10px;text-align:center}
+  .hero h1{font-size:clamp(32px,8vw,44px);line-height:1.15;margin-bottom:14px;text-align:center}
+  .hero-copy{font-size:14.5px;line-height:1.65;margin:0 auto 24px;text-align:center;max-width:480px;padding:0 6px}
+  .hero-actions{display:flex;flex-direction:column;gap:12px;width:100%;align-items:stretch}
   .hero-actions .button{width:100%;min-height:48px;display:grid;place-items:center;font-size:14px}
   .hero-features{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:32px;position:static;width:100%}
   .hero-features>div{padding:10px 12px;background:rgba(0,0,0,.35);backdrop-filter:blur(6px);border-radius:10px;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:8px}
