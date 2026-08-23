@@ -271,18 +271,27 @@ export function ContactPage() {
 
   const parsedTuition = useMemo(() => {
     const content = tuitionSettings?.content || "";
-    const sections: Record<string, string> = {};
-    if (content && content.includes("[") && content.includes("]")) {
+    const sectionLines: Record<string, string[]> = {};
+    if (content && content.includes("[")) {
       let current = "";
       for (const line of content.split("\n")) {
         const match = line.trim().match(/^\[([A-ZÀ-Ỹ0-9\s_]+)\]$/i);
         if (match) {
-          current = match[1].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9]/g, "_");
-          if (sections[current] === undefined) sections[current] = "";
+          current = match[1]
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/đ/g, "d")
+            .replace(/[^a-z0-9]/g, "_");
+          sectionLines[current] = [];
         } else if (current) {
-          sections[current] += (sections[current] ? "\n" : "") + line;
+          sectionLines[current].push(line);
         }
       }
+    }
+    const sections: Record<string, string> = {};
+    for (const [key, lines] of Object.entries(sectionLines)) {
+      sections[key] = lines.join("\n").trim();
     }
     return {
       title: tuitionSettings?.tag || t("Bảng mục học phí", "Tuition Fee Table"),

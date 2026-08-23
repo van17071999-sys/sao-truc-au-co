@@ -142,18 +142,34 @@ const defaultInterestList = [
 ].join("\n");
 
 function parseContactToFields(content: string): ContactFields {
-  const sections: Record<string, string> = {};
-  if (content && content.includes("[") && content.includes("]")) {
-    let current = "";
-    for (const line of content.split("\n")) {
-      const match = line.trim().match(/^\[([A-ZÀ-Ỹ0-9\s_]+)\]$/i);
-      if (match) {
-        current = match[1].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9]/g, "_");
-        if (sections[current] === undefined) sections[current] = "";
-      } else if (current) {
-        sections[current] += (sections[current] ? "\n" : "") + line;
-      }
+function parseSectionMap(content: string): Record<string, string> {
+  const sectionLines: Record<string, string[]> = {};
+  if (!content || !content.includes("[")) return {};
+  let current = "";
+  for (const line of content.split("\n")) {
+    const match = line.trim().match(/^\[([A-ZÀ-Ỹ0-9\s_]+)\]$/i);
+    if (match) {
+      current = match[1]
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/[^a-z0-9]/g, "_");
+      sectionLines[current] = [];
+    } else if (current) {
+      sectionLines[current].push(line);
     }
+  }
+  const result: Record<string, string> = {};
+  for (const [key, lines] of Object.entries(sectionLines)) {
+    result[key] = lines.join("\n").trim();
+  }
+  return result;
+}
+
+function parseContactToFields(content: string = ""): ContactFields {
+  const sections = parseSectionMap(content);
+  if (content && content.includes("[") && content.includes("]")) {
     return {
       blockTitle: sections["tieu_de_khoi"] !== undefined ? sections["tieu_de_khoi"] : (sections["title"] !== undefined ? sections["title"] : "Đăng Kí Học Sáo, Tư Vấn Các Dịch Vụ"),
       blockDesc: sections["mo_ta_khoi"] !== undefined ? sections["mo_ta_khoi"] : (sections["desc"] !== undefined ? sections["desc"] : "Học tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài."),
@@ -204,18 +220,8 @@ type TuitionFields = {
 };
 
 function parseTuitionContentToFields(content: string, imageUrl: string): TuitionFields {
-  const sections: Record<string, string> = {};
+  const sections = parseSectionMap(content);
   if (content && content.includes("[") && content.includes("]")) {
-    let current = "";
-    for (const line of content.split("\n")) {
-      const match = line.trim().match(/^\[([A-ZÀ-Ỹ0-9\s_]+)\]$/i);
-      if (match) {
-        current = match[1].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9]/g, "_");
-        if (sections[current] === undefined) sections[current] = "";
-      } else if (current) {
-        sections[current] += (sections[current] ? "\n" : "") + line;
-      }
-    }
     return {
       sessions1: sections["buoi_1"] !== undefined ? sections["buoi_1"] : "8 buổi",
       sessions2: sections["buoi_2"] !== undefined ? sections["buoi_2"] : "16 buổi",
@@ -260,22 +266,7 @@ type ClassDetailFields = {
 };
 
 function parseClassContentToFields(content: string, excerpt: string): ClassDetailFields {
-  const sections: Record<string, string> = {};
-  let current = "";
-
-  if (content && content.includes("[") && content.includes("]")) {
-    const lines = content.split("\n");
-    for (const line of lines) {
-      const match = line.trim().match(/^\[([A-ZÀ-Ỹ0-9\s_]+)\]$/i);
-      if (match) {
-        current = match[1].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9]/g, "_");
-        if (sections[current] === undefined) sections[current] = "";
-      } else if (current) {
-        sections[current] += (sections[current] ? "\n" : "") + line;
-      }
-    }
-  }
-
+  const sections = parseSectionMap(content);
   const rawPath = sections["lo_trinh_hoc"] ?? sections["lo_trinh"] ?? sections["path"] ?? "";
   const pathLines = rawPath.split(/\n/);
 
