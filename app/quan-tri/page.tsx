@@ -649,45 +649,35 @@ export default function ContentAdmin() {
     return list.sort((a, b) => a.sortOrder - b.sortOrder);
   }, [entries, section, productGroupFilter, courseGroupFilter, videoDisciplineFilter, curriculumDisciplineFilter, sheetDisciplineFilter]);
 
-  const tuitionFields = useMemo(() => {
-    if (!draft || !isTuitionSettings) return null;
-    return parseTuitionContentToFields(draft.content, draft.imageUrl);
-  }, [draft?.content, draft?.imageUrl, isTuitionSettings]);
+  const [tuitionForm, setTuitionForm] = useState<TuitionFields>(() => ({
+    sessions1: "8 buổi",
+    sessions2: "16 buổi",
+    sessions3: "24 buổi",
+    duration: "Thời gian mỗi buổi 60 phút.",
+    promo: "giảm 10% – 15%, tặng MV Video thổi sáo khi hết khoá.",
+    note: "Học phí đã đăng ký không hoàn lại trong mọi trường hợp. Nếu học viên có việc phát sinh và chưa thể tiếp tục học, số buổi còn lại sẽ được bảo lưu để học viên sắp xếp học lại sau.",
+  }));
 
-  function updateTuitionField(field: keyof TuitionFields, value: string) {
-    if (!draft || !tuitionFields) return;
-    const nextFields = { ...tuitionFields, [field]: value };
-    const assembled = assembleTuitionFields(nextFields);
-    setDraft({
-      ...draft,
-      content: assembled,
-      imageUrl: field === "duration" ? value : draft.imageUrl,
-    });
-  }
+  const [contactForm, setContactForm] = useState<ContactFields>(() => parseContactToFields(""));
+  const [classForm, setClassForm] = useState<ClassDetailFields>(() => parseClassContentToFields("", ""));
 
-  const classFields = useMemo(() => {
-    if (!draft || draft.collection !== "class-details") return null;
-    return parseClassContentToFields(draft.content, draft.excerpt);
-  }, [draft?.content, draft?.excerpt, draft?.collection]);
+  useEffect(() => {
+    if (draft && ((draft.collection === "settings" && draft.slug === "tuition") || section === "tuition")) {
+      setTuitionForm(parseTuitionContentToFields(draft.content, draft.imageUrl));
+    }
+  }, [draft?.id, draft?.slug, draft?.collection, section]);
 
-  function updateClassField(field: keyof ClassDetailFields, value: string) {
-    if (!draft || !classFields) return;
-    const nextFields = { ...classFields, [field]: value };
-    const assembled = assembleFieldsToContent(nextFields);
-    setDraft({ ...draft, content: assembled });
-  }
+  useEffect(() => {
+    if (draft && draft.collection === "page-contact") {
+      setContactForm(parseContactToFields(draft.content));
+    }
+  }, [draft?.id, draft?.slug, draft?.collection]);
 
-  const contactFields = useMemo(() => {
-    if (!draft || draft.collection !== "page-contact") return null;
-    return parseContactToFields(draft.content);
-  }, [draft?.content, draft?.collection]);
-
-  function updateContactField(field: keyof ContactFields, value: string) {
-    if (!draft || !contactFields) return;
-    const nextFields = { ...contactFields, [field]: value };
-    const assembled = assembleContactFields(nextFields);
-    setDraft({ ...draft, content: assembled });
-  }
+  useEffect(() => {
+    if (draft && draft.collection === "class-details") {
+      setClassForm(parseClassContentToFields(draft.content, draft.excerpt));
+    }
+  }, [draft?.id, draft?.slug, draft?.collection]);
 
   function createProductForGroup(groupSlug: string) {
     setSection("product-items");
@@ -1012,12 +1002,26 @@ export default function ContentAdmin() {
     setBusy(true);
     setNotice("");
     let payload = draft;
-    if (section === "tuition") {
+    if (section === "tuition" || (payload.collection === "settings" && payload.slug === "tuition")) {
       payload = {
         ...payload,
         collection: "settings",
         slug: "tuition",
         id: payload.id || "settings-tuition",
+        content: assembleTuitionFields(tuitionForm),
+        imageUrl: tuitionForm.duration,
+      };
+    }
+    if (payload.collection === "page-contact") {
+      payload = {
+        ...payload,
+        content: assembleContactFields(contactForm),
+      };
+    }
+    if (payload.collection === "class-details") {
+      payload = {
+        ...payload,
+        content: assembleFieldsToContent(classForm),
       };
     }
     if (payload.collection === "settings" && payload.slug === "payment") {
@@ -1816,7 +1820,7 @@ export default function ContentAdmin() {
                 </div>
               </div>
             </div>
-          ) : isTuitionSettings && tuitionFields ? (
+          ) : isTuitionSettings ? (
             <div className="wide" style={{ display: "grid", gap: 16, borderTop: "2px solid #e2e8f0", paddingTop: 18 }}>
               <div style={{ padding: "14px 18px", background: "#fdf8f0", border: "1px solid #fde8c3", borderRadius: 8, fontSize: 13, color: "#854d0e", lineHeight: 1.6 }}>
                 <b style={{ fontSize: 14 }}>✦ CÀI ĐẶT BẢNG HỌC PHÍ, SỐ BUỔI & LƯU Ý BẢO LƯU:</b>
@@ -1837,8 +1841,8 @@ export default function ContentAdmin() {
                   <span>Thời gian mỗi buổi học *</span>
                   <input
                     required
-                    value={tuitionFields.duration}
-                    onChange={(event) => updateTuitionField("duration", event.target.value)}
+                    value={tuitionForm.duration}
+                    onChange={(event) => setTuitionForm({ ...tuitionForm, duration: event.target.value })}
                     placeholder="Ví dụ: Thời gian mỗi buổi 60 phút."
                   />
                 </label>
@@ -1858,8 +1862,8 @@ export default function ContentAdmin() {
                   <span>Khóa 1 tháng - Số buổi *</span>
                   <input
                     required
-                    value={tuitionFields.sessions1}
-                    onChange={(event) => updateTuitionField("sessions1", event.target.value)}
+                    value={tuitionForm.sessions1}
+                    onChange={(event) => setTuitionForm({ ...tuitionForm, sessions1: event.target.value })}
                     placeholder="Ví dụ: 8 buổi"
                   />
                 </label>
@@ -1879,8 +1883,8 @@ export default function ContentAdmin() {
                   <span>Khóa 2 tháng - Số buổi *</span>
                   <input
                     required
-                    value={tuitionFields.sessions2}
-                    onChange={(event) => updateTuitionField("sessions2", event.target.value)}
+                    value={tuitionForm.sessions2}
+                    onChange={(event) => setTuitionForm({ ...tuitionForm, sessions2: event.target.value })}
                     placeholder="Ví dụ: 16 buổi"
                   />
                 </label>
@@ -1900,8 +1904,8 @@ export default function ContentAdmin() {
                   <span>Khóa 3 tháng - Số buổi *</span>
                   <input
                     required
-                    value={tuitionFields.sessions3}
-                    onChange={(event) => updateTuitionField("sessions3", event.target.value)}
+                    value={tuitionForm.sessions3}
+                    onChange={(event) => setTuitionForm({ ...tuitionForm, sessions3: event.target.value })}
                     placeholder="Ví dụ: 24 buổi"
                   />
                 </label>
@@ -1911,8 +1915,8 @@ export default function ContentAdmin() {
                 <span>Ưu đãi khi đăng ký khóa 2, 3 tháng & Quà tặng MV *</span>
                 <textarea
                   rows={2}
-                  value={tuitionFields.promo}
-                  onChange={(event) => updateTuitionField("promo", event.target.value)}
+                  value={tuitionForm.promo}
+                  onChange={(event) => setTuitionForm({ ...tuitionForm, promo: event.target.value })}
                   placeholder="Ví dụ: giảm 10% – 15%, tặng MV Video thổi sáo khi hết khoá."
                 />
               </label>
@@ -1921,8 +1925,8 @@ export default function ContentAdmin() {
                 <span>Lưu ý / Quy định bảo lưu học phí *</span>
                 <textarea
                   rows={3}
-                  value={tuitionFields.note}
-                  onChange={(event) => updateTuitionField("note", event.target.value)}
+                  value={tuitionForm.note}
+                  onChange={(event) => setTuitionForm({ ...tuitionForm, note: event.target.value })}
                   placeholder="Ví dụ: Học phí đã đăng ký không hoàn lại trong mọi trường hợp. Nếu học viên có việc phát sinh và chưa thể tiếp tục học, số buổi còn lại sẽ được bảo lưu để học viên sắp xếp học lại sau."
                 />
               </label>
@@ -1930,28 +1934,28 @@ export default function ContentAdmin() {
               <div style={{ padding: "16px 20px", background: "#3d1020", color: "#fff", borderRadius: 10 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px dashed rgba(226,186,115,.3)", paddingBottom: 8, marginBottom: 10 }}>
                   <h4 style={{ margin: 0, color: "#fde8c3", fontSize: 14 }}>✦ {draft.tag || "Bảng mục học phí"}</h4>
-                  <span style={{ fontSize: 11, color: "#ffdc94" }}>⏱ {tuitionFields.duration}</span>
+                  <span style={{ fontSize: 11, color: "#ffdc94" }}>⏱ {tuitionForm.duration}</span>
                 </div>
                 <div style={{ display: "grid", gap: 6, fontSize: 12 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 10px", background: "rgba(255,255,255,.05)", borderRadius: 5, borderLeft: "3px solid #e2ba73" }}>
-                    <span>Khóa 1 tháng <small style={{ color: "#ffdc94" }}>({tuitionFields.sessions1})</small></span>
+                    <span>Khóa 1 tháng <small style={{ color: "#ffdc94" }}>({tuitionForm.sessions1})</small></span>
                     <b style={{ color: "#ffdc94" }}>{draft.title}</b>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 10px", background: "rgba(255,255,255,.05)", borderRadius: 5, borderLeft: "3px solid #e2ba73" }}>
-                    <span>Khóa 2 tháng <small style={{ color: "#ffdc94" }}>({tuitionFields.sessions2})</small></span>
+                    <span>Khóa 2 tháng <small style={{ color: "#ffdc94" }}>({tuitionForm.sessions2})</small></span>
                     <b style={{ color: "#ffdc94" }}>{draft.excerpt}</b>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 10px", background: "rgba(255,255,255,.05)", borderRadius: 5, borderLeft: "3px solid #e2ba73" }}>
-                    <span>Khóa 3 tháng <small style={{ color: "#ffdc94" }}>({tuitionFields.sessions3})</small></span>
+                    <span>Khóa 3 tháng <small style={{ color: "#ffdc94" }}>({tuitionForm.sessions3})</small></span>
                     <b style={{ color: "#ffdc94" }}>{draft.price}</b>
                   </div>
                 </div>
                 <div style={{ marginTop: 10, padding: "8px 12px", background: "rgba(143,39,68,.45)", border: "1px solid rgba(226,186,115,.38)", borderRadius: 7, fontSize: 11.5 }}>
                   <div style={{ color: "#ffdc94", fontWeight: 700, marginBottom: 2 }}>🎁 ƯU ĐÃI KHI ĐĂNG KÝ KHÓA 2, 3 THÁNG:</div>
-                  <div>{tuitionFields.promo}</div>
+                  <div>{tuitionForm.promo}</div>
                 </div>
                 <div style={{ marginTop: 8, padding: "7px 10px", background: "rgba(0,0,0,.25)", borderLeft: "3px solid rgba(226,186,115,.6)", borderRadius: 4, fontSize: 11, color: "#eddcd0" }}>
-                  <b style={{ color: "#ffdc94" }}>📌 Lưu ý:</b> {tuitionFields.note}
+                  <b style={{ color: "#ffdc94" }}>📌 Lưu ý:</b> {tuitionForm.note}
                 </div>
               </div>
             </div>
@@ -2001,8 +2005,8 @@ export default function ContentAdmin() {
                 <label className="wide">
                   <span>Tiêu đề khối liên hệ (Chữ Vàng Gold) *</span>
                   <input
-                    value={contactFields?.blockTitle || ""}
-                    onChange={(e) => updateContactField("blockTitle", e.target.value)}
+                    value={contactForm.blockTitle}
+                    onChange={(e) => setContactForm({ ...contactForm, blockTitle: e.target.value })}
                     placeholder="Ví dụ: Đăng Kí Học Sáo, Tư Vấn Các Dịch Vụ"
                     style={{ fontWeight: 700 }}
                   />
@@ -2012,8 +2016,8 @@ export default function ContentAdmin() {
                   <span>Lời giới thiệu & hình thức học *</span>
                   <textarea
                     rows={3}
-                    value={contactFields?.blockDesc || ""}
-                    onChange={(e) => updateContactField("blockDesc", e.target.value)}
+                    value={contactForm.blockDesc}
+                    onChange={(e) => setContactForm({ ...contactForm, blockDesc: e.target.value })}
                     placeholder="Ví dụ: Học tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài."
                   />
                 </label>
@@ -2023,8 +2027,8 @@ export default function ContentAdmin() {
                     <span>Địa chỉ trung tâm / Lớp học (Hỗ trợ nhiều chi nhánh - mỗi chi nhánh 1 dòng) *</span>
                     <textarea
                       rows={3}
-                      value={contactFields?.address || ""}
-                      onChange={(e) => updateContactField("address", e.target.value)}
+                      value={contactForm.address}
+                      onChange={(e) => setContactForm({ ...contactForm, address: e.target.value })}
                       placeholder={"Ví dụ:\n106/72 Hòa Bình, P. Tân Phú, TP.HCM"}
                     />
                   </label>
@@ -2032,8 +2036,8 @@ export default function ContentAdmin() {
                     <span>Email nhận thông báo / liên hệ *</span>
                     <input
                       type="email"
-                      value={contactFields?.email || ""}
-                      onChange={(e) => updateContactField("email", e.target.value)}
+                      value={contactForm.email}
+                      onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
                       placeholder="Ví dụ: van17071999@gmail.com"
                     />
                   </label>
@@ -2047,16 +2051,16 @@ export default function ContentAdmin() {
                   <label>
                     <span>Tiêu đề nhóm lựa chọn bộ môn *</span>
                     <input
-                      value={contactFields?.interestTitle || ""}
-                      onChange={(e) => updateContactField("interestTitle", e.target.value)}
+                      value={contactForm.interestTitle}
+                      onChange={(e) => setContactForm({ ...contactForm, interestTitle: e.target.value })}
                       placeholder="Ví dụ: Đăng ký bộ môn or Tư vấn dịch vụ, sản phẩm"
                     />
                   </label>
                   <label>
                     <span>Ghi chú hướng dẫn chọn *</span>
                     <input
-                      value={contactFields?.interestNote || ""}
-                      onChange={(e) => updateContactField("interestNote", e.target.value)}
+                      value={contactForm.interestNote}
+                      onChange={(e) => setContactForm({ ...contactForm, interestNote: e.target.value })}
                       placeholder="Ví dụ: (Bấm để chọn nhiều mục)"
                     />
                   </label>
@@ -2066,8 +2070,8 @@ export default function ContentAdmin() {
                   <span>Danh sách Bộ môn / Dịch vụ để học viên bấm chọn (Mỗi bộ môn 1 dòng) *</span>
                   <textarea
                     rows={6}
-                    value={contactFields?.interestItems || ""}
-                    onChange={(e) => updateContactField("interestItems", e.target.value)}
+                    value={contactForm.interestItems}
+                    onChange={(e) => setContactForm({ ...contactForm, interestItems: e.target.value })}
                     placeholder={"Sáo trúc Việt Nam\nSáo Dizi Trung Quốc\nSáo Recorder\nĐộng tiêu & Xiao\nFlute phương Tây\nSáo H'Mông\nSáo mèo & Sáo bầu\nMua sáo & phụ kiện\nKhóa học video quay sẵn\nSheet nhạc & giáo trình\nThu âm & quay MV\nBooking biểu diễn"}
                   />
                   <small style={{ color: "#64748b", marginTop: 4 }}>
@@ -2079,16 +2083,16 @@ export default function ContentAdmin() {
                   <label>
                     <span>Chữ trên nút Gửi đăng ký *</span>
                     <input
-                      value={contactFields?.submitButtonText || ""}
-                      onChange={(e) => updateContactField("submitButtonText", e.target.value)}
+                      value={contactForm.submitButtonText}
+                      onChange={(e) => setContactForm({ ...contactForm, submitButtonText: e.target.value })}
                       placeholder="Ví dụ: GỬI YÊU CẦU ĐĂNG KÝ →"
                     />
                   </label>
                   <label>
                     <span>Thông báo sau khi gửi thành công *</span>
                     <input
-                      value={contactFields?.successMessage || ""}
-                      onChange={(e) => updateContactField("successMessage", e.target.value)}
+                      value={contactForm.successMessage}
+                      onChange={(e) => setContactForm({ ...contactForm, successMessage: e.target.value })}
                       placeholder="Ví dụ: Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất."
                     />
                   </label>
@@ -2102,12 +2106,12 @@ export default function ContentAdmin() {
                 <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1.3fr", gap: 20, padding: 18, background: "#3d1020", color: "#fff", borderRadius: 10 }}>
                   <div>
                     <span style={{ fontSize: 10, color: "#dcb269", letterSpacing: "0.15em", textTransform: "uppercase" }}>{draft.tag || "THÔNG TIN LIÊN HỆ"}</span>
-                    <h3 style={{ margin: "8px 0", font: "400 22px Georgia,serif", color: "#e2ba73" }}>{contactFields?.blockTitle || ""}</h3>
-                    <p style={{ fontSize: 12.5, color: "#edd6d0", lineHeight: 1.55 }}>{contactFields?.blockDesc || ""}</p>
+                    <h3 style={{ margin: "8px 0", font: "400 22px Georgia,serif", color: "#e2ba73" }}>{contactForm.blockTitle}</h3>
+                    <p style={{ fontSize: 12.5, color: "#edd6d0", lineHeight: 1.55 }}>{contactForm.blockDesc}</p>
                     <ul style={{ paddingLeft: 16, fontSize: 12.5, color: "#eedbd5", margin: "10px 0 0" }}>
-                      {(contactFields?.address || "").split(/\n+/).map((l, i) => l.trim() && <li key={i}>{l.trim()}</li>)}
+                      {(contactForm.address || "").split(/\n+/).map((l, i) => l.trim() && <li key={i}>{l.trim()}</li>)}
                       <li>Hotline / Zalo: <strong style={{ color: "#eed6a1" }}>{draft.price}</strong></li>
-                      <li>Email: {contactFields?.email || ""}</li>
+                      <li>Email: {contactForm.email}</li>
                     </ul>
                   </div>
                   <div style={{ background: "rgba(255,255,255,0.06)", padding: 14, borderRadius: 8, fontSize: 11.5, color: "#edd6d0", display: "flex", flexDirection: "column", gap: 7 }}>
@@ -2115,22 +2119,22 @@ export default function ContentAdmin() {
                       <div style={{ padding: "6px 8px", background: "rgba(255,255,255,0.1)", borderRadius: 5 }}>Họ và tên</div>
                       <div style={{ padding: "6px 8px", background: "rgba(255,255,255,0.1)", borderRadius: 5 }}>Số điện thoại</div>
                     </div>
-                    <div style={{ fontSize: 11, color: "#ffdc94", fontWeight: 700 }}>{contactFields?.interestTitle || ""} <small style={{ color: "#ddd" }}>{contactFields?.interestNote || ""}</small></div>
+                    <div style={{ fontSize: 11, color: "#ffdc94", fontWeight: 700 }}>{contactForm.interestTitle} <small style={{ color: "#ddd" }}>{contactForm.interestNote}</small></div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, maxHeight: 110, overflowY: "auto" }}>
-                      {(contactFields?.interestItems || "").split(/\n+/).map((item, idx) => item.trim() && (
+                      {(contactForm.interestItems || "").split(/\n+/).map((item, idx) => item.trim() && (
                         <div key={idx} style={{ padding: "4px 6px", background: idx === 0 ? "#7c1c38" : "rgba(255,255,255,0.1)", borderRadius: 4, fontSize: 10 }}>
                           {idx === 0 ? "✓ " : "+ "}{item.trim()}
                         </div>
                       ))}
                     </div>
                     <div style={{ padding: "7px 10px", background: "#8c1c38", borderRadius: 6, color: "#fff", textAlign: "center", fontWeight: 700, fontSize: 11, marginTop: 4 }}>
-                      {contactFields?.submitButtonText || "GỬI YÊU CẦU ĐĂNG KÝ →"}
+                      {contactForm.submitButtonText}
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          ) : draft.collection === "class-details" && classFields ? (
+          ) : draft.collection === "class-details" ? (
             <div className="wide" style={{ display: "grid", gap: 16, borderTop: "2px solid #e2e8f0", paddingTop: 20, marginTop: 10 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
                 <h3 style={{ margin: 0, color: "#7c1c38", fontSize: 16, fontWeight: 800 }}>✦ NỘI DUNG BÀI GIỚI THIỆU ĐẦY ĐỦ (/bo-mon/{draft.slug})</h3>
@@ -2140,8 +2144,8 @@ export default function ContentAdmin() {
               <label className="wide">
                 <span>Tiêu đề bài viết (Headline lớn) *</span>
                 <input 
-                  value={classFields.headline} 
-                  onChange={(e) => updateClassField("headline", e.target.value)} 
+                  value={classForm.headline} 
+                  onChange={(e) => setClassForm({ ...classForm, headline: e.target.value })} 
                   placeholder="Ví dụ: Một lộ trình rõ ràng để chơi nhạc bằng chính cảm xúc của bạn." 
                 />
               </label>
@@ -2150,8 +2154,8 @@ export default function ContentAdmin() {
                 <span>Đoạn văn giới thiệu chi tiết bộ môn</span>
                 <textarea 
                   rows={4} 
-                  value={classFields.intro} 
-                  onChange={(e) => updateClassField("intro", e.target.value)} 
+                  value={classForm.intro} 
+                  onChange={(e) => setClassForm({ ...classForm, intro: e.target.value })} 
                   placeholder="Đoạn văn mô tả chi tiết về bộ môn..." 
                 />
               </label>
@@ -2160,8 +2164,8 @@ export default function ContentAdmin() {
                 <span>Bạn sẽ học được gì? (Mỗi dòng một ý hiển thị dấu ✓)</span>
                 <textarea 
                   rows={6} 
-                  value={classFields.learn} 
-                  onChange={(e) => updateClassField("learn", e.target.value)} 
+                  value={classForm.learn} 
+                  onChange={(e) => setClassForm({ ...classForm, learn: e.target.value })} 
                   placeholder="Tư thế cầm sáo, khẩu hình và điểm đặt môi&#10;Kiểm soát cột hơi, cao độ và chất lượng âm thanh&#10;Ngón bấm, đánh lưỡi, rung hơi, láy và vuốt..." 
                 />
               </label>
@@ -2169,27 +2173,27 @@ export default function ContentAdmin() {
               <div className="wide" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <label>
                   <span>Lộ trình - Giai đoạn 1 (01)</span>
-                  <input value={classFields.stage1} onChange={(e) => updateClassField("stage1", e.target.value)} placeholder="Giai đoạn 1 · Làm quen & tạo tiếng" />
+                  <input value={classForm.stage1} onChange={(e) => setClassForm({ ...classForm, stage1: e.target.value })} placeholder="Giai đoạn 1 · Làm quen & tạo tiếng" />
                 </label>
                 <label>
                   <span>Lộ trình - Giai đoạn 2 (02)</span>
-                  <input value={classFields.stage2} onChange={(e) => updateClassField("stage2", e.target.value)} placeholder="Giai đoạn 2 · Nốt nhạc & nhịp điệu" />
+                  <input value={classForm.stage2} onChange={(e) => setClassForm({ ...classForm, stage2: e.target.value })} placeholder="Giai đoạn 2 · Nốt nhạc & nhịp điệu" />
                 </label>
                 <label>
                   <span>Lộ trình - Giai đoạn 3 (03)</span>
-                  <input value={classFields.stage3} onChange={(e) => updateClassField("stage3", e.target.value)} placeholder="Giai đoạn 3 · Kỹ thuật biểu cảm" />
+                  <input value={classForm.stage3} onChange={(e) => setClassForm({ ...classForm, stage3: e.target.value })} placeholder="Giai đoạn 3 · Kỹ thuật biểu cảm" />
                 </label>
                 <label>
                   <span>Lộ trình - Giai đoạn 4 (04)</span>
-                  <input value={classFields.stage4} onChange={(e) => updateClassField("stage4", e.target.value)} placeholder="Giai đoạn 4 · Hoàn thiện tác phẩm" />
+                  <input value={classForm.stage4} onChange={(e) => setClassForm({ ...classForm, stage4: e.target.value })} placeholder="Giai đoạn 4 · Hoàn thiện tác phẩm" />
                 </label>
               </div>
 
               <label className="wide">
                 <span>Câu trích dẫn / Châm ngôn truyền cảm hứng (Quote)</span>
                 <input 
-                  value={classFields.quote} 
-                  onChange={(e) => updateClassField("quote", e.target.value)} 
+                  value={classForm.quote} 
+                  onChange={(e) => setClassForm({ ...classForm, quote: e.target.value })} 
                   placeholder="Ví dụ: Học đúng kỹ thuật để tự do thể hiện cảm xúc — đó là nền tảng của mỗi chương trình giảng dạy." 
                 />
               </label>
@@ -2199,16 +2203,16 @@ export default function ContentAdmin() {
                   <span>Hình thức học (mỗi dòng một hình thức)</span>
                   <textarea 
                     rows={3} 
-                    value={classFields.formats} 
-                    onChange={(e) => updateClassField("formats", e.target.value)} 
+                    value={classForm.formats} 
+                    onChange={(e) => setClassForm({ ...classForm, formats: e.target.value })} 
                     placeholder="Trực tiếp tại trung tâm&#10;Gia sư tại nhà&#10;Online 1 kèm 1" 
                   />
                 </label>
                 <label>
                   <span>Thời gian học</span>
                   <input 
-                    value={classFields.schedule} 
-                    onChange={(e) => updateClassField("schedule", e.target.value)} 
+                    value={classForm.schedule} 
+                    onChange={(e) => setClassForm({ ...classForm, schedule: e.target.value })} 
                     placeholder="Ví dụ: Linh động theo lịch học viên" 
                   />
                 </label>
