@@ -9,7 +9,7 @@ import { PriceTag, parsePrice } from "./price-helper";
 
 const serviceSlugToHref: Record<string, string> = {
   classes: "/lop-hoc",
-  contact: "/dang-ky-hoc",
+  contact: "#contact",
   products: "/sao-va-phu-kien",
   courses: "/khoa-hoc-quay-san",
   materials: "/giao-trinh-va-sheet",
@@ -20,7 +20,7 @@ const serviceSlugToHref: Record<string, string> = {
 
 const defaultServices = [
   { no: "01", icon: "♫", image: "/carousel-saotruc.webp", title: "Lớp học các bộ môn", text: "Sáo trúc, Dizi, sáo nứa, sáo mèo, recorder và các bộ môn dân tộc.", cta: "Xem lớp học", href: "/lop-hoc" },
-  { no: "02", icon: "⌂", image: "/carousel-recorder.webp", title: "Đăng ký lớp học", text: "Học tại trung tâm, gia sư tại nhà hoặc online 1 kèm 1 với lịch linh động.", cta: "Đăng ký ngay", href: "/dang-ky-hoc" },
+  { no: "02", icon: "⌂", image: "/carousel-recorder.webp", title: "Đăng ký lớp học", text: "Học tại trung tâm, gia sư tại nhà hoặc online 1 kèm 1 với lịch linh động.", cta: "Đăng ký ngay", href: "#contact" },
   { no: "03", icon: "◌", image: "/carousel-dizi.webp", title: "Sáo & phụ kiện", text: "Sáo trúc chuẩn âm, Dizi, sáo nứa, sáo mèo cùng phụ kiện được tuyển chọn.", cta: "Khám phá", href: "/sao-va-phu-kien" },
   { no: "04", icon: "▶", image: "/carousel-tieu.webp", title: "Khóa học quay sẵn", text: "Video bài giảng HD từ nhập môn đến nâng cao, học mọi lúc và xem lại trọn đời.", cta: "Xem khóa học", href: "/khoa-hoc-quay-san" },
   { no: "05", icon: "▤", image: "/carousel-flute.webp", title: "Giáo trình & sheet", text: "Giáo trình kỹ thuật, sheet nhạc và bản chuyển soạn theo yêu cầu biểu diễn.", cta: "Xem tài liệu", href: "/giao-trinh-va-sheet", price: "Từ 50.000đ / sheet" },
@@ -864,19 +864,42 @@ export default function Home() {
         <div className="service-grid">
           {services.map((service) => (
             <article className="service-card" key={service.no}>
-              <Link href={service.href} style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", height: "100%" }}>
-                <div className="card-top">
-                  <span className="card-no">{service.no}</span>
-                  <span className="card-icon">{service.icon}</span>
-                </div>
-                <h3>{service.title}</h3>
-                <p>{service.text}</p>
-                {service.price && <PriceTag price={service.price} className="price" />}
-                <span className="service-card-link" style={{ marginTop: "auto", display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 700, color: "#8c1c38", fontSize: 13, textTransform: "uppercase", letterSpacing: "0.08em", paddingTop: 12 }}>
-                  {service.cta}
-                  <span>→</span>
-                </span>
-              </Link>
+              {service.href.startsWith("#") || service.href === "/dang-ky-hoc" || service.no === "02" ? (
+                <a
+                  href="#contact"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    openService("#contact");
+                  }}
+                  style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", height: "100%", cursor: "pointer" }}
+                >
+                  <div className="card-top">
+                    <span className="card-no">{service.no}</span>
+                    <span className="card-icon">{service.icon}</span>
+                  </div>
+                  <h3>{service.title}</h3>
+                  <p>{service.text}</p>
+                  {service.price && <PriceTag price={service.price} className="price" />}
+                  <span className="service-card-link" style={{ marginTop: "auto", display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 700, color: "#8c1c38", fontSize: 13, textTransform: "uppercase", letterSpacing: "0.08em", paddingTop: 12 }}>
+                    {service.cta}
+                    <span>→</span>
+                  </span>
+                </a>
+              ) : (
+                <Link href={service.href} style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", height: "100%" }}>
+                  <div className="card-top">
+                    <span className="card-no">{service.no}</span>
+                    <span className="card-icon">{service.icon}</span>
+                  </div>
+                  <h3>{service.title}</h3>
+                  <p>{service.text}</p>
+                  {service.price && <PriceTag price={service.price} className="price" />}
+                  <span className="service-card-link" style={{ marginTop: "auto", display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 700, color: "#8c1c38", fontSize: 13, textTransform: "uppercase", letterSpacing: "0.08em", paddingTop: 12 }}>
+                    {service.cta}
+                    <span>→</span>
+                  </span>
+                </Link>
+              )}
             </article>
           ))}
         </div>

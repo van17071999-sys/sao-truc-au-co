@@ -173,12 +173,14 @@ function useServiceData() {
 
   const paymentSettings = cmsEntries.find((entry) => entry.collection === "settings" && entry.slug === "payment" && entry.visible);
   const generalSettings = cmsEntries.find((entry) => entry.collection === "settings" && entry.slug === "general" && entry.visible);
+  const tuitionSettings = cmsEntries.find((entry) => entry.collection === "settings" && entry.slug === "tuition");
 
   return {
     cmsEntries,
     visibleCollection,
     paymentSettings,
     generalSettings,
+    tuitionSettings,
   };
 }
 
@@ -259,14 +261,19 @@ export function ClassesPage() {
   );
 }
 
-// 02. ĐĂNG KÝ LỚP HỌC / LIÊN HỆ
 export function ContactPage() {
   const { t, translate } = useLanguage();
-  const { generalSettings, visibleCollection } = useServiceData();
+  const { generalSettings, visibleCollection, tuitionSettings } = useServiceData();
   const [selectedDisciplines, setSelectedDisciplines] = useState<string[]>(["Sáo trúc Việt Nam"]);
   const [sent, setSent] = useState(false);
   const [requestSubmitting, setRequestSubmitting] = useState(false);
   const [requestError, setRequestError] = useState("");
+
+  const tuitionTitle = tuitionSettings?.tag || t("Bảng mục học phí", "Tuition Fee Table");
+  const tuition1Month = tuitionSettings?.title || "2.400.000đ – 3.200.000đ";
+  const tuition2Months = tuitionSettings?.excerpt || "4.800.000đ – 6.400.000đ";
+  const tuition3Months = tuitionSettings?.price || "7.200.000đ";
+  const tuitionPromo = tuitionSettings?.content || t("giảm 10% – 15%, tặng MV Video thổi sáo khi hết khoá.", "10% – 15% discount, complimentary flute music video upon completion.");
 
   const pageContact = visibleCollection("page-contact")[0];
   const pageEyebrow = translate(pageContact?.tag || "BẮT ĐẦU HÀNH TRÌNH");
@@ -368,7 +375,7 @@ export function ContactPage() {
       <section className="contact section" style={{ maxWidth: 1000, margin: "0 auto", padding: "20px 20px 60px" }}>
         <div className="contact-copy">
           <p className="eyebrow">{t("THÔNG TIN LIÊN HỆ", "CONTACT INFORMATION")}</p>
-          <h2>{blockTitle}</h2>
+          <h2 className="contact-title-refined">{t("Đăng Kí Học Sáo, Tư Vấn Các Dịch Vụ", "Course Enrollment & Service Consultation")}</h2>
           <p>{blockDesc}</p>
           <ul>
             {((contactAddress || "").split(/\n+/).map((l) => l.trim()).filter(Boolean)).map((line, idx) => (
@@ -377,6 +384,31 @@ export function ContactPage() {
             <li>{t("Hotline / Zalo:", "Hotline / Zalo:")} <a href={`tel:${contactPhone.replace(/\D/g, "")}`} style={{ color: "inherit", fontWeight: 700 }}>{contactPhone}</a></li>
             <li>Email: {contactEmail}</li>
           </ul>
+
+          <div className="tuition-card">
+            <div className="tuition-card-head">
+              <h3 className="tuition-card-title"><span>✦</span>{tuitionTitle}</h3>
+              <span className="tuition-card-badge">{t("Chuẩn âm bài bản", "Standard tuning")}</span>
+            </div>
+            <div className="tuition-grid">
+              <div className="tuition-row">
+                <span className="tuition-duration">{t("Khóa 1 tháng", "1-Month Course")}</span>
+                <span className="tuition-fee">{tuition1Month}</span>
+              </div>
+              <div className="tuition-row">
+                <span className="tuition-duration">{t("Khóa 2 tháng", "2-Month Course")}</span>
+                <span className="tuition-fee">{tuition2Months}</span>
+              </div>
+              <div className="tuition-row">
+                <span className="tuition-duration">{t("Khóa 3 tháng", "3-Month Course")}</span>
+                <span className="tuition-fee">{tuition3Months}</span>
+              </div>
+            </div>
+            <div className="tuition-promo">
+              <div className="tuition-promo-title"><span>🎁</span>{t("Ưu đãi khi đăng ký khóa 2, 3 tháng:", "Special offers for 2 & 3-month courses:")}</div>
+              <div>{tuitionPromo}</div>
+            </div>
+          </div>
         </div>
         <form onSubmit={submitForm}>
           <label>{t("Họ và tên", "Full Name")}<input required name="name" placeholder={t("Tên của bạn", "Your full name")} /></label>
