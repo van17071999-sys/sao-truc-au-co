@@ -320,26 +320,56 @@ export function ContactPage() {
         }
       }
       return {
-        blockTitle: sections["tieu_de_khoi"] || sections["title"] || "Để tiếng sáo cất lời.",
+        blockTitle: sections["tieu_de_khoi"] || sections["title"] || "Đăng Kí Học Sáo, Tư Vấn Các Dịch Vụ",
         blockDesc: sections["mo_ta_khoi"] || sections["desc"] || "Học tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài.",
         address: sections["dia_chi"] || sections["address"] || generalSettings?.content || "106/72 Hòa Bình, P. Tân Phú, TP.HCM",
         email: sections["email"] || generalSettings?.tag || "van17071999@gmail.com",
+        interestTitle: sections["tieu_de_bo_mon"] || sections["interest_title"] || "Đăng ký bộ môn or Tư vấn dịch vụ, sản phẩm",
+        interestNote: sections["ghi_chu_bo_mon"] || sections["interest_note"] || "(Bấm để chọn nhiều mục)",
+        interestItems: sections["danh_sach_bo_mon"] || sections["interest_items"] || "",
+        buttonLabel: sections["nut_gui"] || sections["button_label"] || "GỬI YÊU CẦU ĐĂNG KÝ →",
+        successMsg: sections["thong_bao_thanh_cong"] || sections["success_msg"] || "Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất.",
       };
     }
     const lines = content.split(/\n+/).map((l) => l.trim()).filter(Boolean);
     return {
-      blockTitle: lines[0] || "Để tiếng sáo cất lời.",
+      blockTitle: lines[0] || "Đăng Kí Học Sáo, Tư Vấn Các Dịch Vụ",
       blockDesc: lines[1] || "Học tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài.",
       address: lines[2] || generalSettings?.content || "106/72 Hòa Bình, P. Tân Phú, TP.HCM",
       email: lines[3] || generalSettings?.tag || "van17071999@gmail.com",
+      interestTitle: "Đăng ký bộ môn or Tư vấn dịch vụ, sản phẩm",
+      interestNote: "(Bấm để chọn nhiều mục)",
+      interestItems: "",
+      buttonLabel: "GỬI YÊU CẦU ĐĂNG KÝ →",
+      successMsg: "Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất.",
     };
   }, [pageContact, generalSettings]);
 
-  const blockTitle = translate(parsedContact?.blockTitle || "Để tiếng sáo cất lời.");
+  const blockTitle = translate(parsedContact?.blockTitle || "Đăng Kí Học Sáo, Tư Vấn Các Dịch Vụ");
   const blockDesc = translate(parsedContact?.blockDesc || "Học tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài.");
   const contactAddress = translate(parsedContact?.address || generalSettings?.content || "106/72 Hòa Bình, P. Tân Phú, TP.HCM");
   const contactPhone = pageContact?.price || generalSettings?.price || "0374 261 368";
   const contactEmail = parsedContact?.email || generalSettings?.tag || "van17071999@gmail.com";
+
+  const allInterestOptions = useMemo(() => {
+    if (parsedContact?.interestItems && parsedContact.interestItems.trim()) {
+      return parsedContact.interestItems.split(/\n+/).map((s) => s.trim()).filter(Boolean);
+    }
+    return [
+      "Sáo trúc Việt Nam",
+      "Sáo Dizi Trung Quốc",
+      "Sáo Recorder",
+      "Động tiêu & Xiao",
+      "Flute phương Tây",
+      "Sáo H'Mông",
+      "Sáo mèo & Sáo bầu",
+      "Mua sáo & phụ kiện",
+      "Khóa học video quay sẵn",
+      "Sheet nhạc & giáo trình",
+      "Thu âm & quay MV",
+      "Booking biểu diễn",
+    ];
+  }, [parsedContact?.interestItems]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -372,15 +402,20 @@ export function ContactPage() {
         body: JSON.stringify({
           name: data.get("name"),
           phone: data.get("phone"),
-          interest: interestsString,
-          message: data.get("message"),
+          discipline: interestsString,
+          message: data.get("message") || "",
+          type: "Đăng ký học / Tư vấn chung",
         }),
       });
-      if (!response.ok) throw new Error("request_failed");
-      setSent(true);
-      try { form.reset(); } catch {}
+      if (response.ok) {
+        setSent(true);
+        form.reset();
+      } else {
+        const resJson = await response.json().catch(() => ({}));
+        setRequestError(resJson.error || "Gửi yêu cầu không thành công. Vui lòng thử lại hoặc gọi Hotline / Zalo.");
+      }
     } catch {
-      setRequestError(t("Chưa gửi được yêu cầu. Vui lòng liên hệ trực tiếp qua Zalo / Hotline.", "Could not send request. Please contact directly via Hotline / Zalo."));
+      setRequestError("Lỗi kết nối. Vui lòng liên hệ trực tiếp qua số Hotline / Zalo.");
     } finally {
       setRequestSubmitting(false);
     }
@@ -394,7 +429,7 @@ export function ContactPage() {
         <section className="contact section">
           <div className="contact-copy">
             <p className="eyebrow">{pageEyebrow || t("THÔNG TIN LIÊN HỆ", "CONTACT INFORMATION")}</p>
-            <h2 className="contact-title-refined">{blockTitle || t("Đăng Kí Học Sáo, Tư Vấn Các Dịch Vụ", "Course Enrollment & Service Consultation")}</h2>
+            <h2 className="contact-title-refined">{blockTitle}</h2>
             <p className="contact-intro">{blockDesc}</p>
             <ul className="contact-bullet-list">
               {((contactAddress || "").split(/\n+/).map((l) => l.trim()).filter(Boolean)).map((line, idx) => (
@@ -445,9 +480,9 @@ export function ContactPage() {
             
             <div className="full interest-selection-group">
               <span className="interest-group-label">
-                {t("Đăng ký bộ môn or Tư vấn dịch vụ, sản phẩm", "Course Enrollment or Service & Product Consultation")}
+                {translate(parsedContact?.interestTitle || "Đăng ký bộ môn or Tư vấn dịch vụ, sản phẩm")}
                 <small style={{ display: "inline-block", marginLeft: 6, color: "#8a7e72", fontWeight: 400 }}>
-                  {t("(Bấm để chọn nhiều mục)", "(Multi-select)")}
+                  {translate(parsedContact?.interestNote || "(Bấm để chọn nhiều mục)")}
                 </small>
               </span>
               <div className="interest-checkbox-grid">
@@ -471,8 +506,10 @@ export function ContactPage() {
             </div>
 
             <label className="full">{t("Lời nhắn", "Message")}<textarea name="message" rows={2} placeholder={t("Mục tiêu, trình độ hiện tại hoặc nhu cầu của bạn", "Your goals, current experience, or questions")} /></label>
-            <button className="button button-wine full" type="submit" disabled={requestSubmitting}>{requestSubmitting ? t("Đang gửi…", "Sending…") : t("GỬI YÊU CẦU ĐĂNG KÝ →", "SUBMIT REGISTRATION REQUEST →")}</button>
-            {sent && <p className="success full" role="status">{t("Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất.", "Request submitted successfully! Au Co Bamboo Flute will contact you shortly.")}</p>}
+            <button className="button button-wine full" type="submit" disabled={requestSubmitting}>
+              {requestSubmitting ? t("Đang gửi…", "Sending…") : translate(parsedContact?.buttonLabel || "GỬI YÊU CẦU ĐĂNG KÝ →")}
+            </button>
+            {sent && <p className="success full" role="status">{translate(parsedContact?.successMsg || "Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất.")}</p>}
             {requestError && <p className="payment-error full" role="alert">{requestError}</p>}
           </form>
         </section>

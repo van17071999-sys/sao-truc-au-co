@@ -119,7 +119,27 @@ type ContactFields = {
   blockDesc: string;
   address: string;
   email: string;
+  interestTitle: string;
+  interestNote: string;
+  interestItems: string;
+  submitButtonText: string;
+  successMessage: string;
 };
+
+const defaultInterestList = [
+  "Sáo trúc Việt Nam",
+  "Sáo Dizi Trung Quốc",
+  "Sáo Recorder",
+  "Động tiêu & Xiao",
+  "Flute phương Tây",
+  "Sáo H'Mông",
+  "Sáo mèo & Sáo bầu",
+  "Mua sáo & phụ kiện",
+  "Khóa học video quay sẵn",
+  "Sheet nhạc & giáo trình",
+  "Thu âm & quay MV",
+  "Booking biểu diễn",
+].join("\n");
 
 function parseContactToFields(content: string): ContactFields {
   const sections: Record<string, string> = {};
@@ -139,6 +159,11 @@ function parseContactToFields(content: string): ContactFields {
       blockDesc: sections["mo_ta_khoi"] !== undefined ? sections["mo_ta_khoi"] : (sections["desc"] !== undefined ? sections["desc"] : "Học tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài."),
       address: sections["dia_chi"] !== undefined ? sections["dia_chi"] : (sections["address"] !== undefined ? sections["address"] : "106/72 Hòa Bình, P. Tân Phú, TP.HCM"),
       email: sections["email"] !== undefined ? sections["email"] : "van17071999@gmail.com",
+      interestTitle: sections["tieu_de_bo_mon"] !== undefined ? sections["tieu_de_bo_mon"] : "Đăng ký bộ môn or Tư vấn dịch vụ, sản phẩm",
+      interestNote: sections["ghi_chu_bo_mon"] !== undefined ? sections["ghi_chu_bo_mon"] : "(Bấm để chọn nhiều mục)",
+      interestItems: sections["danh_sach_bo_mon"] !== undefined ? sections["danh_sach_bo_mon"] : defaultInterestList,
+      submitButtonText: sections["nut_gui"] !== undefined ? sections["nut_gui"] : "GỬI YÊU CẦU ĐĂNG KÝ →",
+      successMessage: sections["thong_bao_thanh_cong"] !== undefined ? sections["thong_bao_thanh_cong"] : "Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất.",
     };
   }
   const lines = content ? content.split(/\n/) : [];
@@ -147,6 +172,11 @@ function parseContactToFields(content: string): ContactFields {
     blockDesc: lines[1] ?? "Học tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài.",
     address: lines[2] ?? "106/72 Hòa Bình, P. Tân Phú, TP.HCM",
     email: lines[3] ?? "van17071999@gmail.com",
+    interestTitle: "Đăng ký bộ môn or Tư vấn dịch vụ, sản phẩm",
+    interestNote: "(Bấm để chọn nhiều mục)",
+    interestItems: defaultInterestList,
+    submitButtonText: "GỬI YÊU CẦU ĐĂNG KÝ →",
+    successMessage: "Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất.",
   };
 }
 
@@ -156,6 +186,11 @@ function assembleContactFields(fields: ContactFields): string {
     `[MÔ TẢ KHỐI]\n${fields.blockDesc}`,
     `[ĐỊA CHỈ]\n${fields.address}`,
     `[EMAIL]\n${fields.email}`,
+    `[TIEU_DE_BO_MON]\n${fields.interestTitle}`,
+    `[GHI_CHU_BO_MON]\n${fields.interestNote}`,
+    `[DANH_SACH_BO_MON]\n${fields.interestItems}`,
+    `[NUT_GUI]\n${fields.submitButtonText}`,
+    `[THONG_BAO_THANH_CONG]\n${fields.successMessage}`,
   ].join("\n\n");
 }
 
@@ -1981,11 +2016,18 @@ export default function ContentAdmin() {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
                 <div>
                   <h3 style={{ margin: 0, color: "#7c1c38", fontSize: 16, fontWeight: 800 }}>✦ NỘI DUNG TRANG ĐĂNG KÝ HỌC & TƯ VẤN (/dang-ky-hoc)</h3>
-                  <small style={{ color: "#64748b" }}>Chỉnh sửa trực tiếp tiêu đề, thông tin liên hệ và biểu mẫu tư vấn</small>
+                  <small style={{ color: "#64748b" }}>Chỉnh sửa trực tiếp tiêu đề, thông tin liên hệ, bảng bộ môn và biểu mẫu đăng ký</small>
                 </div>
                 <a href="/dang-ky-hoc" target="_blank" rel="noreferrer" style={{ fontSize: 12, fontWeight: 700, color: "#7c1c38", textDecoration: "underline" }}>
                   Xem trang thực tế ↗
                 </a>
+              </div>
+
+              <div style={{ padding: "12px 16px", background: "#fdf8f0", border: "1px solid #fde8c3", borderRadius: 8, fontSize: 13, color: "#854d0e", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                <span>💡 <b>Mẹo:</b> Để chỉnh sửa các mức Học phí (1, 2, 3 tháng & Ưu đãi), bạn hãy bấm vào mục <b>Bảng học phí & Ưu đãi</b> ở menu bên trái.</span>
+                <button type="button" onClick={() => setSection("tuition")} style={{ padding: "5px 12px", background: "#854d0e", color: "#fff", border: 0, borderRadius: 5, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                  Mở Bảng học phí →
+                </button>
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
@@ -1994,7 +2036,7 @@ export default function ContentAdmin() {
                   <input
                     value={draft.tag}
                     onChange={(e) => setDraft({ ...draft, tag: e.target.value })}
-                    placeholder="Ví dụ: BẮT ĐẦU HÀNH TRÌNH"
+                    placeholder="Ví dụ: THÔNG TIN LIÊN HỆ"
                   />
                 </label>
                 <label>
@@ -2009,36 +2051,15 @@ export default function ContentAdmin() {
                 </label>
               </div>
 
-              <label className="wide">
-                <span>Tiêu đề chính trang (Headline lớn) *</span>
-                <input
-                  required
-                  value={draft.title}
-                  onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-                  placeholder="Ví dụ: Đăng ký lớp học & Tư vấn"
-                  style={{ fontSize: 16, fontWeight: 700 }}
-                />
-              </label>
-
-              <label className="wide">
-                <span>Mô tả ngắn dưới tiêu đề *</span>
-                <textarea
-                  rows={2}
-                  value={draft.excerpt}
-                  onChange={(e) => setDraft({ ...draft, excerpt: e.target.value })}
-                  placeholder="Ví dụ: Để lại thông tin, Sáo Trúc Âu Cơ sẽ liên hệ tư vấn lớp học, chọn sáo hoặc dịch vụ phù hợp."
-                />
-              </label>
-
               <div style={{ padding: "16px 18px", background: "#fdf8f4", border: "1px solid #ead7c8", borderRadius: 10, display: "grid", gap: 14 }}>
-                <b style={{ color: "#7c1c38", fontSize: 14 }}>✦ KHỐI THÔNG TIN LIÊN HỆ BÊN TRÁI BIỂU MẪU:</b>
+                <b style={{ color: "#7c1c38", fontSize: 14 }}>✦ 1. THÔNG TIN LIÊN HỆ (CỘT BÊN TRÁI):</b>
                 
                 <label className="wide">
-                  <span>Tiêu đề khối liên hệ *</span>
+                  <span>Tiêu đề khối liên hệ (Chữ Vàng Gold) *</span>
                   <input
                     value={contactFields.blockTitle}
                     onChange={(e) => updateContactField("blockTitle", e.target.value)}
-                    placeholder="Ví dụ: Để tiếng sáo cất lời."
+                    placeholder="Ví dụ: Đăng Kí Học Sáo, Tư Vấn Các Dịch Vụ"
                     style={{ fontWeight: 700 }}
                   />
                 </label>
@@ -2053,17 +2074,17 @@ export default function ContentAdmin() {
                   />
                 </label>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 14 }}>
-                  <label className="wide">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                  <label>
                     <span>Địa chỉ trung tâm / Lớp học (Hỗ trợ nhiều chi nhánh - mỗi chi nhánh 1 dòng) *</span>
                     <textarea
                       rows={3}
                       value={contactFields.address}
                       onChange={(e) => updateContactField("address", e.target.value)}
-                      placeholder={"Ví dụ:\nCN1: 106/72 Hòa Bình, P. Tân Phú, TP.HCM\nCN2: Vinhomes Grand Park, Tòa S203, TP. Thủ Đức, TP.HCM"}
+                      placeholder={"Ví dụ:\n106/72 Hòa Bình, P. Tân Phú, TP.HCM"}
                     />
                   </label>
-                  <label className="wide">
+                  <label>
                     <span>Email nhận thông báo / liên hệ *</span>
                     <input
                       type="email"
@@ -2075,25 +2096,92 @@ export default function ContentAdmin() {
                 </div>
               </div>
 
+              <div style={{ padding: "16px 18px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, display: "grid", gap: 14 }}>
+                <b style={{ color: "#1e293b", fontSize: 14 }}>✦ 2. CÀI ĐẶT FORM & DANH SÁCH BỘ MÔN (CỘT BÊN PHẢI):</b>
+                
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                  <label>
+                    <span>Tiêu đề nhóm lựa chọn bộ môn *</span>
+                    <input
+                      value={contactFields.interestTitle}
+                      onChange={(e) => updateContactField("interestTitle", e.target.value)}
+                      placeholder="Ví dụ: Đăng ký bộ môn or Tư vấn dịch vụ, sản phẩm"
+                    />
+                  </label>
+                  <label>
+                    <span>Ghi chú hướng dẫn chọn *</span>
+                    <input
+                      value={contactFields.interestNote}
+                      onChange={(e) => updateContactField("interestNote", e.target.value)}
+                      placeholder="Ví dụ: (Bấm để chọn nhiều mục)"
+                    />
+                  </label>
+                </div>
+
+                <label className="wide">
+                  <span>Danh sách Bộ môn / Dịch vụ để học viên bấm chọn (Mỗi bộ môn 1 dòng) *</span>
+                  <textarea
+                    rows={6}
+                    value={contactFields.interestItems}
+                    onChange={(e) => updateContactField("interestItems", e.target.value)}
+                    placeholder={"Sáo trúc Việt Nam\nSáo Dizi Trung Quốc\nSáo Recorder\nĐộng tiêu & Xiao\nFlute phương Tây\nSáo H'Mông\nSáo mèo & Sáo bầu\nMua sáo & phụ kiện\nKhóa học video quay sẵn\nSheet nhạc & giáo trình\nThu âm & quay MV\nBooking biểu diễn"}
+                  />
+                  <small style={{ color: "#64748b", marginTop: 4 }}>
+                    Học viên có thể bấm chọn một hoặc nhiều bộ môn trong danh sách này trên form đăng ký.
+                  </small>
+                </label>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                  <label>
+                    <span>Chữ trên nút Gửi đăng ký *</span>
+                    <input
+                      value={contactFields.submitButtonText}
+                      onChange={(e) => updateContactField("submitButtonText", e.target.value)}
+                      placeholder="Ví dụ: GỬI YÊU CẦU ĐĂNG KÝ →"
+                    />
+                  </label>
+                  <label>
+                    <span>Thông báo sau khi gửi thành công *</span>
+                    <input
+                      value={contactFields.successMessage}
+                      onChange={(e) => updateContactField("successMessage", e.target.value)}
+                      placeholder="Ví dụ: Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất."
+                    />
+                  </label>
+                </div>
+              </div>
+
               <div style={{ padding: "16px 20px", background: "#fff", border: "1px solid #cbd5e1", borderRadius: 10 }}>
                 <small style={{ display: "block", color: "#475569", fontWeight: 800, letterSpacing: "0.08em", marginBottom: 12 }}>
-                  ✦ XEM TRƯỚC TRỰC TIẾP KHỐI LIÊN HỆ (LIVE PREVIEW):
+                  ✦ XEM TRƯỚC TRỰC TIẾP KHỐI LIÊN HỆ & FORM ĐĂNG KÝ (LIVE PREVIEW):
                 </small>
-                <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 20, padding: 18, background: "#3d1020", color: "#fff", borderRadius: 10 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1.3fr", gap: 20, padding: 18, background: "#3d1020", color: "#fff", borderRadius: 10 }}>
                   <div>
-                    <span style={{ fontSize: 10, color: "#dcb269", letterSpacing: "0.15em", textTransform: "uppercase" }}>THÔNG TIN LIÊN HỆ</span>
-                    <h3 style={{ margin: "8px 0", font: "400 24px Georgia,serif", color: "#fff5e5" }}>{contactFields.blockTitle}</h3>
-                    <p style={{ fontSize: 13, color: "#edd6d0", lineHeight: 1.6 }}>{contactFields.blockDesc}</p>
-                    <ul style={{ paddingLeft: 16, fontSize: 13, color: "#eedbd5", margin: "10px 0 0" }}>
+                    <span style={{ fontSize: 10, color: "#dcb269", letterSpacing: "0.15em", textTransform: "uppercase" }}>{draft.tag || "THÔNG TIN LIÊN HỆ"}</span>
+                    <h3 style={{ margin: "8px 0", font: "400 22px Georgia,serif", color: "#e2ba73" }}>{contactFields.blockTitle}</h3>
+                    <p style={{ fontSize: 12.5, color: "#edd6d0", lineHeight: 1.55 }}>{contactFields.blockDesc}</p>
+                    <ul style={{ paddingLeft: 16, fontSize: 12.5, color: "#eedbd5", margin: "10px 0 0" }}>
                       {contactFields.address.split(/\n+/).map((l, i) => l.trim() && <li key={i}>{l.trim()}</li>)}
                       <li>Hotline / Zalo: <strong style={{ color: "#eed6a1" }}>{draft.price}</strong></li>
                       <li>Email: {contactFields.email}</li>
                     </ul>
                   </div>
-                  <div style={{ background: "rgba(255,255,255,0.06)", padding: 14, borderRadius: 8, fontSize: 12, color: "#edd6d0", display: "flex", flexDirection: "column", justifyContent: "center", gap: 8 }}>
-                    <div style={{ padding: "8px 12px", background: "rgba(255,255,255,0.1)", borderRadius: 6 }}>Họ và tên: [Tên của bạn]</div>
-                    <div style={{ padding: "8px 12px", background: "rgba(255,255,255,0.1)", borderRadius: 6 }}>Số điện thoại / Zalo: [Số điện thoại]</div>
-                    <div style={{ padding: "8px 12px", background: "#8c1c38", borderRadius: 6, color: "#fff", textAlign: "center", fontWeight: 700 }}>GỬI YÊU CẦU ĐĂNG KÝ →</div>
+                  <div style={{ background: "rgba(255,255,255,0.06)", padding: 14, borderRadius: 8, fontSize: 11.5, color: "#edd6d0", display: "flex", flexDirection: "column", gap: 7 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                      <div style={{ padding: "6px 8px", background: "rgba(255,255,255,0.1)", borderRadius: 5 }}>Họ và tên</div>
+                      <div style={{ padding: "6px 8px", background: "rgba(255,255,255,0.1)", borderRadius: 5 }}>Số điện thoại</div>
+                    </div>
+                    <div style={{ fontSize: 11, color: "#ffdc94", fontWeight: 700 }}>{contactFields.interestTitle} <small style={{ color: "#ddd" }}>{contactFields.interestNote}</small></div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, maxHeight: 110, overflowY: "auto" }}>
+                      {contactFields.interestItems.split(/\n+/).map((item, idx) => item.trim() && (
+                        <div key={idx} style={{ padding: "4px 6px", background: idx === 0 ? "#7c1c38" : "rgba(255,255,255,0.1)", borderRadius: 4, fontSize: 10 }}>
+                          {idx === 0 ? "✓ " : "+ "}{item.trim()}
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ padding: "7px 10px", background: "#8c1c38", borderRadius: 6, color: "#fff", textAlign: "center", fontWeight: 700, fontSize: 11, marginTop: 4 }}>
+                      {contactFields.submitButtonText}
+                    </div>
                   </div>
                 </div>
               </div>
