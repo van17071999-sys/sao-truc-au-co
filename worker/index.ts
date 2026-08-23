@@ -62,9 +62,13 @@ const initialCmsEntries = [
   ["page-contact", "page-contact", "Đăng ký lớp học & Tư vấn", "dang-ky-hoc", "Để lại thông tin, Sáo Trúc Âu Cơ sẽ liên hệ tư vấn lớp học, chọn sáo hoặc dịch vụ phù hợp.", "/hero-flute.webp", "BẮT ĐẦU HÀNH TRÌNH", "0374 261 368", "Để tiếng sáo cất lời.\n\nHọc tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài.\n\n106/72 Hòa Bình, P. Tân Phú, TP.HCM\n\nvanquach999x@gmail.com", 1],
   ["settings-general", "settings", "SÁO TRÚC ÂU CƠ", "general", "Sáo trúc & âm nhạc dân tộc", "/hero-flute.webp", "vanquach999x@gmail.com", "0374 261 368", "106/72 Hòa Bình, P. Tân Phú, TP.HCM", 1],
   ["settings-payment", "settings", "Thanh toán VietQR", "payment", "QUACH HA VAN", "/vietqr-payment.png", "STB · Sacombank", "030046023451", "Thông tin chuyển khoản dùng chung cho toàn bộ website.", 2],
+  ["settings-tuition", "settings", "2.400.000đ – 3.200.000đ", "tuition", "4.800.000đ – 6.400.000đ", "", "Bảng mục học phí", "7.200.000đ", "giảm 10% – 15%, tặng MV Video thổi sáo khi hết khoá.", 3],
 ] as const;
 
 const detailedCmsEntries = [
+  // Cài đặt học phí và ưu đãi
+  ["settings-tuition", "settings", "2.400.000đ – 3.200.000đ", "tuition", "4.800.000đ – 6.400.000đ", "", "Bảng mục học phí", "7.200.000đ", "giảm 10% – 15%, tặng MV Video thổi sáo khi hết khoá.", 3],
+
   // Thông tin tài khoản và QR dùng chung cho mọi bảng thanh toán trên website.
   ["settings-payment", "settings", "Thanh toán VietQR", "payment", "QUACH HA VAN", "/vietqr-payment.png", "STB · Sacombank", "030046023451", "Thông tin chuyển khoản dùng chung cho toàn bộ website.", 2],
 

@@ -941,6 +941,7 @@ export default function ContentAdmin() {
   }
 
   const isPaymentSettings = draft?.collection === "settings" && draft.slug === "payment";
+  const isTuitionSettings = draft?.collection === "settings" && draft.slug === "tuition";
   const fieldMeta = activeMeta as typeof activeMeta & {
     tagLabel?: string;
     tagPlaceholder?: string;
@@ -1473,7 +1474,7 @@ export default function ContentAdmin() {
       </div> : <form className="admin-editor" onSubmit={save}>
         <div className="admin-editor-head"><button type="button" onClick={() => setDraft(null)}>← Danh sách</button><div><small>{draft.id ? "CHỈNH SỬA" : "TẠO MỚI"}</small><h2>{draft.title || activeMeta.label}</h2>{entryHref(draft) && <a className="admin-page-url" href={entryHref(draft)} target="_blank" rel="noreferrer">saotrucauco.com{entryHref(draft)} ↗</a>}</div><button className="admin-primary" disabled={busy}>{busy ? "Đang lưu…" : "Lưu nội dung"}</button></div>
         <div className="admin-form-grid">
-          <label className="wide">Tiêu đề *<input required value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value, slug: draft.slug || slugify(event.target.value) })} /></label>
+          <label className="wide">{isTuitionSettings ? "Học phí Khóa 1 tháng *" : "Tiêu đề *"}<input required value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value, slug: draft.slug || slugify(event.target.value) })} placeholder={isTuitionSettings ? "Ví dụ: 2.400.000đ – 3.200.000đ" : undefined} /></label>
           <label className="wide slug-field">Slug (đường dẫn, không dấu) *<span><input required pattern="[a-z0-9-]+" value={draft.slug} onChange={(event) => setDraft({ ...draft, slug: slugify(event.target.value) })} /><button type="button" onClick={() => setDraft({ ...draft, slug: slugify(draft.title) })}>Tạo lại</button></span></label>
           <label>Ngày đăng<input type="date" value={draft.publishedAt} onChange={(event) => setDraft({ ...draft, publishedAt: event.target.value })} /></label>
           <label>Thứ tự hiển thị<input type="number" min="0" value={draft.sortOrder} onChange={(event) => setDraft({ ...draft, sortOrder: Number(event.target.value) })} /></label>
@@ -1547,7 +1548,7 @@ export default function ContentAdmin() {
               </select>
             </label>
           ) : (
-            <label>{isPaymentSettings ? "Ngân hàng" : fieldMeta.tagLabel || "Phân loại / nhãn"}<input required={isPaymentSettings} value={draft.tag} onChange={(event) => setDraft({ ...draft, tag: event.target.value })} placeholder={isPaymentSettings ? "Ví dụ: STB · Sacombank" : fieldMeta.tagPlaceholder || "Ví dụ: Kỹ thuật"} /></label>
+            <label>{isTuitionSettings ? "Tiêu đề bảng học phí" : (isPaymentSettings ? "Ngân hàng" : fieldMeta.tagLabel || "Phân loại / nhãn")}<input required={isPaymentSettings} value={draft.tag} onChange={(event) => setDraft({ ...draft, tag: event.target.value })} placeholder={isTuitionSettings ? "Ví dụ: Bảng mục học phí" : (isPaymentSettings ? "Ví dụ: STB · Sacombank" : fieldMeta.tagPlaceholder || "Ví dụ: Kỹ thuật")} /></label>
           )}
           
           {isPaymentSettings ? (
@@ -1680,6 +1681,44 @@ export default function ContentAdmin() {
                   </small>
                 </div>
               </div>
+            </div>
+          ) : isTuitionSettings ? (
+            <div className="wide" style={{ display: "grid", gap: 16, borderTop: "2px solid #e2e8f0", paddingTop: 18 }}>
+              <div style={{ padding: "14px 18px", background: "#fdf8f0", border: "1px solid #fde8c3", borderRadius: 8, fontSize: 13, color: "#854d0e", lineHeight: 1.6 }}>
+                <b style={{ fontSize: 14 }}>✦ CÀI ĐẶT BẢNG HỌC PHÍ & ƯU ĐÃI KHÓA HỌC:</b>
+                <p style={{ margin: "4px 0 0" }}>Các mức học phí và khuyến mãi dưới đây sẽ hiển thị trực tiếp trong khung Bảng học phí ở Form đăng ký tại trang chủ.</p>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                <label>
+                  <span>Học phí Khóa 2 tháng *</span>
+                  <input
+                    required
+                    value={draft.excerpt}
+                    onChange={(event) => setDraft({ ...draft, excerpt: event.target.value })}
+                    placeholder="Ví dụ: 4.800.000đ – 6.400.000đ"
+                  />
+                </label>
+                <label>
+                  <span>Học phí Khóa 3 tháng *</span>
+                  <input
+                    required
+                    value={draft.price}
+                    onChange={(event) => setDraft({ ...draft, price: event.target.value })}
+                    placeholder="Ví dụ: 7.200.000đ"
+                  />
+                </label>
+              </div>
+
+              <label className="wide">
+                <span>Ưu đãi khi đăng ký khóa 2, 3 tháng & Quà tặng MV</span>
+                <textarea
+                  rows={3}
+                  value={draft.content}
+                  onChange={(event) => setDraft({ ...draft, content: event.target.value })}
+                  placeholder="Ví dụ: giảm 10% – 15%, tặng MV Video thổi sáo khi hết khoá."
+                />
+              </label>
             </div>
           ) : (
             <>

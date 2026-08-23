@@ -415,6 +415,12 @@ export default function Home() {
     .filter(Boolean);
   const contactPhone = generalSettings?.price || "0374 261 368";
   const contactEmail = generalSettings?.tag || "vanquach999x@gmail.com";
+  const tuitionSettings = cmsEntries.find((entry) => entry.collection === "settings" && entry.slug === "tuition");
+  const tuitionTitle = tuitionSettings?.tag || t("Bảng mục học phí", "Tuition Fee Table");
+  const tuition1Month = tuitionSettings?.title || "2.400.000đ – 3.200.000đ";
+  const tuition2Months = tuitionSettings?.excerpt || "4.800.000đ – 6.400.000đ";
+  const tuition3Months = tuitionSettings?.price || "7.200.000đ";
+  const tuitionPromo = tuitionSettings?.content || t("giảm 10% – 15%, tặng MV Video thổi sáo khi hết khoá.", "10% – 15% discount, complimentary flute music video upon completion.");
   const paymentSettings = cmsEntries.find((entry) => entry.collection === "settings" && entry.slug === "payment" && entry.visible);
   const paymentBank = paymentSettings?.tag || "STB · Sacombank";
   const paymentAccount = paymentSettings?.price || "030046023451";
@@ -1006,9 +1012,9 @@ export default function Home() {
 
       {activeService === "contact" && <section className="contact section" id="contact">
         <div className="contact-copy">
-          <p className="eyebrow">{t("BẮT ĐẦU HÀNH TRÌNH", "BEGIN YOUR MUSICAL JOURNEY")}</p>
-          <h2>{t("Để tiếng sáo cất lời.", "Let your melody speak.")}</h2>
-          <p>{t("Để lại thông tin, Sáo Trúc Âu Cơ sẽ liên hệ tư vấn lớp học, chọn sáo hoặc dịch vụ phù hợp.", "Leave your information, Au Co Bamboo Flute will contact you for course, instrument, or service advice.")}</p>
+          <p className="eyebrow">{t("THÔNG TIN LIÊN HỆ", "CONTACT INFORMATION")}</p>
+          <h2 className="contact-title-refined">{t("Đăng Kí Học Sáo, Tư Vấn Các Dịch Vụ", "Course Enrollment & Service Consultation")}</h2>
+          <p>{t("Học tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài.", "Study at the center (HCMC), home tutoring, or 1-on-1 flexible online for distant and overseas students.")}</p>
           <ul>
             {addressLines.map((line, idx) => (
               <li key={idx}><span style={{ color: "#ddb268" }}>⌖</span> {renderAddressLine(line)}</li>
@@ -1016,6 +1022,31 @@ export default function Home() {
             <li>{t("Hotline / Zalo:", "Hotline / Zalo:")} {contactPhone}</li>
             <li>Email: {contactEmail}</li>
           </ul>
+
+          <div className="tuition-card">
+            <div className="tuition-card-head">
+              <h3 className="tuition-card-title"><span>✦</span>{tuitionTitle}</h3>
+              <span className="tuition-card-badge">{t("Chuẩn âm bài bản", "Standard tuning")}</span>
+            </div>
+            <div className="tuition-grid">
+              <div className="tuition-row">
+                <span className="tuition-duration">{t("Khóa 1 tháng", "1-Month Course")}</span>
+                <span className="tuition-fee">{tuition1Month}</span>
+              </div>
+              <div className="tuition-row">
+                <span className="tuition-duration">{t("Khóa 2 tháng", "2-Month Course")}</span>
+                <span className="tuition-fee">{tuition2Months}</span>
+              </div>
+              <div className="tuition-row">
+                <span className="tuition-duration">{t("Khóa 3 tháng", "3-Month Course")}</span>
+                <span className="tuition-fee">{tuition3Months}</span>
+              </div>
+            </div>
+            <div className="tuition-promo">
+              <div className="tuition-promo-title"><span>🎁</span>{t("Ưu đãi khi đăng ký khóa 2, 3 tháng:", "Special offers for 2 & 3-month courses:")}</div>
+              <div>{tuitionPromo}</div>
+            </div>
+          </div>
         </div>
         <form onSubmit={submitForm}>
           <label>{t("Họ và tên", "Full Name")}<input required name="name" placeholder={t("Tên của bạn", "Your full name")} /></label>
@@ -1049,10 +1080,16 @@ export default function Home() {
           </div>
 
           <label className="full">{t("Lời nhắn", "Message")}<textarea name="message" rows={3} placeholder={t("Mục tiêu hoặc nhu cầu của bạn", "Your goals, questions, or specific needs")} /></label>
-          <button className="button button-wine full" type="submit" disabled={requestSubmitting}>{requestSubmitting ? t("Đang gửi…", "Sending…") : t("Gửi yêu cầu →", "Submit Request →")}</button>
+          <button className="button button-wine full" type="submit" disabled={requestSubmitting}>{requestSubmitting ? t("Đang gửi…", "Sending…") : t("GỬI YÊU CẦU ĐĂNG KÝ →", "SUBMIT REGISTRATION REQUEST →")}</button>
           {sent && <p className="success full" role="status">{t("Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất.", "Request submitted successfully! Au Co Bamboo Flute will contact you shortly.")}</p>}
           {requestError && <p className="payment-error full" role="alert">{requestError}</p>}
         </form>
+
+        <div className="contact-back-wrapper">
+          <button className="contact-back-button" type="button" onClick={closeService}>
+            {t("← QUAY LẠI TRANG CHỦ", "← BACK TO HOME")}
+          </button>
+        </div>
       </section>}
 
       <footer><div className="brand"><img src="/logo.jpg" alt="Logo Sáo Trúc Âu Cơ" width={46} height={46} style={{ width: 46, height: 46, objectFit: "cover", borderRadius: 8, flex: "0 0 auto" }} /><span><b>{brandName}</b><small>{brandTagline}</small></span></div><p>{t("Đam mê làm nên giá trị · Chất lượng tạo nên uy tín", "Passion creates value · Quality builds trust")}</p><small>{t("© 2026 Sáo Trúc Âu Cơ. All rights reserved.", "© 2026 Au Co Bamboo Flute. All rights reserved.")}</small></footer>
