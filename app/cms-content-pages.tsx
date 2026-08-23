@@ -8,7 +8,7 @@ import type { ReactNode } from "react";
 import { PaymentModal } from "./service-pages";
 import { PriceTag, parsePrice } from "./price-helper";
 
-type CmsEntry = {
+export type CmsEntry = {
   id: string;
   collection: string;
   title: string;
@@ -23,8 +23,8 @@ type CmsEntry = {
   sortOrder: number;
 };
 
-function useCmsEntries(collection: string) {
-  const [entries, setEntries] = useState<CmsEntry[] | null>(null);
+function useCmsEntries(collection: string, initialEntries?: CmsEntry[]) {
+  const [entries, setEntries] = useState<CmsEntry[] | null>(initialEntries || null);
   useEffect(() => {
     let active = true;
     fetch("/api/cms/content")
@@ -558,10 +558,10 @@ export function renderArticleFormatting(source: string): ReactNode[] {
   return blocks;
 }
 
-export function NewsDetail() {
+export function NewsDetail({ initialEntry }: { initialEntry?: CmsEntry }) {
   const { t, translate } = useLanguage();
   const params = useParams<{ slug: string }>();
-  const entries = useCmsEntries("articles");
+  const entries = useCmsEntries("articles", initialEntry ? [initialEntry] : undefined);
   const entry = entries?.find((item) => item.slug === params.slug);
   const articleContent = translate(entry?.content || entry?.excerpt || "");
 

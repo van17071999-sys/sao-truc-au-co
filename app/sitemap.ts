@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 const subjects = ["sao-truc-viet-nam", "sao-dizi", "sao-recorder", "dong-tieu-xiao", "flute", "sao-hmong"];
-const articleSlugs = ["5-buoc-tao-tieng-sao", "nguoi-moi-chon-sao-tone-nao", "cach-luyen-hoi-dai"];
+const articleSlugs = ["hoc-thoi-sao-hcm", "5-buoc-tao-tieng-sao", "nguoi-moi-chon-sao-tone-nao", "cach-luyen-hoi-dai"];
 const fluteTabSlugs = ["beo-dat-may-troi", "ve-que", "tinh-ca-tay-bac"];
 const catalogPaths = [
   ..."dan-ca-nhac-co nhac-dan-gian nhac-tru-tinh-bolero nhac-tre sao-meo-co-ban nhac-ngu-cung giao-trinh-steiner nhac-thieu-nhi dizi-co-ban nhac-hoa-loi-viet".split(" ").map((slug) => `/khoa-hoc/${slug}`),
