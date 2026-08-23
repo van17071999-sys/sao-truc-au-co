@@ -550,6 +550,15 @@ export default function ContentAdmin() {
 
   const activeMeta = [...collections, ...singletons].find((item) => item.key === section) || singletons[0];
   const isSingleton = singletons.some((item) => item.key === section);
+  const isPaymentSettings = draft?.collection === "settings" && draft.slug === "payment";
+  const isTuitionSettings = (draft?.collection === "settings" && draft.slug === "tuition") || section === "tuition";
+  const fieldMeta = activeMeta as typeof activeMeta & {
+    tagLabel?: string;
+    tagPlaceholder?: string;
+    priceLabel?: string;
+    excerptLabel?: string;
+    contentLabel?: string;
+  };
 
   const defaultProductGroupList = useMemo(() => [
     { slug: "sao-ngang-viet-nam", title: "Sáo ngang Việt Nam" },
@@ -1083,16 +1092,6 @@ export default function ContentAdmin() {
       </section>
     </main>;
   }
-
-  const isPaymentSettings = draft?.collection === "settings" && draft.slug === "payment";
-  const isTuitionSettings = (draft?.collection === "settings" && draft.slug === "tuition") || section === "tuition";
-  const fieldMeta = activeMeta as typeof activeMeta & {
-    tagLabel?: string;
-    tagPlaceholder?: string;
-    priceLabel?: string;
-    excerptLabel?: string;
-    contentLabel?: string;
-  };
 
   return <main className="admin-shell">
     <aside className={navOpen ? "admin-sidebar open" : "admin-sidebar"}>
