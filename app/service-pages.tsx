@@ -100,7 +100,7 @@ export function ServicePageHeader() {
   return (
     <>
       <div className="top-contact-bar" aria-label={t("Thông tin liên hệ nhanh", "Quick contact info")}>
-        <Link className="top-address" href="/#contact">
+        <Link className="top-address" href="/dang-ky-hoc">
           <span className="top-address-icon">⌖</span>
           <span className="top-address-list">
             {addressLines.length > 0 ? (
