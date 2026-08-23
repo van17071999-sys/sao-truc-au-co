@@ -470,7 +470,7 @@ export function ContactPage() {
               </div>
             </div>
 
-            <label className="full">{t("Lời nhắn", "Message")}<textarea name="message" rows={2} placeholder={t("Mục tiêu, trình độ hiện tại hoặc nhu cầu của bạn", "Your goals, current experience, or questions")} /></label>
+            <label className="full">{t("Lời nhắn", "Message")}<textarea name="message" rows={3} placeholder={t("Mục tiêu, trình độ hiện tại hoặc nhu cầu của bạn", "Your goals, current experience, or questions")} /></label>
             <button className="button button-wine full" type="submit" disabled={requestSubmitting}>{requestSubmitting ? t("Đang gửi…", "Sending…") : t("GỬI YÊU CẦU ĐĂNG KÝ →", "SUBMIT REGISTRATION REQUEST →")}</button>
             {sent && <p className="success full" role="status">{t("Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất.", "Request submitted successfully! Au Co Bamboo Flute will contact you shortly.")}</p>}
             {requestError && <p className="payment-error full" role="alert">{requestError}</p>}
