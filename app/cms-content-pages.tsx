@@ -596,7 +596,7 @@ export function SalesDetail({ collection, typeLabel, backHref, backLabel }: { co
   const showPrice = Boolean(entry?.price && entry.price.toLowerCase() !== "liên hệ" && entry.price.toLowerCase() !== "contact");
   const cleanTag = entry?.tag?.replace(/^(giao-trinh|sheet):/, "");
 
-  const schema = entry ? {
+  const schema = entry && showPrice ? {
     "@context": "https://schema.org",
     "@type": "Product",
     name: entry.title,
@@ -604,13 +604,13 @@ export function SalesDetail({ collection, typeLabel, backHref, backLabel }: { co
     image: entry.imageUrl || undefined,
     category: typeLabel,
     brand: { "@type": "Brand", name: "Sáo Trúc Âu Cơ" },
-    offers: showPrice ? {
+    offers: {
       "@type": "Offer",
       priceCurrency: "VND",
       price: entry.price.replace(/\D/g, ""),
       availability: "https://schema.org/InStock",
       url: typeof window !== "undefined" ? window.location.href : undefined,
-    } : undefined,
+    },
   } : null;
 
   return (

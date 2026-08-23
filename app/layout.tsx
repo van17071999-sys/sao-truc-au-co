@@ -156,13 +156,6 @@ const jsonLdData = {
           closes: "21:30",
         },
       ],
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: "4.9",
-        reviewCount: "128",
-        bestRating: "5",
-        worstRating: "1",
-      },
       hasOfferCatalog: {
         "@type": "OfferCatalog",
         name: "Khóa Học & Dịch Vụ Sáo Trúc Âu Cơ",
@@ -206,7 +199,7 @@ const jsonLdData = {
           {
             "@type": "Offer",
             itemOffered: {
-              "@type": "Product",
+              "@type": "Service",
               name: "Sáo Trúc & Nhạc Cụ Dân Tộc Chuẩn Âm",
               description: "Cung cấp sáo nứa Bắc, nứa Nam, sáo Dizi, tiêu bát khổng, sáo Mèo chuẩn cao độ 440Hz/442Hz.",
             },
