@@ -9,7 +9,7 @@ import { PriceTag, parsePrice } from "./price-helper";
 
 const serviceSlugToHref: Record<string, string> = {
   classes: "/lop-hoc",
-  contact: "#contact",
+  contact: "/dang-ky-hoc",
   products: "/sao-va-phu-kien",
   courses: "/khoa-hoc-quay-san",
   materials: "/giao-trinh-va-sheet",
@@ -20,7 +20,7 @@ const serviceSlugToHref: Record<string, string> = {
 
 const defaultServices = [
   { no: "01", icon: "♫", image: "/carousel-saotruc.webp", title: "Lớp học các bộ môn", text: "Sáo trúc, Dizi, sáo nứa, sáo mèo, recorder và các bộ môn dân tộc.", cta: "Xem lớp học", href: "/lop-hoc" },
-  { no: "02", icon: "⌂", image: "/carousel-recorder.webp", title: "Đăng ký lớp học", text: "Học tại trung tâm, gia sư tại nhà hoặc online 1 kèm 1 với lịch linh động.", cta: "Đăng ký ngay", href: "#contact" },
+  { no: "02", icon: "⌂", image: "/carousel-recorder.webp", title: "Đăng ký lớp học", text: "Học tại trung tâm, gia sư tại nhà hoặc online 1 kèm 1 với lịch linh động.", cta: "Đăng ký ngay", href: "/dang-ky-hoc" },
   { no: "03", icon: "◌", image: "/carousel-dizi.webp", title: "Sáo & phụ kiện", text: "Sáo trúc chuẩn âm, Dizi, sáo nứa, sáo mèo cùng phụ kiện được tuyển chọn.", cta: "Khám phá", href: "/sao-va-phu-kien" },
   { no: "04", icon: "▶", image: "/carousel-tieu.webp", title: "Khóa học quay sẵn", text: "Video bài giảng HD từ nhập môn đến nâng cao, học mọi lúc và xem lại trọn đời.", cta: "Xem khóa học", href: "/khoa-hoc-quay-san" },
   { no: "05", icon: "▤", image: "/carousel-flute.webp", title: "Giáo trình & sheet", text: "Giáo trình kỹ thuật, sheet nhạc và bản chuyển soạn theo yêu cầu biểu diễn.", cta: "Xem tài liệu", href: "/giao-trinh-va-sheet", price: "Từ 50.000đ / sheet" },
@@ -799,7 +799,7 @@ export default function Home() {
   return (
     <main>
       <div className="top-contact-bar" aria-label={t("Thông tin liên hệ nhanh", "Quick contact info")}>
-        <a className="top-address" href="#contact" onClick={(e) => { e.preventDefault(); openService("#contact"); }}>
+        <Link className="top-address" href="/dang-ky-hoc">
           <span className="top-address-icon">⌖</span>
           <span className="top-address-list">
             {addressLines.length > 0 ? (
@@ -812,7 +812,7 @@ export default function Home() {
               <span className="top-address-line">106/72 Hòa Bình, P. Tân Phú, TP.HCM</span>
             )}
           </span>
-        </a>
+        </Link>
         <a className="top-phone" href={`tel:${contactPhone.replace(/\D/g, "")}`}><span>☎</span><span>{contactPhone}</span><small>{t("Hotline / Zalo", "Hotline / Zalo")}</small></a>
         <LanguageSwitcher className="lang-switcher-top" compact />
       </div>
@@ -828,9 +828,9 @@ export default function Home() {
           <a href="/bai-viet" onClick={() => setMenuOpen(false)}>{t("Bài viết", "Articles")}</a>
           <a href="#classes" onClick={(e) => { e.preventDefault(); openService("#classes"); }}>{t("Lớp học", "Classes")}</a>
           <a href="/cam-am" onClick={() => setMenuOpen(false)}>{t("Cảm âm", "Flute Tabs")}</a>
-          <a href="#contact" onClick={(e) => { e.preventDefault(); openService("#contact"); }}>{t("Liên hệ", "Contact")}</a>
+          <Link href="/dang-ky-hoc" onClick={() => setMenuOpen(false)}>{t("Liên hệ", "Contact")}</Link>
         </nav>
-        <button className="button button-gold header-cta" onClick={() => openService("#contact")}>{t("✦ Đăng ký học", "✦ Enroll Now")}</button>
+        <Link href="/dang-ky-hoc" className="button button-gold header-cta" style={{ textDecoration: "none" }}>{t("✦ Đăng ký học", "✦ Enroll Now")}</Link>
         {searchOpen && <div className="search-panel"><div className="search-box"><span>⌕</span><input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("Tìm lớp học, khóa học, dịch vụ...", "Search classes, courses, services...")} aria-label={t("Tìm kiếm nội dung", "Search content")} /><button onClick={() => { setSearchOpen(false); setQuery(""); }} aria-label={t("Đóng tìm kiếm", "Close search")}>×</button></div>{query && <div className="search-results">{searchItems.length ? searchItems.slice(0, 6).map((item) => <a key={`${item.type}-${item.title}`} href={item.href} onClick={(e) => { e.preventDefault(); openService(item.href); }}><small>{item.type}</small><span>{item.title}</span><b>→</b></a>) : <p>{t("Không tìm thấy nội dung phù hợp.", "No matching content found.")}</p>}</div>}</div>}
       </header>
 
@@ -845,7 +845,7 @@ export default function Home() {
           <p className="hero-copy">{displayedSlides[currentSlide].copy}</p>
           <div className="hero-actions">
             <a className="button button-gold hero-link" href={displayedSlides[currentSlide].href}>{displayedSlides[currentSlide].cta}</a>
-            <button className="button button-outline" onClick={() => openService("#contact")}>{t("Đăng ký học", "Enroll Now")}</button>
+            <Link href="/dang-ky-hoc" className="button button-outline" style={{ textDecoration: "none" }}>{t("Đăng ký học", "Enroll Now")}</Link>
           </div>
         </div>
         <div className="hero-features" aria-label={t("Điểm nổi bật", "Highlights")}>
@@ -864,48 +864,25 @@ export default function Home() {
         <div className="service-grid">
           {services.map((service) => (
             <article className="service-card" key={service.no}>
-              {service.href.startsWith("#") || service.href === "/dang-ky-hoc" || service.no === "02" ? (
-                <a
-                  href="#contact"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    openService("#contact");
-                  }}
-                  style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", height: "100%", cursor: "pointer" }}
-                >
-                  <div className="card-top">
-                    <span className="card-no">{service.no}</span>
-                    <span className="card-icon">{service.icon}</span>
-                  </div>
-                  <h3>{service.title}</h3>
-                  <p>{service.text}</p>
-                  {service.price && <PriceTag price={service.price} className="price" />}
-                  <span className="service-card-link" style={{ marginTop: "auto", display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 700, color: "#8c1c38", fontSize: 13, textTransform: "uppercase", letterSpacing: "0.08em", paddingTop: 12 }}>
-                    {service.cta}
-                    <span>→</span>
-                  </span>
-                </a>
-              ) : (
-                <Link href={service.href} style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", height: "100%" }}>
-                  <div className="card-top">
-                    <span className="card-no">{service.no}</span>
-                    <span className="card-icon">{service.icon}</span>
-                  </div>
-                  <h3>{service.title}</h3>
-                  <p>{service.text}</p>
-                  {service.price && <PriceTag price={service.price} className="price" />}
-                  <span className="service-card-link" style={{ marginTop: "auto", display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 700, color: "#8c1c38", fontSize: 13, textTransform: "uppercase", letterSpacing: "0.08em", paddingTop: 12 }}>
-                    {service.cta}
-                    <span>→</span>
-                  </span>
-                </Link>
-              )}
+              <Link href={service.href} style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", height: "100%" }}>
+                <div className="card-top">
+                  <span className="card-no">{service.no}</span>
+                  <span className="card-icon">{service.icon}</span>
+                </div>
+                <h3>{service.title}</h3>
+                <p>{service.text}</p>
+                {service.price && <PriceTag price={service.price} className="price" />}
+                <span className="service-card-link" style={{ marginTop: "auto", display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 700, color: "#8c1c38", fontSize: 13, textTransform: "uppercase", letterSpacing: "0.08em", paddingTop: 12 }}>
+                  {service.cta}
+                  <span>→</span>
+                </span>
+              </Link>
             </article>
           ))}
         </div>
       </section>
 
-      {activeService && <div className="service-detail-bar" id="service-detail">
+      {activeService && activeService !== "contact" && <div className="service-detail-bar" id="service-detail">
         <div><small>{t("NỘI DUNG ĐANG XEM", "CURRENTLY VIEWING")}</small><b>{services.find((service) => service.href === `#${activeService}`)?.title}</b></div>
         <button onClick={closeService}>{t("← Quay lại 8 danh mục", "← Back to 8 categories")}</button>
       </div>}
@@ -1033,7 +1010,7 @@ export default function Home() {
         <div className="social-grid">{displayedSocialLinks.map((item) => <a href={item.href} className={item.slug} target="_blank" rel="noreferrer" key={item.slug}><b>{item.icon}</b><span><small>{item.platform}</small>{item.title}</span><i>↗</i></a>)}</div>
       </section>
 
-      {activeService === "contact" && <section className="contact section" id="contact">
+      <section className="contact section" id="contact">
         <div className="contact-copy">
           <p className="eyebrow">{t("THÔNG TIN LIÊN HỆ", "CONTACT INFORMATION")}</p>
           <h2 className="contact-title-refined">{t("Đăng Kí Học Sáo, Tư Vấn Các Dịch Vụ", "Course Enrollment & Service Consultation")}</h2>
@@ -1109,11 +1086,11 @@ export default function Home() {
         </form>
 
         <div className="contact-back-wrapper">
-          <button className="contact-back-button" type="button" onClick={closeService}>
-            {t("← QUAY LẠI TRANG CHỦ", "← BACK TO HOME")}
-          </button>
+          <Link className="contact-back-button" href="#top" style={{ textDecoration: "none" }}>
+            {t("↑ LÊN ĐẦU TRANG", "↑ BACK TO TOP")}
+          </Link>
         </div>
-      </section>}
+      </section>
 
       <footer><div className="brand"><img src="/logo.jpg" alt="Logo Sáo Trúc Âu Cơ" width={46} height={46} style={{ width: 46, height: 46, objectFit: "cover", borderRadius: 8, flex: "0 0 auto" }} /><span><b>{brandName}</b><small>{brandTagline}</small></span></div><p>{t("Đam mê làm nên giá trị · Chất lượng tạo nên uy tín", "Passion creates value · Quality builds trust")}</p><small>{t("© 2026 Sáo Trúc Âu Cơ. All rights reserved.", "© 2026 Au Co Bamboo Flute. All rights reserved.")}</small></footer>
     </main>

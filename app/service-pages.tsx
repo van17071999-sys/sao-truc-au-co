@@ -366,13 +366,13 @@ export function ContactPage() {
   return (
     <main className="subject-page content-page">
       <ServicePageHeader />
-      <section className="content-list-hero">
+      <section className="content-list-hero" style={{ padding: "45px 20px 20px" }}>
         <p className="eyebrow">{pageEyebrow}</p>
-        <h1>{pageTitle}</h1>
+        <h1>{t("Đăng Ký Học & Tư Vấn Dịch Vụ", "Course Enrollment & Consultation")}</h1>
         <p>{pageExcerpt}</p>
       </section>
 
-      <section className="contact section" style={{ maxWidth: 1000, margin: "0 auto", padding: "20px 20px 60px" }}>
+      <section className="contact section" style={{ maxWidth: 1200, margin: "0 auto 40px", borderRadius: 16 }}>
         <div className="contact-copy">
           <p className="eyebrow">{t("THÔNG TIN LIÊN HỆ", "CONTACT INFORMATION")}</p>
           <h2 className="contact-title-refined">{t("Đăng Kí Học Sáo, Tư Vấn Các Dịch Vụ", "Course Enrollment & Service Consultation")}</h2>
@@ -442,7 +442,7 @@ export function ContactPage() {
           </div>
 
           <label className="full">{t("Lời nhắn", "Message")}<textarea name="message" rows={4} placeholder={t("Mục tiêu, trình độ hiện tại hoặc nhu cầu của bạn", "Your goals, current experience, or questions")} /></label>
-          <button className="button button-wine full" type="submit" disabled={requestSubmitting}>{requestSubmitting ? t("Đang gửi…", "Sending…") : t("Gửi yêu cầu đăng ký →", "Submit Enrollment →")}</button>
+          <button className="button button-wine full" type="submit" disabled={requestSubmitting}>{requestSubmitting ? t("Đang gửi…", "Sending…") : t("GỬI YÊU CẦU ĐĂNG KÝ →", "SUBMIT REGISTRATION REQUEST →")}</button>
           {sent && <p className="success full" role="status">{t("Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất.", "Request submitted successfully! Au Co Bamboo Flute will contact you shortly.")}</p>}
           {requestError && <p className="payment-error full" role="alert">{requestError}</p>}
         </form>
