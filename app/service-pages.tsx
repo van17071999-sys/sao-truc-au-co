@@ -269,11 +269,34 @@ export function ContactPage() {
   const [requestSubmitting, setRequestSubmitting] = useState(false);
   const [requestError, setRequestError] = useState("");
 
-  const tuitionTitle = tuitionSettings?.tag || t("Bảng mục học phí", "Tuition Fee Table");
-  const tuition1Month = tuitionSettings?.title || "2.400.000đ – 3.200.000đ";
-  const tuition2Months = tuitionSettings?.excerpt || "4.800.000đ – 6.400.000đ";
-  const tuition3Months = tuitionSettings?.price || "7.200.000đ";
-  const tuitionPromo = tuitionSettings?.content || t("giảm 10% – 15%, tặng MV Video thổi sáo khi hết khoá.", "10% – 15% discount, complimentary flute music video upon completion.");
+  const parsedTuition = useMemo(() => {
+    const content = tuitionSettings?.content || "";
+    const sections: Record<string, string> = {};
+    if (content && content.includes("[") && content.includes("]")) {
+      let current = "";
+      for (const line of content.split("\n")) {
+        const match = line.trim().match(/^\[([A-ZÀ-Ỹ0-9\s_]+)\]$/i);
+        if (match) {
+          current = match[1].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9]/g, "_");
+          if (sections[current] === undefined) sections[current] = "";
+        } else if (current) {
+          sections[current] += (sections[current] ? "\n" : "") + line;
+        }
+      }
+    }
+    return {
+      title: tuitionSettings?.tag || t("Bảng mục học phí", "Tuition Fee Table"),
+      fee1: tuitionSettings?.title || "2.400.000đ – 3.200.000đ",
+      sessions1: sections["buoi_1"] || "8 buổi",
+      fee2: tuitionSettings?.excerpt || "4.800.000đ – 6.400.000đ",
+      sessions2: sections["buoi_2"] || "16 buổi",
+      fee3: tuitionSettings?.price || "7.200.000đ",
+      sessions3: sections["buoi_3"] || "24 buổi",
+      duration: sections["thoi_luong"] || tuitionSettings?.imageUrl || t("Thời gian mỗi buổi 60 phút.", "60 minutes per session."),
+      promo: sections["uu_dai"] || (content && !content.includes("[") ? content : t("giảm 10% – 15%, tặng MV Video thổi sáo khi hết khoá.", "10% – 15% discount, complimentary flute music video upon completion.")),
+      note: sections["luu_y"] || t("Học phí đã đăng ký không hoàn lại trong mọi trường hợp. Nếu học viên có việc phát sinh và chưa thể tiếp tục học, số buổi còn lại sẽ được bảo lưu để học viên sắp xếp học lại sau.", "Tuition is non-refundable. Remaining sessions can be preserved if postponed."),
+    };
+  }, [tuitionSettings, t]);
 
   const pageContact = visibleCollection("page-contact")[0];
   const pageEyebrow = translate(pageContact?.tag || "BẮT ĐẦU HÀNH TRÌNH");
@@ -383,26 +406,34 @@ export function ContactPage() {
 
             <div className="tuition-card">
               <div className="tuition-card-head">
-                <h3 className="tuition-card-title"><span>✦</span>{tuitionTitle}</h3>
+                <h3 className="tuition-card-title"><span>✦</span>{parsedTuition.title}</h3>
+                <span className="tuition-duration-tag">⏱ {parsedTuition.duration}</span>
               </div>
               <div className="tuition-grid">
                 <div className="tuition-row">
-                  <span className="tuition-duration">{t("Khóa 1 tháng", "1-Month Course")}</span>
-                  <span className="tuition-fee">{tuition1Month}</span>
+                  <span className="tuition-duration">{t("Khóa 1 tháng", "1-Month Course")} <small className="tuition-sessions">({parsedTuition.sessions1})</small></span>
+                  <span className="tuition-fee">{parsedTuition.fee1}</span>
                 </div>
                 <div className="tuition-row">
-                  <span className="tuition-duration">{t("Khóa 2 tháng", "2-Month Course")}</span>
-                  <span className="tuition-fee">{tuition2Months}</span>
+                  <span className="tuition-duration">{t("Khóa 2 tháng", "2-Month Course")} <small className="tuition-sessions">({parsedTuition.sessions2})</small></span>
+                  <span className="tuition-fee">{parsedTuition.fee2}</span>
                 </div>
                 <div className="tuition-row">
-                  <span className="tuition-duration">{t("Khóa 3 tháng", "3-Month Course")}</span>
-                  <span className="tuition-fee">{tuition3Months}</span>
+                  <span className="tuition-duration">{t("Khóa 3 tháng", "3-Month Course")} <small className="tuition-sessions">({parsedTuition.sessions3})</small></span>
+                  <span className="tuition-fee">{parsedTuition.fee3}</span>
                 </div>
               </div>
-              <div className="tuition-promo">
-                <div className="tuition-promo-title"><span>🎁</span>{t("Ưu đãi khi đăng ký khóa 2, 3 tháng:", "Special offers for 2 & 3-month courses:")}</div>
-                <div>{tuitionPromo}</div>
-              </div>
+              {parsedTuition.promo && (
+                <div className="tuition-promo">
+                  <div className="tuition-promo-title"><span>🎁</span>{t("Ưu đãi khi đăng ký khóa 2, 3 tháng:", "Special offers for 2 & 3-month courses:")}</div>
+                  <div>{parsedTuition.promo}</div>
+                </div>
+              )}
+              {parsedTuition.note && (
+                <div className="tuition-note">
+                  <b>📌 {t("Lưu ý:", "Note:")}</b> {parsedTuition.note}
+                </div>
+              )}
             </div>
           </div>
 

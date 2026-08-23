@@ -159,6 +159,58 @@ function assembleContactFields(fields: ContactFields): string {
   ].join("\n\n");
 }
 
+type TuitionFields = {
+  sessions1: string;
+  sessions2: string;
+  sessions3: string;
+  duration: string;
+  promo: string;
+  note: string;
+};
+
+function parseTuitionContentToFields(content: string, imageUrl: string): TuitionFields {
+  const sections: Record<string, string> = {};
+  if (content && content.includes("[") && content.includes("]")) {
+    let current = "";
+    for (const line of content.split("\n")) {
+      const match = line.trim().match(/^\[([A-ZÀ-Ỹ0-9\s_]+)\]$/i);
+      if (match) {
+        current = match[1].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9]/g, "_");
+        if (sections[current] === undefined) sections[current] = "";
+      } else if (current) {
+        sections[current] += (sections[current] ? "\n" : "") + line;
+      }
+    }
+    return {
+      sessions1: sections["buoi_1"] !== undefined ? sections["buoi_1"] : "8 buổi",
+      sessions2: sections["buoi_2"] !== undefined ? sections["buoi_2"] : "16 buổi",
+      sessions3: sections["buoi_3"] !== undefined ? sections["buoi_3"] : "24 buổi",
+      duration: sections["thoi_luong"] !== undefined ? sections["thoi_luong"] : (imageUrl || "Thời gian mỗi buổi 60 phút."),
+      promo: sections["uu_dai"] !== undefined ? sections["uu_dai"] : "giảm 10% – 15%, tặng MV Video thổi sáo khi hết khoá.",
+      note: sections["luu_y"] !== undefined ? sections["luu_y"] : "Học phí đã đăng ký không hoàn lại trong mọi trường hợp. Nếu học viên có việc phát sinh và chưa thể tiếp tục học, số buổi còn lại sẽ được bảo lưu để học viên sắp xếp học lại sau.",
+    };
+  }
+  return {
+    sessions1: "8 buổi",
+    sessions2: "16 buổi",
+    sessions3: "24 buổi",
+    duration: imageUrl || "Thời gian mỗi buổi 60 phút.",
+    promo: content || "giảm 10% – 15%, tặng MV Video thổi sáo khi hết khoá.",
+    note: "Học phí đã đăng ký không hoàn lại trong mọi trường hợp. Nếu học viên có việc phát sinh và chưa thể tiếp tục học, số buổi còn lại sẽ được bảo lưu để học viên sắp xếp học lại sau.",
+  };
+}
+
+function assembleTuitionFields(fields: TuitionFields): string {
+  return [
+    `[BUOI_1]\n${fields.sessions1}`,
+    `[BUOI_2]\n${fields.sessions2}`,
+    `[BUOI_3]\n${fields.sessions3}`,
+    `[THOI_LUONG]\n${fields.duration}`,
+    `[UU_DAI]\n${fields.promo}`,
+    `[LUU_Y]\n${fields.note}`,
+  ].join("\n\n");
+}
+
 type ClassDetailFields = {
   headline: string;
   intro: string;
@@ -540,17 +592,43 @@ export default function ContentAdmin() {
         });
       }
     }
-    if (section === "sheets") {
-      list = entries.filter((entry) => entry.collection === "sheets" || (entry.collection === "materials" && entry.tag.startsWith("sheet:")));
-      if (sheetDisciplineFilter !== "all") {
-        list = list.filter((entry) => {
-          const normTag = entry.tag.replace(/^sheet:/, "");
-          return normTag === sheetDisciplineFilter || slugify(normTag) === sheetDisciplineFilter;
-        });
+    if (section === "tuition") {
+      list = entries.filter((entry) => entry.collection === "tuition" || (entry.collection === "settings" && entry.slug === "tuition"));
+      if (!list.length) {
+        list = [{
+          id: "settings-tuition",
+          collection: "settings",
+          title: "2.400.000đ – 3.200.000đ",
+          slug: "tuition",
+          publishedAt: new Date().toISOString().slice(0, 10),
+          excerpt: "4.800.000đ – 6.400.000đ",
+          imageUrl: "Thời gian mỗi buổi 60 phút.",
+          tag: "Bảng mục học phí",
+          price: "7.200.000đ",
+          content: "[BUOI_1]\n8 buổi\n\n[BUOI_2]\n16 buổi\n\n[BUOI_3]\n24 buổi\n\n[THOI_LUONG]\nThời gian mỗi buổi 60 phút.\n\n[UU_DAI]\ngiảm 10% – 15%, tặng MV Video thổi sáo khi hết khoá.\n\n[LUU_Y]\nHọc phí đã đăng ký không hoàn lại trong mọi trường hợp. Nếu học viên có việc phát sinh và chưa thể tiếp tục học, số buổi còn lại sẽ được bảo lưu để học viên sắp xếp học lại sau.",
+          visible: true,
+          sortOrder: 3,
+        }];
       }
     }
     return list.sort((a, b) => a.sortOrder - b.sortOrder);
   }, [entries, section, productGroupFilter, courseGroupFilter, videoDisciplineFilter, curriculumDisciplineFilter, sheetDisciplineFilter]);
+
+  const tuitionFields = useMemo(() => {
+    if (!draft || !isTuitionSettings) return null;
+    return parseTuitionContentToFields(draft.content, draft.imageUrl);
+  }, [draft?.content, draft?.imageUrl, isTuitionSettings]);
+
+  function updateTuitionField(field: keyof TuitionFields, value: string) {
+    if (!draft || !tuitionFields) return;
+    const nextFields = { ...tuitionFields, [field]: value };
+    const assembled = assembleTuitionFields(nextFields);
+    setDraft({
+      ...draft,
+      content: assembled,
+      imageUrl: field === "duration" ? value : draft.imageUrl,
+    });
+  }
 
   const classFields = useMemo(() => {
     if (!draft || draft.collection !== "class-details") return null;
@@ -1713,16 +1791,58 @@ export default function ContentAdmin() {
                 </div>
               </div>
             </div>
-          ) : isTuitionSettings ? (
+          ) : isTuitionSettings && tuitionFields ? (
             <div className="wide" style={{ display: "grid", gap: 16, borderTop: "2px solid #e2e8f0", paddingTop: 18 }}>
               <div style={{ padding: "14px 18px", background: "#fdf8f0", border: "1px solid #fde8c3", borderRadius: 8, fontSize: 13, color: "#854d0e", lineHeight: 1.6 }}>
-                <b style={{ fontSize: 14 }}>✦ CÀI ĐẶT BẢNG HỌC PHÍ & ƯU ĐÃI KHÓA HỌC:</b>
-                <p style={{ margin: "4px 0 0" }}>Các mức học phí và khuyến mãi dưới đây sẽ hiển thị trực tiếp trong khung Bảng học phí ở Form đăng ký tại trang chủ.</p>
+                <b style={{ fontSize: 14 }}>✦ CÀI ĐẶT BẢNG HỌC PHÍ, SỐ BUỔI & LƯU Ý BẢO LƯU:</b>
+                <p style={{ margin: "4px 0 0" }}>Các thông tin dưới đây sẽ hiển thị trực tiếp trong khung Bảng học phí ở trang đăng ký học.</p>
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                 <label>
-                  <span>Học phí Khóa 2 tháng *</span>
+                  <span>Tiêu đề bảng học phí *</span>
+                  <input
+                    required
+                    value={draft.tag}
+                    onChange={(event) => setDraft({ ...draft, tag: event.target.value })}
+                    placeholder="Ví dụ: Bảng mục học phí"
+                  />
+                </label>
+                <label>
+                  <span>Thời gian mỗi buổi học *</span>
+                  <input
+                    required
+                    value={tuitionFields.duration}
+                    onChange={(event) => updateTuitionField("duration", event.target.value)}
+                    placeholder="Ví dụ: Thời gian mỗi buổi 60 phút."
+                  />
+                </label>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, background: "#fff", padding: "14px 16px", borderRadius: 8, border: "1px solid #e2e8f0" }}>
+                <label>
+                  <span>Khóa 1 tháng - Mức học phí *</span>
+                  <input
+                    required
+                    value={draft.title}
+                    onChange={(event) => setDraft({ ...draft, title: event.target.value })}
+                    placeholder="Ví dụ: 2.400.000đ – 3.200.000đ"
+                  />
+                </label>
+                <label>
+                  <span>Khóa 1 tháng - Số buổi *</span>
+                  <input
+                    required
+                    value={tuitionFields.sessions1}
+                    onChange={(event) => updateTuitionField("sessions1", event.target.value)}
+                    placeholder="Ví dụ: 8 buổi"
+                  />
+                </label>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, background: "#fff", padding: "14px 16px", borderRadius: 8, border: "1px solid #e2e8f0" }}>
+                <label>
+                  <span>Khóa 2 tháng - Mức học phí *</span>
                   <input
                     required
                     value={draft.excerpt}
@@ -1731,7 +1851,19 @@ export default function ContentAdmin() {
                   />
                 </label>
                 <label>
-                  <span>Học phí Khóa 3 tháng *</span>
+                  <span>Khóa 2 tháng - Số buổi *</span>
+                  <input
+                    required
+                    value={tuitionFields.sessions2}
+                    onChange={(event) => updateTuitionField("sessions2", event.target.value)}
+                    placeholder="Ví dụ: 16 buổi"
+                  />
+                </label>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, background: "#fff", padding: "14px 16px", borderRadius: 8, border: "1px solid #e2e8f0" }}>
+                <label>
+                  <span>Khóa 3 tháng - Mức học phí *</span>
                   <input
                     required
                     value={draft.price}
@@ -1739,17 +1871,64 @@ export default function ContentAdmin() {
                     placeholder="Ví dụ: 7.200.000đ"
                   />
                 </label>
+                <label>
+                  <span>Khóa 3 tháng - Số buổi *</span>
+                  <input
+                    required
+                    value={tuitionFields.sessions3}
+                    onChange={(event) => updateTuitionField("sessions3", event.target.value)}
+                    placeholder="Ví dụ: 24 buổi"
+                  />
+                </label>
               </div>
 
               <label className="wide">
-                <span>Ưu đãi khi đăng ký khóa 2, 3 tháng & Quà tặng MV</span>
+                <span>Ưu đãi khi đăng ký khóa 2, 3 tháng & Quà tặng MV *</span>
                 <textarea
-                  rows={3}
-                  value={draft.content}
-                  onChange={(event) => setDraft({ ...draft, content: event.target.value })}
+                  rows={2}
+                  value={tuitionFields.promo}
+                  onChange={(event) => updateTuitionField("promo", event.target.value)}
                   placeholder="Ví dụ: giảm 10% – 15%, tặng MV Video thổi sáo khi hết khoá."
                 />
               </label>
+
+              <label className="wide">
+                <span>Lưu ý / Quy định bảo lưu học phí *</span>
+                <textarea
+                  rows={3}
+                  value={tuitionFields.note}
+                  onChange={(event) => updateTuitionField("note", event.target.value)}
+                  placeholder="Ví dụ: Học phí đã đăng ký không hoàn lại trong mọi trường hợp. Nếu học viên có việc phát sinh và chưa thể tiếp tục học, số buổi còn lại sẽ được bảo lưu để học viên sắp xếp học lại sau."
+                />
+              </label>
+
+              <div style={{ padding: "16px 20px", background: "#3d1020", color: "#fff", borderRadius: 10 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px dashed rgba(226,186,115,.3)", paddingBottom: 8, marginBottom: 10 }}>
+                  <h4 style={{ margin: 0, color: "#fde8c3", fontSize: 14 }}>✦ {draft.tag || "Bảng mục học phí"}</h4>
+                  <span style={{ fontSize: 11, color: "#ffdc94" }}>⏱ {tuitionFields.duration}</span>
+                </div>
+                <div style={{ display: "grid", gap: 6, fontSize: 12 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 10px", background: "rgba(255,255,255,.05)", borderRadius: 5, borderLeft: "3px solid #e2ba73" }}>
+                    <span>Khóa 1 tháng <small style={{ color: "#ffdc94" }}>({tuitionFields.sessions1})</small></span>
+                    <b style={{ color: "#ffdc94" }}>{draft.title}</b>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 10px", background: "rgba(255,255,255,.05)", borderRadius: 5, borderLeft: "3px solid #e2ba73" }}>
+                    <span>Khóa 2 tháng <small style={{ color: "#ffdc94" }}>({tuitionFields.sessions2})</small></span>
+                    <b style={{ color: "#ffdc94" }}>{draft.excerpt}</b>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 10px", background: "rgba(255,255,255,.05)", borderRadius: 5, borderLeft: "3px solid #e2ba73" }}>
+                    <span>Khóa 3 tháng <small style={{ color: "#ffdc94" }}>({tuitionFields.sessions3})</small></span>
+                    <b style={{ color: "#ffdc94" }}>{draft.price}</b>
+                  </div>
+                </div>
+                <div style={{ marginTop: 10, padding: "8px 12px", background: "rgba(143,39,68,.45)", border: "1px solid rgba(226,186,115,.38)", borderRadius: 7, fontSize: 11.5 }}>
+                  <div style={{ color: "#ffdc94", fontWeight: 700, marginBottom: 2 }}>🎁 ƯU ĐÃI KHI ĐĂNG KÝ KHÓA 2, 3 THÁNG:</div>
+                  <div>{tuitionFields.promo}</div>
+                </div>
+                <div style={{ marginTop: 8, padding: "7px 10px", background: "rgba(0,0,0,.25)", borderLeft: "3px solid rgba(226,186,115,.6)", borderRadius: 4, fontSize: 11, color: "#eddcd0" }}>
+                  <b style={{ color: "#ffdc94" }}>📌 Lưu ý:</b> {tuitionFields.note}
+                </div>
+              </div>
             </div>
           ) : (
             <>
