@@ -793,7 +793,7 @@ export function SubjectDetail() {
         <span className="subject-symbol">{icon}</span>
         <h1>{title}</h1>
         <p>{lead}</p>
-        <a className="button button-wine" href="#dang-ky">{t("Đăng ký tư vấn →", "Get Consultation →")}</a>
+        <Link className="button button-wine" href={`/dang-ky-hoc?subject=${encodeURIComponent(rawTitle)}`}>{t("Đăng ký tư vấn →", "Get Consultation →")}</Link>
       </div>
     </section>
     <article className="subject-article">
