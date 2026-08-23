@@ -43,6 +43,7 @@ const collections = [
 
 const singletons = [
   { key: "settings", label: "Cài đặt chung & VietQR", note: "Thương hiệu, liên hệ và thanh toán VietQR", contentLabel: "Địa chỉ các chi nhánh (Mỗi chi nhánh 1 dòng - CN1, CN2,...)", excerptLabel: "Khẩu hiệu (Tagline)", priceLabel: "Hotline / Zalo", tagLabel: "Email liên hệ" },
+  { key: "tuition", label: "Bảng học phí & Ưu đãi", note: "Mức học phí các khóa 1, 2, 3 tháng và quà tặng ưu đãi" },
   { key: "page-contact", label: "Trang Đăng ký & Tư vấn", note: "Nội dung lời dẫn, hotline, email và form đăng ký (/dang-ky-hoc)" },
   { key: "change-password", label: "Đổi mật khẩu Quản trị", note: "Thay đổi mật khẩu đăng nhập trang quản trị" },
 ];
@@ -134,7 +135,7 @@ function parseContactToFields(content: string): ContactFields {
       }
     }
     return {
-      blockTitle: sections["tieu_de_khoi"] !== undefined ? sections["tieu_de_khoi"] : (sections["title"] !== undefined ? sections["title"] : "Để tiếng sáo cất lời."),
+      blockTitle: sections["tieu_de_khoi"] !== undefined ? sections["tieu_de_khoi"] : (sections["title"] !== undefined ? sections["title"] : "Đăng Kí Học Sáo, Tư Vấn Các Dịch Vụ"),
       blockDesc: sections["mo_ta_khoi"] !== undefined ? sections["mo_ta_khoi"] : (sections["desc"] !== undefined ? sections["desc"] : "Học tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài."),
       address: sections["dia_chi"] !== undefined ? sections["dia_chi"] : (sections["address"] !== undefined ? sections["address"] : "106/72 Hòa Bình, P. Tân Phú, TP.HCM"),
       email: sections["email"] !== undefined ? sections["email"] : "van17071999@gmail.com",
@@ -142,7 +143,7 @@ function parseContactToFields(content: string): ContactFields {
   }
   const lines = content ? content.split(/\n/) : [];
   return {
-    blockTitle: lines[0] ?? "Để tiếng sáo cất lời.",
+    blockTitle: lines[0] ?? "Đăng Kí Học Sáo, Tư Vấn Các Dịch Vụ",
     blockDesc: lines[1] ?? "Học tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài.",
     address: lines[2] ?? "106/72 Hòa Bình, P. Tân Phú, TP.HCM",
     email: lines[3] ?? "van17071999@gmail.com",
@@ -803,6 +804,28 @@ export default function ContentAdmin() {
       setDraft({ ...preferredEntry });
       return;
     }
+    if (section === "tuition") {
+      const tuitionEntry = entries.find((entry) => entry.collection === "settings" && entry.slug === "tuition");
+      if (tuitionEntry) {
+        setDraft({ ...tuitionEntry });
+      } else {
+        setDraft({
+          id: "settings-tuition",
+          collection: "settings",
+          title: "2.400.000đ – 3.200.000đ",
+          slug: "tuition",
+          publishedAt: new Date().toISOString().slice(0, 10),
+          excerpt: "4.800.000đ – 6.400.000đ",
+          imageUrl: "",
+          tag: "Bảng mục học phí",
+          price: "7.200.000đ",
+          content: "giảm 10% – 15%, tặng MV Video thổi sáo khi hết khoá.",
+          visible: true,
+          sortOrder: 3,
+        });
+      }
+      return;
+    }
     if (section === "page-contact") {
       setDraft({
         id: "page-contact",
@@ -812,9 +835,9 @@ export default function ContentAdmin() {
         publishedAt: new Date().toISOString().slice(0, 10),
         excerpt: "Để lại thông tin, Sáo Trúc Âu Cơ sẽ liên hệ tư vấn lớp học, chọn sáo hoặc dịch vụ phù hợp.",
         imageUrl: "/hero-flute.webp",
-        tag: "BẮT ĐẦU HÀNH TRÌNH",
+        tag: "THÔNG TIN LIÊN HỆ",
         price: "0374 261 368",
-        content: "[TIÊU ĐỀ KHỐI]\nĐể tiếng sáo cất lời.\n\n[MÔ TẢ KHỐI]\nHọc tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài.\n\n[ĐỊA CHỈ]\n106/72 Hòa Bình, P. Tân Phú, TP.HCM\n\n[EMAIL]\nvan17071999@gmail.com",
+        content: "[TIÊU ĐỀ KHỐI]\nĐăng Kí Học Sáo, Tư Vấn Các Dịch Vụ\n\n[MÔ TẢ KHỐI]\nHọc tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài.\n\n[ĐỊA CHỈ]\n106/72 Hòa Bình, P. Tân Phú, TP.HCM\n\n[EMAIL]\nvan17071999@gmail.com",
         visible: true,
         sortOrder: 1,
       });
@@ -876,7 +899,15 @@ export default function ContentAdmin() {
     setBusy(true);
     setNotice("");
     let payload = draft;
-    if (draft.collection === "settings" && draft.slug === "payment") {
+    if (section === "tuition") {
+      payload = {
+        ...payload,
+        collection: "settings",
+        slug: "tuition",
+        id: payload.id || "settings-tuition",
+      };
+    }
+    if (payload.collection === "settings" && payload.slug === "payment") {
       const savedEntry = entries.find((entry) => entry.id === draft.id);
       const accountChanged = Boolean(savedEntry && savedEntry.price !== draft.price);
       const qrUnchanged = Boolean(savedEntry && savedEntry.imageUrl === draft.imageUrl);
@@ -941,7 +972,7 @@ export default function ContentAdmin() {
   }
 
   const isPaymentSettings = draft?.collection === "settings" && draft.slug === "payment";
-  const isTuitionSettings = draft?.collection === "settings" && draft.slug === "tuition";
+  const isTuitionSettings = (draft?.collection === "settings" && draft.slug === "tuition") || section === "tuition";
   const fieldMeta = activeMeta as typeof activeMeta & {
     tagLabel?: string;
     tagPlaceholder?: string;

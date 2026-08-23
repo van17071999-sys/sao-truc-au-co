@@ -370,8 +370,8 @@ export function ContactPage() {
       <div className="contact-page-container">
         <section className="contact section">
           <div className="contact-copy">
-            <p className="eyebrow">{t("THÔNG TIN LIÊN HỆ", "CONTACT INFORMATION")}</p>
-            <h2 className="contact-title-refined">{t("Đăng Kí Học Sáo, Tư Vấn Các Dịch Vụ", "Course Enrollment & Service Consultation")}</h2>
+            <p className="eyebrow">{pageEyebrow || t("THÔNG TIN LIÊN HỆ", "CONTACT INFORMATION")}</p>
+            <h2 className="contact-title-refined">{blockTitle || t("Đăng Kí Học Sáo, Tư Vấn Các Dịch Vụ", "Course Enrollment & Service Consultation")}</h2>
             <p className="contact-intro">{blockDesc}</p>
             <ul className="contact-bullet-list">
               {((contactAddress || "").split(/\n+/).map((l) => l.trim()).filter(Boolean)).map((line, idx) => (
@@ -384,7 +384,6 @@ export function ContactPage() {
             <div className="tuition-card">
               <div className="tuition-card-head">
                 <h3 className="tuition-card-title"><span>✦</span>{tuitionTitle}</h3>
-                <span className="tuition-card-badge">{t("Chuẩn âm bài bản", "Standard tuning")}</span>
               </div>
               <div className="tuition-grid">
                 <div className="tuition-row">
