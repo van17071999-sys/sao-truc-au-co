@@ -1965,53 +1965,7 @@ export default function ContentAdmin() {
                 </div>
               </div>
             </div>
-          ) : (
-            <>
-              {["product-items", "course-items", "curriculums", "sheets", "single-videos", "studio-packages", "booking-packages", "recording-instruments", "services"].includes(section) ? (
-                <div className="wide">
-                  <PriceVoucherEditor
-                    value={draft.price}
-                    onChange={(newVal) => setDraft({ ...draft, price: newVal })}
-                    label={fieldMeta.priceLabel || "Giá bán & Voucher Khuyến mãi"}
-                  />
-                </div>
-              ) : (
-                <label>
-                  <span>{fieldMeta.priceLabel || "Giá / Giá trị"}</span>
-                  <input
-                    value={draft.price}
-                    onChange={(event) => setDraft({ ...draft, price: event.target.value })}
-                    placeholder="Nhập giá trị"
-                  />
-                </label>
-              )}
-
-              <label className="wide">{fieldMeta.excerptLabel || "Mô tả ngắn"}<textarea rows={3} value={draft.excerpt} onChange={(event) => setDraft({ ...draft, excerpt: event.target.value })} /></label>
-              
-              <label className="wide">
-                <span>{"Ảnh bìa / Ảnh đại diện (Tối ưu dạng ảnh dọc 3:4)"}</span>
-                <div className="admin-upload">
-                  <input value={draft.imageUrl} onChange={(event) => setDraft({ ...draft, imageUrl: event.target.value })} placeholder={"Dán URL ảnh hoặc tải ảnh lên (tối ưu ảnh chụp dọc)"} />
-                  <span><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file); }} />Chọn ảnh</span>
-                </div>
-                {draft.imageUrl && (
-                  <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 14 }}>
-                    <img 
-                      className="admin-cover-preview" 
-                      src={draft.imageUrl} 
-                      alt={"Xem trước ảnh bìa"} 
-                      style={{ width: 130, height: 173, objectFit: "cover", borderRadius: 8, border: "1px solid #e2e8f0" }}
-                    />
-                    <small style={{ color: "#64748b" }}>
-                      ✓ Khung hiển thị chuẩn tỉ lệ ảnh dọc (3:4) cho sản phẩm & nhạc cụ
-                    </small>
-                  </div>
-                )}
-              </label>
-            </>
-          )}
-          
-          {draft.collection === "page-contact" && contactFields ? (
+          ) : draft.collection === "page-contact" ? (
             <div className="wide" style={{ display: "grid", gap: 18, borderTop: "2px solid #e2e8f0", paddingTop: 20, marginTop: 10 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
                 <div>
@@ -2057,7 +2011,7 @@ export default function ContentAdmin() {
                 <label className="wide">
                   <span>Tiêu đề khối liên hệ (Chữ Vàng Gold) *</span>
                   <input
-                    value={contactFields.blockTitle}
+                    value={contactFields?.blockTitle || ""}
                     onChange={(e) => updateContactField("blockTitle", e.target.value)}
                     placeholder="Ví dụ: Đăng Kí Học Sáo, Tư Vấn Các Dịch Vụ"
                     style={{ fontWeight: 700 }}
@@ -2068,7 +2022,7 @@ export default function ContentAdmin() {
                   <span>Lời giới thiệu & hình thức học *</span>
                   <textarea
                     rows={3}
-                    value={contactFields.blockDesc}
+                    value={contactFields?.blockDesc || ""}
                     onChange={(e) => updateContactField("blockDesc", e.target.value)}
                     placeholder="Ví dụ: Học tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài."
                   />
@@ -2079,7 +2033,7 @@ export default function ContentAdmin() {
                     <span>Địa chỉ trung tâm / Lớp học (Hỗ trợ nhiều chi nhánh - mỗi chi nhánh 1 dòng) *</span>
                     <textarea
                       rows={3}
-                      value={contactFields.address}
+                      value={contactFields?.address || ""}
                       onChange={(e) => updateContactField("address", e.target.value)}
                       placeholder={"Ví dụ:\n106/72 Hòa Bình, P. Tân Phú, TP.HCM"}
                     />
@@ -2088,7 +2042,7 @@ export default function ContentAdmin() {
                     <span>Email nhận thông báo / liên hệ *</span>
                     <input
                       type="email"
-                      value={contactFields.email}
+                      value={contactFields?.email || ""}
                       onChange={(e) => updateContactField("email", e.target.value)}
                       placeholder="Ví dụ: van17071999@gmail.com"
                     />
@@ -2103,7 +2057,7 @@ export default function ContentAdmin() {
                   <label>
                     <span>Tiêu đề nhóm lựa chọn bộ môn *</span>
                     <input
-                      value={contactFields.interestTitle}
+                      value={contactFields?.interestTitle || ""}
                       onChange={(e) => updateContactField("interestTitle", e.target.value)}
                       placeholder="Ví dụ: Đăng ký bộ môn or Tư vấn dịch vụ, sản phẩm"
                     />
@@ -2111,7 +2065,7 @@ export default function ContentAdmin() {
                   <label>
                     <span>Ghi chú hướng dẫn chọn *</span>
                     <input
-                      value={contactFields.interestNote}
+                      value={contactFields?.interestNote || ""}
                       onChange={(e) => updateContactField("interestNote", e.target.value)}
                       placeholder="Ví dụ: (Bấm để chọn nhiều mục)"
                     />
@@ -2122,7 +2076,7 @@ export default function ContentAdmin() {
                   <span>Danh sách Bộ môn / Dịch vụ để học viên bấm chọn (Mỗi bộ môn 1 dòng) *</span>
                   <textarea
                     rows={6}
-                    value={contactFields.interestItems}
+                    value={contactFields?.interestItems || ""}
                     onChange={(e) => updateContactField("interestItems", e.target.value)}
                     placeholder={"Sáo trúc Việt Nam\nSáo Dizi Trung Quốc\nSáo Recorder\nĐộng tiêu & Xiao\nFlute phương Tây\nSáo H'Mông\nSáo mèo & Sáo bầu\nMua sáo & phụ kiện\nKhóa học video quay sẵn\nSheet nhạc & giáo trình\nThu âm & quay MV\nBooking biểu diễn"}
                   />
@@ -2135,7 +2089,7 @@ export default function ContentAdmin() {
                   <label>
                     <span>Chữ trên nút Gửi đăng ký *</span>
                     <input
-                      value={contactFields.submitButtonText}
+                      value={contactFields?.submitButtonText || ""}
                       onChange={(e) => updateContactField("submitButtonText", e.target.value)}
                       placeholder="Ví dụ: GỬI YÊU CẦU ĐĂNG KÝ →"
                     />
@@ -2143,7 +2097,7 @@ export default function ContentAdmin() {
                   <label>
                     <span>Thông báo sau khi gửi thành công *</span>
                     <input
-                      value={contactFields.successMessage}
+                      value={contactFields?.successMessage || ""}
                       onChange={(e) => updateContactField("successMessage", e.target.value)}
                       placeholder="Ví dụ: Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất."
                     />
@@ -2158,12 +2112,12 @@ export default function ContentAdmin() {
                 <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1.3fr", gap: 20, padding: 18, background: "#3d1020", color: "#fff", borderRadius: 10 }}>
                   <div>
                     <span style={{ fontSize: 10, color: "#dcb269", letterSpacing: "0.15em", textTransform: "uppercase" }}>{draft.tag || "THÔNG TIN LIÊN HỆ"}</span>
-                    <h3 style={{ margin: "8px 0", font: "400 22px Georgia,serif", color: "#e2ba73" }}>{contactFields.blockTitle}</h3>
-                    <p style={{ fontSize: 12.5, color: "#edd6d0", lineHeight: 1.55 }}>{contactFields.blockDesc}</p>
+                    <h3 style={{ margin: "8px 0", font: "400 22px Georgia,serif", color: "#e2ba73" }}>{contactFields?.blockTitle || ""}</h3>
+                    <p style={{ fontSize: 12.5, color: "#edd6d0", lineHeight: 1.55 }}>{contactFields?.blockDesc || ""}</p>
                     <ul style={{ paddingLeft: 16, fontSize: 12.5, color: "#eedbd5", margin: "10px 0 0" }}>
-                      {contactFields.address.split(/\n+/).map((l, i) => l.trim() && <li key={i}>{l.trim()}</li>)}
+                      {(contactFields?.address || "").split(/\n+/).map((l, i) => l.trim() && <li key={i}>{l.trim()}</li>)}
                       <li>Hotline / Zalo: <strong style={{ color: "#eed6a1" }}>{draft.price}</strong></li>
-                      <li>Email: {contactFields.email}</li>
+                      <li>Email: {contactFields?.email || ""}</li>
                     </ul>
                   </div>
                   <div style={{ background: "rgba(255,255,255,0.06)", padding: 14, borderRadius: 8, fontSize: 11.5, color: "#edd6d0", display: "flex", flexDirection: "column", gap: 7 }}>
@@ -2171,16 +2125,16 @@ export default function ContentAdmin() {
                       <div style={{ padding: "6px 8px", background: "rgba(255,255,255,0.1)", borderRadius: 5 }}>Họ và tên</div>
                       <div style={{ padding: "6px 8px", background: "rgba(255,255,255,0.1)", borderRadius: 5 }}>Số điện thoại</div>
                     </div>
-                    <div style={{ fontSize: 11, color: "#ffdc94", fontWeight: 700 }}>{contactFields.interestTitle} <small style={{ color: "#ddd" }}>{contactFields.interestNote}</small></div>
+                    <div style={{ fontSize: 11, color: "#ffdc94", fontWeight: 700 }}>{contactFields?.interestTitle || ""} <small style={{ color: "#ddd" }}>{contactFields?.interestNote || ""}</small></div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, maxHeight: 110, overflowY: "auto" }}>
-                      {contactFields.interestItems.split(/\n+/).map((item, idx) => item.trim() && (
+                      {(contactFields?.interestItems || "").split(/\n+/).map((item, idx) => item.trim() && (
                         <div key={idx} style={{ padding: "4px 6px", background: idx === 0 ? "#7c1c38" : "rgba(255,255,255,0.1)", borderRadius: 4, fontSize: 10 }}>
                           {idx === 0 ? "✓ " : "+ "}{item.trim()}
                         </div>
                       ))}
                     </div>
                     <div style={{ padding: "7px 10px", background: "#8c1c38", borderRadius: 6, color: "#fff", textAlign: "center", fontWeight: 700, fontSize: 11, marginTop: 4 }}>
-                      {contactFields.submitButtonText}
+                      {contactFields?.submitButtonText || "GỬI YÊU CẦU ĐĂNG KÝ →"}
                     </div>
                   </div>
                 </div>
