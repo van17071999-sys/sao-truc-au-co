@@ -397,13 +397,21 @@ export function ContactPage() {
             <h2 className="contact-title-refined">{blockTitle || t("Đăng Kí Học Sáo, Tư Vấn Các Dịch Vụ", "Course Enrollment & Service Consultation")}</h2>
             <p className="contact-intro">{blockDesc}</p>
             <ul className="contact-bullet-list">
-              {((contactAddress || "").split(/\n+/).map((l) => l.trim()).filter(Boolean)).map((line, idx) => (
-                <li key={idx}><span style={{ color: "#ddb268" }}>⌖</span> {renderAddressLine(line)}</li>
-              ))}
+              {((contactAddress || "").split(/\n+/).map((l) => l.trim()).filter(Boolean)).map((line, idx) => {
+                const isPrefixed = /^(?:Địa\s*chỉ|Dia\s*chi|CN\s*\d+|Chi\s*nhánh\s*\d+|Cơ\s*sở\s*\d+|Trụ\s*sở)/i.test(line);
+                return (
+                  <li key={idx}>
+                    <span style={{ color: "#ddb268" }}>⌖</span>{" "}
+                    {isPrefixed ? renderAddressLine(line) : <>{t("Địa chỉ:", "Address:")} {renderAddressLine(line)}</>}
+                  </li>
+                );
+              })}
               <li><span style={{ color: "#ddb268" }}>☎</span> {t("Hotline / Zalo:", "Hotline / Zalo:")} <a href={`tel:${contactPhone.replace(/\D/g, "")}`} style={{ color: "inherit", fontWeight: 700 }}>{contactPhone}</a></li>
               <li><span style={{ color: "#ddb268" }}>✉</span> Email: {contactEmail}</li>
             </ul>
+          </div>
 
+          <div className="contact-right-panel">
             <div className="tuition-card">
               <div className="tuition-card-head">
                 <h3 className="tuition-card-title"><span>✦</span>{parsedTuition.title}</h3>
@@ -435,46 +443,46 @@ export function ContactPage() {
                 </div>
               )}
             </div>
-          </div>
 
-          <form onSubmit={submitForm}>
-            <div className="contact-form-row-2">
-              <label>{t("Họ và tên", "Full Name")}<input required name="name" placeholder={t("Tên của bạn", "Your full name")} /></label>
-              <label>{t("Số điện thoại / Zalo", "Phone / Zalo")}<input required name="phone" type="tel" placeholder={t("Số điện thoại liên hệ", "Your phone/Zalo")} /></label>
-            </div>
-            
-            <div className="full interest-selection-group">
-              <span className="interest-group-label">
-                {t("Đăng ký bộ môn or Tư vấn dịch vụ, sản phẩm", "Course Enrollment or Service & Product Consultation")}
-                <small style={{ display: "inline-block", marginLeft: 6, color: "#8a7e72", fontWeight: 400 }}>
-                  {t("(Bấm để chọn nhiều mục)", "(Multi-select)")}
-                </small>
-              </span>
-              <div className="interest-checkbox-grid">
-                {allInterestOptions.map((item) => {
-                  const isChecked = selectedDisciplines.includes(item);
-                  return (
-                    <label key={item} className={`interest-checkbox-chip ${isChecked ? "is-selected" : ""}`}>
-                      <input
-                        type="checkbox"
-                        name="interest"
-                        value={item}
-                        checked={isChecked}
-                        onChange={() => toggleInterest(item)}
-                      />
-                      <span className="interest-check-icon">{isChecked ? "✓" : "+"}</span>
-                      <span className="interest-title">{translate(item)}</span>
-                    </label>
-                  );
-                })}
+            <form onSubmit={submitForm}>
+              <div className="contact-form-row-2">
+                <label>{t("Họ và tên", "Full Name")}<input required name="name" placeholder={t("Tên của bạn", "Your full name")} /></label>
+                <label>{t("Số điện thoại / Zalo", "Phone / Zalo")}<input required name="phone" type="tel" placeholder={t("Số điện thoại liên hệ", "Your phone/Zalo")} /></label>
               </div>
-            </div>
+              
+              <div className="full interest-selection-group">
+                <span className="interest-group-label">
+                  {t("Đăng ký bộ môn or Tư vấn dịch vụ, sản phẩm", "Course Enrollment or Service & Product Consultation")}
+                  <small style={{ display: "inline-block", marginLeft: 6, color: "#8a7e72", fontWeight: 400 }}>
+                    {t("(Bấm để chọn nhiều mục)", "(Multi-select)")}
+                  </small>
+                </span>
+                <div className="interest-checkbox-grid">
+                  {allInterestOptions.map((item) => {
+                    const isChecked = selectedDisciplines.includes(item);
+                    return (
+                      <label key={item} className={`interest-checkbox-chip ${isChecked ? "is-selected" : ""}`}>
+                        <input
+                          type="checkbox"
+                          name="interest"
+                          value={item}
+                          checked={isChecked}
+                          onChange={() => toggleInterest(item)}
+                        />
+                        <span className="interest-check-icon">{isChecked ? "✓" : "+"}</span>
+                        <span className="interest-title">{translate(item)}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
 
-            <label className="full">{t("Lời nhắn", "Message")}<textarea name="message" rows={3} placeholder={t("Mục tiêu, trình độ hiện tại hoặc nhu cầu của bạn", "Your goals, current experience, or questions")} /></label>
-            <button className="button button-wine full" type="submit" disabled={requestSubmitting}>{requestSubmitting ? t("Đang gửi…", "Sending…") : t("GỬI YÊU CẦU ĐĂNG KÝ →", "SUBMIT REGISTRATION REQUEST →")}</button>
-            {sent && <p className="success full" role="status">{t("Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất.", "Request submitted successfully! Au Co Bamboo Flute will contact you shortly.")}</p>}
-            {requestError && <p className="payment-error full" role="alert">{requestError}</p>}
-          </form>
+              <label className="full">{t("Lời nhắn", "Message")}<textarea name="message" rows={2} placeholder={t("Mục tiêu, trình độ hiện tại hoặc nhu cầu của bạn", "Your goals, current experience, or questions")} /></label>
+              <button className="button button-wine full" type="submit" disabled={requestSubmitting}>{requestSubmitting ? t("Đang gửi…", "Sending…") : t("GỬI YÊU CẦU ĐĂNG KÝ →", "SUBMIT REGISTRATION REQUEST →")}</button>
+              {sent && <p className="success full" role="status">{t("Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất.", "Request submitted successfully! Au Co Bamboo Flute will contact you shortly.")}</p>}
+              {requestError && <p className="payment-error full" role="alert">{requestError}</p>}
+            </form>
+          </div>
         </section>
       </div>
 
