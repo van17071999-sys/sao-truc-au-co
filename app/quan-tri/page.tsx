@@ -45,6 +45,7 @@ const singletons = [
   { key: "settings", label: "Cài đặt chung & VietQR", note: "Thương hiệu, liên hệ và thanh toán VietQR", contentLabel: "Địa chỉ các chi nhánh (Mỗi chi nhánh 1 dòng - CN1, CN2,...)", excerptLabel: "Khẩu hiệu (Tagline)", priceLabel: "Hotline / Zalo", tagLabel: "Email liên hệ" },
   { key: "tuition", label: "Bảng học phí & Ưu đãi", note: "Mức học phí các khóa 1, 2, 3 tháng và quà tặng ưu đãi" },
   { key: "page-contact", label: "Trang Đăng ký & Tư vấn", note: "Nội dung lời dẫn, hotline, email và form đăng ký (/dang-ky-hoc)" },
+  { key: "recommend-links", label: "Mục tham khảo cuối bài", note: "Tiêu đề & 3 link chuyển trang ở cuối bài viết và cảm âm" },
   { key: "change-password", label: "Đổi mật khẩu Quản trị", note: "Thay đổi mật khẩu đăng nhập trang quản trị" },
 ];
 
@@ -249,6 +250,60 @@ function assembleTuitionFields(fields: TuitionFields): string {
     `[UU_DAI]\n${fields.promo}`,
     `[LUU_Y]\n${fields.note}`,
   ].join("\n\n");
+}
+
+type RecommendFields = {
+  title: string;
+  badge1: string;
+  title1: string;
+  href1: string;
+  badge2: string;
+  title2: string;
+  href2: string;
+  badge3: string;
+  title3: string;
+  href3: string;
+};
+
+function parseRecommendToFields(content: string, title?: string): RecommendFields {
+  const defaults: RecommendFields = {
+    title: title || "THAM KHẢO CÁC LỚP HỌC, SẢN PHẨM VÀ GIÁO TRÌNH",
+    badge1: "ĐÀO TẠO & KHÓA HỌC",
+    title1: "Đăng ký học sáo →",
+    href1: "/dang-ky-hoc",
+    badge2: "NHẠC CỤ CHUẨN ÂM",
+    title2: "Các sản phẩm sáo →",
+    href2: "/sao-va-phu-kien",
+    badge3: "TÀI LIỆU & SHEET NHẠC",
+    title3: "Mua tài liệu & sheet →",
+    href3: "/giao-trinh-va-sheet",
+  };
+  if (!content) return defaults;
+  try {
+    const lines = content.split("\n").map((l) => l.trim()).filter(Boolean);
+    if (lines.length >= 3) {
+      const p1 = lines[0].split("|");
+      const p2 = lines[1].split("|");
+      const p3 = lines[2].split("|");
+      return {
+        title: title || defaults.title,
+        badge1: p1[0] || defaults.badge1,
+        title1: p1[1] || defaults.title1,
+        href1: p1[2] || defaults.href1,
+        badge2: p2[0] || defaults.badge2,
+        title2: p2[1] || defaults.title2,
+        href2: p2[2] || defaults.href2,
+        badge3: p3[0] || defaults.badge3,
+        title3: p3[1] || defaults.title3,
+        href3: p3[2] || defaults.href3,
+      };
+    }
+  } catch {}
+  return defaults;
+}
+
+function assembleRecommendFields(f: RecommendFields): string {
+  return `${f.badge1}|${f.title1}|${f.href1}\n${f.badge2}|${f.title2}|${f.href2}\n${f.badge3}|${f.title3}|${f.href3}`;
 }
 
 type ClassDetailFields = {
@@ -542,6 +597,7 @@ export default function ContentAdmin() {
   const isSingleton = singletons.some((item) => item.key === section);
   const isPaymentSettings = draft?.collection === "settings" && draft.slug === "payment";
   const isTuitionSettings = (draft?.collection === "settings" && draft.slug === "tuition") || section === "tuition";
+  const isRecommendLinks = (draft?.collection === "settings" && draft.slug === "recommend-links") || section === "recommend-links";
   const fieldMeta = activeMeta as typeof activeMeta & {
     tagLabel?: string;
     tagPlaceholder?: string;
@@ -654,6 +710,25 @@ export default function ContentAdmin() {
         }];
       }
     }
+    if (section === "recommend-links") {
+      list = entries.filter((entry) => (entry.collection === "settings" && entry.slug === "recommend-links") || entry.collection === "recommend-links");
+      if (!list.length) {
+        list = [{
+          id: "settings-recommend-links",
+          collection: "settings",
+          title: "THAM KHẢO CÁC LỚP HỌC, SẢN PHẨM VÀ GIÁO TRÌNH",
+          slug: "recommend-links",
+          publishedAt: new Date().toISOString().slice(0, 10),
+          excerpt: "",
+          imageUrl: "",
+          tag: "THAM KHẢO",
+          price: "",
+          content: "ĐÀO TẠO & KHÓA HỌC|Đăng ký học sáo →|/dang-ky-hoc\nNHẠC CỤ CHUẨN ÂM|Các sản phẩm sáo →|/sao-va-phu-kien\nTÀI LIỆU & SHEET NHẠC|Mua tài liệu & sheet →|/giao-trinh-va-sheet",
+          visible: true,
+          sortOrder: 4,
+        }];
+      }
+    }
     return list.sort((a, b) => a.sortOrder - b.sortOrder);
   }, [entries, section, productGroupFilter, courseGroupFilter, videoDisciplineFilter, curriculumDisciplineFilter, sheetDisciplineFilter]);
 
@@ -668,12 +743,19 @@ export default function ContentAdmin() {
 
   const [contactForm, setContactForm] = useState<ContactFields>(() => parseContactToFields(""));
   const [classForm, setClassForm] = useState<ClassDetailFields>(() => parseClassContentToFields("", ""));
+  const [recommendForm, setRecommendForm] = useState<RecommendFields>(() => parseRecommendToFields(""));
 
   useEffect(() => {
     if (draft && ((draft.collection === "settings" && draft.slug === "tuition") || section === "tuition")) {
       setTuitionForm(parseTuitionContentToFields(draft.content, draft.imageUrl));
     }
   }, [draft?.id, draft?.slug, draft?.collection, section]);
+
+  useEffect(() => {
+    if (draft && (isRecommendLinks || (draft.collection === "settings" && draft.slug === "recommend-links"))) {
+      setRecommendForm(parseRecommendToFields(draft.content, draft.title));
+    }
+  }, [draft?.id, draft?.slug, draft?.collection, isRecommendLinks]);
 
   useEffect(() => {
     if (draft && draft.collection === "page-contact") {
@@ -937,6 +1019,28 @@ export default function ContentAdmin() {
       }
       return;
     }
+    if (section === "recommend-links") {
+      const recommendEntry = entries.find((entry) => entry.collection === "settings" && entry.slug === "recommend-links");
+      if (recommendEntry) {
+        setDraft({ ...recommendEntry });
+      } else {
+        setDraft({
+          id: "settings-recommend-links",
+          collection: "settings",
+          title: "THAM KHẢO CÁC LỚP HỌC, SẢN PHẨM VÀ GIÁO TRÌNH",
+          slug: "recommend-links",
+          publishedAt: new Date().toISOString().slice(0, 10),
+          excerpt: "",
+          imageUrl: "",
+          tag: "THAM KHẢO",
+          price: "",
+          content: "ĐÀO TẠO & KHÓA HỌC|Đăng ký học sáo →|/dang-ky-hoc\nNHẠC CỤ CHUẨN ÂM|Các sản phẩm sáo →|/sao-va-phu-kien\nTÀI LIỆU & SHEET NHẠC|Mua tài liệu & sheet →|/giao-trinh-va-sheet",
+          visible: true,
+          sortOrder: 4,
+        });
+      }
+      return;
+    }
     if (section === "page-contact") {
       setDraft({
         id: "page-contact",
@@ -1058,6 +1162,16 @@ export default function ContentAdmin() {
         id: payload.id || "settings-tuition",
         content: assembleTuitionFields(tuitionForm),
         imageUrl: tuitionForm.duration,
+      };
+    }
+    if (isRecommendLinks || (payload.collection === "settings" && payload.slug === "recommend-links")) {
+      payload = {
+        ...payload,
+        collection: "settings",
+        slug: "recommend-links",
+        id: payload.id || "settings-recommend-links",
+        title: recommendForm.title,
+        content: assembleRecommendFields(recommendForm),
       };
     }
     if (payload.collection === "page-contact") {
@@ -1758,7 +1872,7 @@ export default function ContentAdmin() {
             <label>{isTuitionSettings ? "Tiêu đề bảng học phí" : (isPaymentSettings ? "Ngân hàng" : fieldMeta.tagLabel || "Phân loại / nhãn")}<input required={isPaymentSettings} value={draft.tag} onChange={(event) => setDraft({ ...draft, tag: event.target.value })} placeholder={isTuitionSettings ? "Ví dụ: Bảng mục học phí" : (isPaymentSettings ? "Ví dụ: STB · Sacombank" : fieldMeta.tagPlaceholder || "Ví dụ: Kỹ thuật")} /></label>
           )}
 
-          {!isPaymentSettings && !isTuitionSettings && draft.collection !== "page-contact" && draft.collection !== "class-details" && (
+          {!isPaymentSettings && !isTuitionSettings && !isRecommendLinks && draft.collection !== "page-contact" && draft.collection !== "class-details" && (
             <label className="wide">
               <span>{fieldMeta.excerptLabel || (section === "sheets" ? "Mô tả ngắn / Tone, nhịp *" : "Mô tả ngắn")}</span>
               <input
@@ -1769,7 +1883,7 @@ export default function ContentAdmin() {
             </label>
           )}
 
-          {!isPaymentSettings && !isTuitionSettings && draft.collection !== "page-contact" && draft.collection !== "class-details" && draft.collection !== "hero-slides" && draft.collection !== "social-links" && draft.collection !== "flute-tabs" && draft.collection !== "articles" && (
+          {!isPaymentSettings && !isTuitionSettings && !isRecommendLinks && draft.collection !== "page-contact" && draft.collection !== "class-details" && draft.collection !== "hero-slides" && draft.collection !== "social-links" && draft.collection !== "flute-tabs" && draft.collection !== "articles" && (
             <label>
               <span>{fieldMeta.priceLabel || (section === "sheets" ? "Giá sheet (VNĐ hoặc 'Liên hệ') *" : "Giá (VNĐ hoặc 'Liên hệ')")}</span>
               <input
@@ -1780,7 +1894,7 @@ export default function ContentAdmin() {
             </label>
           )}
 
-          {!isPaymentSettings && !isTuitionSettings && draft.collection !== "page-contact" && (
+          {!isPaymentSettings && !isTuitionSettings && !isRecommendLinks && draft.collection !== "page-contact" && (
             <div className="wide" style={{ display: "grid", gap: 8 }}>
               <label>
                 <span>{section === "sheets" ? "Hình ảnh demo Sheet nhạc / Ảnh minh họa" : "Ảnh minh họa / Ảnh đại diện"}</span>
@@ -2087,6 +2201,156 @@ export default function ContentAdmin() {
                 </div>
                 <div style={{ marginTop: 8, padding: "7px 10px", background: "rgba(0,0,0,.25)", borderLeft: "3px solid rgba(226,186,115,.6)", borderRadius: 4, fontSize: 11, color: "#eddcd0" }}>
                   <b style={{ color: "#ffdc94" }}>📌 Lưu ý:</b> {tuitionForm.note}
+                </div>
+              </div>
+            </div>
+          ) : isRecommendLinks ? (
+            <div className="wide" style={{ display: "grid", gap: 16, borderTop: "2px solid #e2e8f0", paddingTop: 18 }}>
+              <div style={{ padding: "14px 18px", background: "#fdf8f0", border: "1px solid #fde8c3", borderRadius: 8, fontSize: 13, color: "#854d0e", lineHeight: 1.6 }}>
+                <b style={{ fontSize: 14 }}>✦ CÀI ĐẶT MỤC THAM KHẢO Ở CUỐI BÀI VIẾT & CẢM ÂM:</b>
+                <p style={{ margin: "4px 0 0" }}>Khối liên kết này tự động xuất hiện ở cuối tất cả các bài viết và bài cảm âm trên website, giúp điều hướng người đọc sang đăng ký học, mua sáo và tài liệu.</p>
+              </div>
+
+              <label className="wide">
+                <span>Tiêu đề khối tham khảo *</span>
+                <input
+                  required
+                  value={recommendForm.title}
+                  onChange={(event) => setRecommendForm({ ...recommendForm, title: event.target.value })}
+                  placeholder="Ví dụ: THAM KHẢO CÁC LỚP HỌC, SẢN PHẨM VÀ GIÁO TRÌNH"
+                />
+              </label>
+
+              {/* Thẻ 1: Lớp học */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1.5fr", gap: 12, background: "#fff", padding: "14px 16px", borderRadius: 8, border: "1px solid #e2e8f0" }}>
+                <label>
+                  <span>Thẻ 1 - Nhãn nhỏ trên *</span>
+                  <input
+                    required
+                    value={recommendForm.badge1}
+                    onChange={(event) => setRecommendForm({ ...recommendForm, badge1: event.target.value })}
+                    placeholder="Ví dụ: ĐÀO TẠO & KHÓA HỌC"
+                  />
+                </label>
+                <label>
+                  <span>Thẻ 1 - Tên nút bấm *</span>
+                  <input
+                    required
+                    value={recommendForm.title1}
+                    onChange={(event) => setRecommendForm({ ...recommendForm, title1: event.target.value })}
+                    placeholder="Ví dụ: Đăng ký học sáo →"
+                  />
+                </label>
+                <label>
+                  <span>Thẻ 1 - Đường dẫn link *</span>
+                  <input
+                    required
+                    value={recommendForm.href1}
+                    onChange={(event) => setRecommendForm({ ...recommendForm, href1: event.target.value })}
+                    placeholder="Ví dụ: /dang-ky-hoc"
+                  />
+                </label>
+              </div>
+
+              {/* Thẻ 2: Sản phẩm sáo */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1.5fr", gap: 12, background: "#fff", padding: "14px 16px", borderRadius: 8, border: "1px solid #e2e8f0" }}>
+                <label>
+                  <span>Thẻ 2 - Nhãn nhỏ trên *</span>
+                  <input
+                    required
+                    value={recommendForm.badge2}
+                    onChange={(event) => setRecommendForm({ ...recommendForm, badge2: event.target.value })}
+                    placeholder="Ví dụ: NHẠC CỤ CHUẨN ÂM"
+                  />
+                </label>
+                <label>
+                  <span>Thẻ 2 - Tên nút bấm *</span>
+                  <input
+                    required
+                    value={recommendForm.title2}
+                    onChange={(event) => setRecommendForm({ ...recommendForm, title2: event.target.value })}
+                    placeholder="Ví dụ: Các sản phẩm sáo →"
+                  />
+                </label>
+                <label>
+                  <span>Thẻ 2 - Đường dẫn link *</span>
+                  <input
+                    required
+                    value={recommendForm.href2}
+                    onChange={(event) => setRecommendForm({ ...recommendForm, href2: event.target.value })}
+                    placeholder="Ví dụ: /sao-va-phu-kien"
+                  />
+                </label>
+              </div>
+
+              {/* Thẻ 3: Giáo trình & Sheet */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1.5fr", gap: 12, background: "#fff", padding: "14px 16px", borderRadius: 8, border: "1px solid #e2e8f0" }}>
+                <label>
+                  <span>Thẻ 3 - Nhãn nhỏ trên *</span>
+                  <input
+                    required
+                    value={recommendForm.badge3}
+                    onChange={(event) => setRecommendForm({ ...recommendForm, badge3: event.target.value })}
+                    placeholder="Ví dụ: TÀI LIỆU & SHEET NHẠC"
+                  />
+                </label>
+                <label>
+                  <span>Thẻ 3 - Tên nút bấm *</span>
+                  <input
+                    required
+                    value={recommendForm.title3}
+                    onChange={(event) => setRecommendForm({ ...recommendForm, title3: event.target.value })}
+                    placeholder="Ví dụ: Mua tài liệu & sheet →"
+                  />
+                </label>
+                <label>
+                  <span>Thẻ 3 - Đường dẫn link *</span>
+                  <input
+                    required
+                    value={recommendForm.href3}
+                    onChange={(event) => setRecommendForm({ ...recommendForm, href3: event.target.value })}
+                    placeholder="Ví dụ: /giao-trinh-va-sheet"
+                  />
+                </label>
+              </div>
+
+              {/* Live Preview */}
+              <div style={{
+                marginTop: 10,
+                padding: "20px 24px",
+                background: "linear-gradient(135deg, #fff9f0, #fcf3e6)",
+                border: "1px solid #ebd9c5",
+                borderRadius: 12,
+                boxShadow: "0 4px 14px rgba(75, 20, 34, 0.04)"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                  <span style={{ fontSize: 16, color: "#8a243c" }}>✦</span>
+                  <h4 style={{ margin: 0, fontSize: 14, fontFamily: "Georgia, serif", color: "#63172f", fontWeight: 700 }}>
+                    {recommendForm.title || "THAM KHẢO CÁC LỚP HỌC, SẢN PHẨM VÀ GIÁO TRÌNH"}
+                  </h4>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "#63172f", color: "#fff", borderRadius: 8 }}>
+                    <span style={{ fontSize: 18 }}>🎓</span>
+                    <span style={{ lineHeight: 1.3 }}>
+                      <span style={{ display: "block", color: "#e8c37c", fontSize: 10, textTransform: "uppercase", fontWeight: 700 }}>{recommendForm.badge1}</span>
+                      <strong style={{ color: "#fff", fontSize: 13 }}>{recommendForm.title1}</strong>
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "#fff", color: "#63172f", border: "1px solid #dfc399", borderRadius: 8 }}>
+                    <span style={{ fontSize: 18 }}>🎋</span>
+                    <span style={{ lineHeight: 1.3 }}>
+                      <span style={{ display: "block", color: "#8a5829", fontSize: 10, textTransform: "uppercase", fontWeight: 700 }}>{recommendForm.badge2}</span>
+                      <strong style={{ color: "#63172f", fontSize: 13 }}>{recommendForm.title2}</strong>
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "#fff", color: "#63172f", border: "1px solid #dfc399", borderRadius: 8 }}>
+                    <span style={{ fontSize: 18 }}>🎼</span>
+                    <span style={{ lineHeight: 1.3 }}>
+                      <span style={{ display: "block", color: "#8a5829", fontSize: 10, textTransform: "uppercase", fontWeight: 700 }}>{recommendForm.badge3}</span>
+                      <strong style={{ color: "#63172f", fontSize: 13 }}>{recommendForm.title3}</strong>
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

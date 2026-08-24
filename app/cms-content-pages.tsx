@@ -256,6 +256,7 @@ export function FluteIndex() {
       {entries === null ? <p className="content-state">{t("Đang tải cảm âm…", "Loading flute tabs…")}</p> : entries.length ? <div className="flute-tab-list">{entries.map((entry, index) => <article className="flute-tab" key={entry.id}>
         <Link className="flute-tab-summary" href={`/cam-am/${entry.slug}`}><span><small>{t("BÀI CẢM ÂM", "FLUTE TAB")} {String(index + 1).padStart(2, "0")}</small><b>{entry.title}</b><em>{translate(entry.tag)}</em></span><i>→</i></Link>
       </article>)}</div> : <p className="content-state">{t("Chưa có bài cảm âm nào được đăng.", "No flute tabs published yet.")}</p>}
+      <FeaturedReferenceLinks />
     </section>
     <ContentFooter />
   </main>;
@@ -289,6 +290,7 @@ export function FluteDetail() {
             </div>
           ))}
         </div>
+        <FeaturedReferenceLinks />
         <div className="content-detail-actions"><Link href="/cam-am">{t("← Tất cả bài cảm âm", "← All Flute Tabs")}</Link><ShareButton title={entry.title} /></div>
       </article>
     </> : <section className="content-state content-detail-state"><h1>{t("Không tìm thấy bài cảm âm", "Flute tab not found")}</h1><Link href="/cam-am">{t("Quay lại danh sách", "Back to list")}</Link></section>}
@@ -558,6 +560,89 @@ export function renderArticleFormatting(source: string): ReactNode[] {
   return blocks;
 }
 
+export function FeaturedReferenceLinks() {
+  const { t, translate } = useLanguage();
+  const settingsEntries = useCmsEntries("settings");
+  const recommendEntry = settingsEntries?.find((e) => e.slug === "recommend-links");
+
+  const title = recommendEntry?.title || "THAM KHẢO CÁC LỚP HỌC, SẢN PHẨM VÀ GIÁO TRÌNH";
+  const defaultItems = [
+    { icon: "🎓", badge: "ĐÀO TẠO & KHÓA HỌC", title: "Đăng ký học sáo →", href: "/dang-ky-hoc", isPrimary: true },
+    { icon: "🎋", badge: "NHẠC CỤ CHUẨN ÂM", title: "Các sản phẩm sáo →", href: "/sao-va-phu-kien", isPrimary: false },
+    { icon: "🎼", badge: "TÀI LIỆU & SHEET NHẠC", title: "Mua tài liệu & sheet →", href: "/giao-trinh-va-sheet", isPrimary: false },
+  ];
+
+  let items = defaultItems;
+  if (recommendEntry?.content) {
+    const lines = recommendEntry.content.split("\n").map((l) => l.trim()).filter(Boolean);
+    if (lines.length >= 3) {
+      items = lines.slice(0, 3).map((line, idx) => {
+        const parts = line.split("|");
+        return {
+          icon: idx === 0 ? "🎓" : idx === 1 ? "🎋" : "🎼",
+          badge: parts[0] || defaultItems[idx].badge,
+          title: parts[1] || defaultItems[idx].title,
+          href: parts[2] || defaultItems[idx].href,
+          isPrimary: idx === 0,
+        };
+      });
+    }
+  }
+
+  return (
+    <div className="article-featured-links" style={{
+      marginTop: 44,
+      marginBottom: 32,
+      padding: "24px 28px",
+      background: "linear-gradient(135deg, #fff9f0, #fcf3e6)",
+      border: "1px solid #ebd9c5",
+      borderRadius: 14,
+      boxShadow: "0 6px 20px rgba(75, 20, 34, 0.04)"
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+        <span style={{ fontSize: 18, color: "#8a243c" }}>✦</span>
+        <h3 style={{ margin: 0, fontSize: 16, fontFamily: "Georgia, serif", color: "#63172f", fontWeight: 700, letterSpacing: "0.03em" }}>
+          {translate(title)}
+        </h3>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
+        {items.map((item, idx) => (
+          <Link
+            key={idx}
+            href={item.href}
+            className="article-link-card"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              padding: "15px 18px",
+              background: item.isPrimary ? "#63172f" : "#fff",
+              color: item.isPrimary ? "#fff" : "#63172f",
+              border: item.isPrimary ? "none" : "1px solid #dfc399",
+              borderRadius: 10,
+              textDecoration: "none",
+              fontWeight: 600,
+              fontSize: 14,
+              boxShadow: item.isPrimary ? "0 4px 12px rgba(99, 23, 47, 0.15)" : "0 2px 8px rgba(75, 20, 34, 0.04)",
+              transition: "all 0.2s ease"
+            }}
+          >
+            <span style={{ fontSize: 22 }}>{item.icon}</span>
+            <span style={{ lineHeight: 1.35 }}>
+              <span style={{ display: "block", color: item.isPrimary ? "#e8c37c" : "#8a5829", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 }}>
+                {translate(item.badge)}
+              </span>
+              <strong style={{ color: item.isPrimary ? "#ffffff" : "#63172f", fontSize: 14 }}>
+                {translate(item.title)}
+              </strong>
+            </span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function NewsDetail({ initialEntry }: { initialEntry?: CmsEntry }) {
   const { t, translate } = useLanguage();
   const params = useParams<{ slug: string }>();
@@ -572,102 +657,7 @@ export function NewsDetail({ initialEntry }: { initialEntry?: CmsEntry }) {
       <article className="content-detail-body prose-content">
         {entry.imageUrl && <img src={entry.imageUrl} alt={entry.title} onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }} />}
         <div className="article-formatted-content">{renderArticleFormatting(articleContent)}</div>
-
-        <div className="article-featured-links" style={{
-          marginTop: 48,
-          marginBottom: 32,
-          padding: "24px 28px",
-          background: "linear-gradient(135deg, #fff9f0, #fcf3e6)",
-          border: "1px solid #ebd9c5",
-          borderRadius: 14,
-          boxShadow: "0 6px 20px rgba(75, 20, 34, 0.04)"
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-            <span style={{ fontSize: 18, color: "#8a243c" }}>✦</span>
-            <h3 style={{ margin: 0, fontSize: 17, fontFamily: "Georgia, serif", color: "#63172f", fontWeight: 700, letterSpacing: "0.02em" }}>
-              {t("THÔNG TIN HỮU ÍCH DÀNH CHO BẠN", "RECOMMENDED LINKS")}
-            </h3>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
-            <Link
-              href="/dang-ky-hoc"
-              className="article-link-card"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                padding: "15px 18px",
-                background: "#63172f",
-                color: "#fff",
-                borderRadius: 10,
-                textDecoration: "none",
-                fontWeight: 600,
-                fontSize: 14,
-                boxShadow: "0 4px 12px rgba(99, 23, 47, 0.15)",
-                transition: "all 0.2s ease"
-              }}
-            >
-              <span style={{ fontSize: 22 }}>🎓</span>
-              <span style={{ lineHeight: 1.35 }}>
-                <span style={{ display: "block", color: "#e8c37c", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 }}>{t("ĐÀO TẠO & KHÓA HỌC", "TRAINING & COURSES")}</span>
-                <strong style={{ color: "#ffffff", fontSize: 14 }}>{t("Đăng ký học sáo →", "Enroll in Flute Class →")}</strong>
-              </span>
-            </Link>
-
-            <Link
-              href="/sao-va-phu-kien"
-              className="article-link-card"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                padding: "15px 18px",
-                background: "#fff",
-                color: "#63172f",
-                border: "1px solid #dfc399",
-                borderRadius: 10,
-                textDecoration: "none",
-                fontWeight: 600,
-                fontSize: 14,
-                boxShadow: "0 2px 8px rgba(75, 20, 34, 0.04)",
-                transition: "all 0.2s ease"
-              }}
-            >
-              <span style={{ fontSize: 22 }}>🎋</span>
-              <span style={{ lineHeight: 1.35 }}>
-                <span style={{ display: "block", color: "#8a5829", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 }}>{t("NHẠC CỤ CHUẨN ÂM", "TUNED INSTRUMENTS")}</span>
-                <strong style={{ color: "#63172f", fontSize: 14 }}>{t("Các sản phẩm sáo →", "Flute Products & Accessories →")}</strong>
-              </span>
-            </Link>
-
-            <Link
-              href="/giao-trinh-va-sheet"
-              className="article-link-card"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                padding: "15px 18px",
-                background: "#fff",
-                color: "#63172f",
-                border: "1px solid #dfc399",
-                borderRadius: 10,
-                textDecoration: "none",
-                fontWeight: 600,
-                fontSize: 14,
-                boxShadow: "0 2px 8px rgba(75, 20, 34, 0.04)",
-                transition: "all 0.2s ease"
-              }}
-            >
-              <span style={{ fontSize: 22 }}>🎼</span>
-              <span style={{ lineHeight: 1.35 }}>
-                <span style={{ display: "block", color: "#8a5829", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 }}>{t("TÀI LIỆU & SHEET NHẠC", "SHEET MUSIC & CURRICULUM")}</span>
-                <strong style={{ color: "#63172f", fontSize: 14 }}>{t("Mua tài liệu & sheet →", "Curriculum & Sheet Music →")}</strong>
-              </span>
-            </Link>
-          </div>
-        </div>
-
+        <FeaturedReferenceLinks />
         <div className="content-detail-actions">
           <Link href="/bai-viet">{t("← Tất cả bài viết", "← All Articles")}</Link>
           <ShareButton title={translate(entry.title)} />
