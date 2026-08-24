@@ -569,7 +569,110 @@ export function NewsDetail({ initialEntry }: { initialEntry?: CmsEntry }) {
     <ContentHeader />
     {entries === null ? <p className="content-state content-detail-state">{t("Đang tải bài viết…", "Loading article…")}</p> : entry ? <>
       <section className="content-detail-hero"><p className="eyebrow">{translate(entry.tag) || t("BÀI VIẾT", "ARTICLE")}</p><h1>{translate(entry.title)}</h1><p>{translate(entry.excerpt)}</p><span>{entry.publishedAt ? new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN") : ""}</span></section>
-      <article className="content-detail-body prose-content">{entry.imageUrl && <img src={entry.imageUrl} alt={entry.title} onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }} />}<div className="article-formatted-content">{renderArticleFormatting(articleContent)}</div><div className="content-detail-actions"><Link href="/bai-viet">{t("← Tất cả bài viết", "← All Articles")}</Link><ShareButton title={translate(entry.title)} /></div></article>
+      <article className="content-detail-body prose-content">
+        {entry.imageUrl && <img src={entry.imageUrl} alt={entry.title} onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }} />}
+        <div className="article-formatted-content">{renderArticleFormatting(articleContent)}</div>
+
+        <div className="article-featured-links" style={{
+          marginTop: 48,
+          marginBottom: 32,
+          padding: "24px 28px",
+          background: "linear-gradient(135deg, #fff9f0, #fcf3e6)",
+          border: "1px solid #ebd9c5",
+          borderRadius: 14,
+          boxShadow: "0 6px 20px rgba(75, 20, 34, 0.04)"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+            <span style={{ fontSize: 18, color: "#8a243c" }}>✦</span>
+            <h3 style={{ margin: 0, fontSize: 17, fontFamily: "Georgia, serif", color: "#63172f", fontWeight: 700, letterSpacing: "0.02em" }}>
+              {t("THÔNG TIN HỮU ÍCH DÀNH CHO BẠN", "RECOMMENDED LINKS")}
+            </h3>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
+            <Link
+              href="/dang-ky-hoc"
+              className="article-link-card"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "15px 18px",
+                background: "#63172f",
+                color: "#fff",
+                borderRadius: 10,
+                textDecoration: "none",
+                fontWeight: 600,
+                fontSize: 14,
+                boxShadow: "0 4px 12px rgba(99, 23, 47, 0.15)",
+                transition: "all 0.2s ease"
+              }}
+            >
+              <span style={{ fontSize: 22 }}>🎓</span>
+              <span style={{ lineHeight: 1.35 }}>
+                <span style={{ display: "block", color: "#e8c37c", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 }}>{t("ĐÀO TẠO & KHÓA HỌC", "TRAINING & COURSES")}</span>
+                <strong style={{ color: "#ffffff", fontSize: 14 }}>{t("Đăng ký học sáo →", "Enroll in Flute Class →")}</strong>
+              </span>
+            </Link>
+
+            <Link
+              href="/sao-va-phu-kien"
+              className="article-link-card"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "15px 18px",
+                background: "#fff",
+                color: "#63172f",
+                border: "1px solid #dfc399",
+                borderRadius: 10,
+                textDecoration: "none",
+                fontWeight: 600,
+                fontSize: 14,
+                boxShadow: "0 2px 8px rgba(75, 20, 34, 0.04)",
+                transition: "all 0.2s ease"
+              }}
+            >
+              <span style={{ fontSize: 22 }}>🎋</span>
+              <span style={{ lineHeight: 1.35 }}>
+                <span style={{ display: "block", color: "#8a5829", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 }}>{t("NHẠC CỤ CHUẨN ÂM", "TUNED INSTRUMENTS")}</span>
+                <strong style={{ color: "#63172f", fontSize: 14 }}>{t("Các sản phẩm sáo →", "Flute Products & Accessories →")}</strong>
+              </span>
+            </Link>
+
+            <Link
+              href="/giao-trinh-va-sheet"
+              className="article-link-card"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "15px 18px",
+                background: "#fff",
+                color: "#63172f",
+                border: "1px solid #dfc399",
+                borderRadius: 10,
+                textDecoration: "none",
+                fontWeight: 600,
+                fontSize: 14,
+                boxShadow: "0 2px 8px rgba(75, 20, 34, 0.04)",
+                transition: "all 0.2s ease"
+              }}
+            >
+              <span style={{ fontSize: 22 }}>🎼</span>
+              <span style={{ lineHeight: 1.35 }}>
+                <span style={{ display: "block", color: "#8a5829", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 }}>{t("TÀI LIỆU & SHEET NHẠC", "SHEET MUSIC & CURRICULUM")}</span>
+                <strong style={{ color: "#63172f", fontSize: 14 }}>{t("Mua tài liệu & sheet →", "Curriculum & Sheet Music →")}</strong>
+              </span>
+            </Link>
+          </div>
+        </div>
+
+        <div className="content-detail-actions">
+          <Link href="/bai-viet">{t("← Tất cả bài viết", "← All Articles")}</Link>
+          <ShareButton title={translate(entry.title)} />
+        </div>
+      </article>
     </> : <section className="content-state content-detail-state"><h1>{t("Không tìm thấy bài viết", "Article not found")}</h1><Link href="/bai-viet">{t("Quay lại danh sách bài viết", "Back to articles list")}</Link></section>}
     <ContentFooter />
   </main>;

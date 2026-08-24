@@ -1660,7 +1660,22 @@ export default function ContentAdmin() {
       </div> : <form className="admin-editor" onSubmit={save}>
         <div className="admin-editor-head"><button type="button" onClick={() => setDraft(null)}>← Danh sách</button><div><small>{draft.id ? "CHỈNH SỬA" : "TẠO MỚI"}</small><h2>{draft.title || activeMeta.label}</h2>{entryHref(draft) && <a className="admin-page-url" href={entryHref(draft)} target="_blank" rel="noreferrer">saotrucauco.com{entryHref(draft)} ↗</a>}</div><button className="admin-primary" disabled={busy}>{busy ? "Đang lưu…" : "Lưu nội dung"}</button></div>
         <div className="admin-form-grid">
-          <label className="wide">{isTuitionSettings ? "Học phí Khóa 1 tháng *" : "Tiêu đề *"}<input required value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value, slug: draft.slug || slugify(event.target.value) })} placeholder={isTuitionSettings ? "Ví dụ: 2.400.000đ – 3.200.000đ" : undefined} /></label>
+          <label className="wide">
+            {isTuitionSettings ? "Học phí Khóa 1 tháng *" : "Tiêu đề *"}
+            <input
+              required
+              value={draft.title}
+              onChange={(event) => {
+                const newTitle = event.target.value;
+                setDraft({
+                  ...draft,
+                  title: newTitle,
+                  slug: slugify(newTitle),
+                });
+              }}
+              placeholder={isTuitionSettings ? "Ví dụ: 2.400.000đ – 3.200.000đ" : undefined}
+            />
+          </label>
           <label className="wide slug-field">Slug (đường dẫn, không dấu) *<span><input required pattern="[a-z0-9-]+" value={draft.slug} onChange={(event) => setDraft({ ...draft, slug: slugify(event.target.value) })} /><button type="button" onClick={() => setDraft({ ...draft, slug: slugify(draft.title) })}>Tạo lại</button></span></label>
           <label>Ngày đăng<input type="date" value={draft.publishedAt} onChange={(event) => setDraft({ ...draft, publishedAt: event.target.value })} /></label>
           <label>Thứ tự hiển thị<input type="number" min="0" value={draft.sortOrder} onChange={(event) => setDraft({ ...draft, sortOrder: Number(event.target.value) })} /></label>
