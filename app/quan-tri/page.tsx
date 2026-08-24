@@ -141,7 +141,6 @@ const defaultInterestList = [
   "Booking biểu diễn",
 ].join("\n");
 
-function parseContactToFields(content: string): ContactFields {
 function parseSectionMap(content: string): Record<string, string> {
   const sectionLines: Record<string, string[]> = {};
   if (!content || !content.includes("[")) return {};
