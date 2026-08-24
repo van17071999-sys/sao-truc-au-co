@@ -51,31 +51,31 @@ Người mới sẽ được hướng dẫn từng bước để có thể:
 
 **Có những bộ môn sáo nào?**
 
-Bên cạnh sáo trúc Việt Nam, Sáo Trúc Âu Cơ còn định hướng đào tạo nhiều bộ môn khác để người học có thể lựa chọn nhạc cụ phù hợp với sở thích:
+Bên cạnh sáo trúc Việt Nam, Sáo Trúc Âu Cơ còn định hướng đào tạo đa dạng các bộ môn khác. *(💡 Hướng dẫn: Bạn có thể nhấp trực tiếp vào tên từng bộ môn dưới đây để xem chi tiết bài giới thiệu, lộ trình và học phí bộ môn đó)*:
 
-**[Sáo Trúc Việt Nam](https://saotrucauco.com/bo-mon/sao-truc-viet-nam)**
+### [✦ Sáo Trúc Việt Nam (Bấm để xem chi tiết bộ môn →)](https://saotrucauco.com/bo-mon/sao-truc-viet-nam)
 Phù hợp với người yêu thích âm nhạc Việt Nam, nhạc dân gian, nhạc quê hương và nhiều thể loại âm nhạc hiện đại. Đây cũng là bộ môn phù hợp nhất để bắt đầu đối với nhiều người mới học sáo.
-👉 *Tham khảo chi tiết: [Khóa học Sáo Trúc Việt Nam tại TP.HCM & Online](https://saotrucauco.com/bo-mon/sao-truc-viet-nam)*
+👉 *Nhấp vào liên kết: [Xem chi tiết Khóa học Sáo Trúc Việt Nam tại TP.HCM & Online →](https://saotrucauco.com/bo-mon/sao-truc-viet-nam)*
 
-**[Sáo Dizi (Sáo Tàu)](https://saotrucauco.com/bo-mon/sao-dizi)**
+### [✦ Sáo Dizi – Sáo Tàu (Bấm để xem chi tiết bộ môn →)](https://saotrucauco.com/bo-mon/sao-dizi)
 Dizi là một loại sáo ngang truyền thống của Trung Quốc, đặc trưng bởi âm thanh sáng và lớp màng rung tạo nên màu sắc riêng biệt. Học viên được hướng dẫn từ cách cầm sáo, bấm nốt, sử dụng hơi đến những kỹ thuật đặc trưng trong biểu diễn Dizi.
-👉 *Tham khảo chi tiết: [Khóa học Sáo Dizi tại TP.HCM & Online](https://saotrucauco.com/bo-mon/sao-dizi)*
+👉 *Nhấp vào liên kết: [Xem chi tiết Khóa học Sáo Dizi tại TP.HCM & Online →](https://saotrucauco.com/bo-mon/sao-dizi)*
 
-**[Động Tiêu & Xiao](https://saotrucauco.com/bo-mon/dong-tieu-xiao)**
+### [✦ Động Tiêu & Xiao (Bấm để xem chi tiết bộ môn →)](https://saotrucauco.com/bo-mon/dong-tieu-xiao)
 Động tiêu có tư thế thổi dọc và mang màu âm trầm, sâu, phù hợp với những người yêu thích âm sắc nhẹ nhàng, sâu lắng và giàu cảm xúc. Chương trình bao gồm từ kỹ thuật cơ bản đến cách xử lý hơi, ngón và sắc thái của nhạc cụ.
-👉 *Tham khảo chi tiết: [Khóa học Động Tiêu & Xiao tại TP.HCM & Online](https://saotrucauco.com/bo-mon/dong-tieu-xiao)*
+👉 *Nhấp vào liên kết: [Xem chi tiết Khóa học Động Tiêu & Xiao tại TP.HCM & Online →](https://saotrucauco.com/bo-mon/dong-tieu-xiao)*
 
-**[Sáo Recorder](https://saotrucauco.com/bo-mon/sao-recorder)**
+### [✦ Sáo Recorder (Bấm để xem chi tiết bộ môn →)](https://saotrucauco.com/bo-mon/sao-recorder)
 Recorder (sáo dọc) là nhạc cụ hơi có cấu tạo đơn giản, dễ tiếp cận và đặc biệt phù hợp với trẻ em, học sinh và người mới bắt đầu học nhạc.
-👉 *Tham khảo chi tiết: [Khóa học Sáo Recorder tại TP.HCM & Online](https://saotrucauco.com/bo-mon/sao-recorder)*
+👉 *Nhấp vào liên kết: [Xem chi tiết Khóa học Sáo Recorder tại TP.HCM & Online →](https://saotrucauco.com/bo-mon/sao-recorder)*
 
-**[Sáo Flute](https://saotrucauco.com/bo-mon/flute)**
+### [✦ Sáo Flute Phương Tây (Bấm để xem chi tiết bộ môn →)](https://saotrucauco.com/bo-mon/flute)
 Flute phù hợp với những học viên yêu thích âm nhạc cổ điển, bán cổ điển hoặc muốn phát triển theo hướng nhạc cụ phương Tây.
-👉 *Tham khảo chi tiết: [Khóa học Sáo Flute tại TP.HCM & Online](https://saotrucauco.com/bo-mon/flute)*
+👉 *Nhấp vào liên kết: [Xem chi tiết Khóa học Sáo Flute tại TP.HCM & Online →](https://saotrucauco.com/bo-mon/flute)*
 
-**[Sáo H'Mông](https://saotrucauco.com/bo-mon/sao-hmong)**
+### [✦ Sáo H'Mông Tây Bắc (Bấm để xem chi tiết bộ môn →)](https://saotrucauco.com/bo-mon/sao-hmong)
 Sáo H’Mông sử dụng lam đồng và có màu âm da diết rất riêng của núi rừng Tây Bắc, mang đậm bản sắc văn hóa vùng cao.
-👉 *Tham khảo chi tiết: [Khóa học Sáo H'Mông tại TP.HCM & Online](https://saotrucauco.com/bo-mon/sao-hmong)*
+👉 *Nhấp vào liên kết: [Xem chi tiết Khóa học Sáo H'Mông tại TP.HCM & Online →](https://saotrucauco.com/bo-mon/sao-hmong)*
 
 **Phương pháp học tại Sáo Trúc Âu Cơ**
 Mục tiêu của chương trình không chỉ là giúp học viên thổi được một vài bài nhạc mà còn xây dựng nền tảng kỹ thuật đúng ngay từ đầu.
@@ -111,7 +111,7 @@ Người học vẫn nên chuẩn bị nhạc cụ phù hợp và không gian đ
 Lớp học có thể phù hợp với nhiều đối tượng như học sinh, sinh viên, người đi làm, người yêu thích âm nhạc dân tộc hoặc người muốn học một nhạc cụ để thư giãn sau thời gian học tập và làm việc.
 Đặc biệt, bạn không cần biết nhạc lý trước khi đăng ký. Những kiến thức cần thiết có thể được học song song trong quá trình luyện sáo.
 
-👉 *[Bấm vào đây để đăng ký tham gia lớp học ngay hôm nay →](https://saotrucauco.com/dang-ky-hoc)*
+👉 *💡 Hướng dẫn: [Bấm vào đây để chuyển sang trang Đăng Ký Học Sáo Trúc Âu Cơ →](https://saotrucauco.com/dang-ky-hoc)*
 
 **Đăng ký lớp học thổi sáo tại Tân Phú, Tân Bình, TPHCM**
 **Nếu bạn đang tìm kiếm:**
