@@ -41,10 +41,10 @@ type CmsRow = {
 
 const CMS_COOKIE = "saotrucauco_cms_session";
 const CMS_COLLECTIONS = new Set([
-  "services", "classes", "products", "materials", "articles", "courses",
+  "services", "classes", "products", "materials", "articles", "courses", "curriculums", "sheets",
   "hero-slides", "class-details", "product-groups", "product-items", "course-groups", "course-items",
   "single-videos", "social-links", "studio-packages", "booking-packages", "recording-instruments", "flute-tabs", "free-guides",
-  "settings", "page-contact", "page-classes", "page-products", "page-articles", "page-courses",
+  "settings", "tuition", "page-contact", "page-classes", "page-products", "page-articles", "page-courses",
 ]);
 
 const initialCmsEntries = [

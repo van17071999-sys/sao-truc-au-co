@@ -626,6 +626,15 @@ export default function ContentAdmin() {
         });
       }
     }
+    if (section === "sheets") {
+      list = entries.filter((entry) => entry.collection === "sheets" || (entry.collection === "materials" && entry.tag.startsWith("sheet:")));
+      if (sheetDisciplineFilter !== "all") {
+        list = list.filter((entry) => {
+          const normTag = entry.tag.replace(/^sheet:/, "");
+          return normTag === sheetDisciplineFilter || slugify(normTag) === sheetDisciplineFilter;
+        });
+      }
+    }
     if (section === "tuition") {
       list = entries.filter((entry) => entry.collection === "tuition" || (entry.collection === "settings" && entry.slug === "tuition"));
       if (!list.length) {
@@ -779,7 +788,7 @@ export default function ContentAdmin() {
       publishedAt: new Date().toISOString().slice(0, 10),
       excerpt: "Tone C5 · Ký âm nốt nhạc chuẩn và sơ đồ ngón bấm.",
       imageUrl: "",
-      tag: discSlug,
+      tag: `sheet:${discSlug.replace(/^sheet:/, "")}`,
       price: "79.000đ",
       content: "Bản ký âm 5 dòng kẻ chuẩn\nKèm sơ đồ ngón bấm và ký hiệu lấy hơi\nĐánh dấu vị trí xử lý luyến láy, rung hơi\nFile PDF độ phân giải cao sẵn sàng in ấn",
       visible: true,
@@ -960,6 +969,46 @@ export default function ContentAdmin() {
         tag: defaultGroup,
         price: "Liên hệ",
         content: "",
+        visible: true,
+        sortOrder: maxOrder + 1,
+      });
+      return;
+    }
+    if (section === "sheets") {
+      const defaultDisc = (sheetDisciplineFilter !== "all" ? sheetDisciplineFilter : "sao-truc");
+      const existing = entries.filter((e) => e.collection === "sheets" || (e.collection === "materials" && e.tag.startsWith("sheet:")));
+      const maxOrder = existing.length ? Math.max(...existing.map((e) => e.sortOrder)) : 0;
+      setDraft({
+        id: "",
+        collection: "sheets",
+        title: "",
+        slug: "",
+        publishedAt: new Date().toISOString().slice(0, 10),
+        excerpt: "Tone C5 · Nhịp 4/4 · Kèm ngón bấm",
+        imageUrl: "",
+        tag: `sheet:${defaultDisc.replace(/^sheet:/, "")}`,
+        price: "79.000đ",
+        content: "Bản ký âm 5 dòng kẻ chuẩn\nKèm sơ đồ ngón bấm và ký hiệu lấy hơi\nĐánh dấu vị trí xử lý luyến láy, rung hơi\nFile PDF độ phân giải cao sẵn sàng in ấn",
+        visible: true,
+        sortOrder: maxOrder + 1,
+      });
+      return;
+    }
+    if (section === "curriculums") {
+      const defaultDisc = (curriculumDisciplineFilter !== "all" ? curriculumDisciplineFilter : "sao-truc");
+      const existing = entries.filter((e) => e.collection === "curriculums" || (e.collection === "materials" && e.tag.startsWith("giao-trinh:")));
+      const maxOrder = existing.length ? Math.max(...existing.map((e) => e.sortOrder)) : 0;
+      setDraft({
+        id: "",
+        collection: "curriculums",
+        title: "",
+        slug: "",
+        publishedAt: new Date().toISOString().slice(0, 10),
+        excerpt: "Giáo trình đào tạo bài bản từ cơ bản đến nâng cao.",
+        imageUrl: "",
+        tag: `giao-trinh:${defaultDisc.replace(/^giao-trinh:/, "")}`,
+        price: "249.000đ",
+        content: "Chương 1 · Tư thế, khẩu hình và cột hơi nền tảng\nChương 2 · Hệ thống ngón bấm và đọc bản nhạc chuẩn\nChương 3 · Kỹ thuật rung hơi, luyến láy và phát triển sắc thái\nChương 4 · Phân tích và hoàn thiện các tác phẩm biểu diễn\nĐính kèm file PDF chất lượng cao và video thị phạm",
         visible: true,
         sortOrder: maxOrder + 1,
       });
@@ -1673,7 +1722,13 @@ export default function ContentAdmin() {
               <select
                 required
                 value={draft.tag.replace(/^(giao-trinh|sheet):/, "")}
-                onChange={(event) => setDraft({ ...draft, tag: event.target.value })}
+                onChange={(event) => {
+                  const val = event.target.value;
+                  setDraft({
+                    ...draft,
+                    tag: section === "sheets" ? (val.startsWith("sheet:") ? val : `sheet:${val}`) : (val.startsWith("giao-trinh:") ? val : `giao-trinh:${val}`)
+                  });
+                }}
                 style={{ height: 42, padding: "0 12px", border: "1px solid #ccd2dc", borderRadius: 8, background: "#fff", color: "#20242b", fontSize: 14 }}
               >
                 <option value="">-- Chọn bộ môn --</option>
@@ -1686,6 +1741,68 @@ export default function ContentAdmin() {
             </label>
           ) : (
             <label>{isTuitionSettings ? "Tiêu đề bảng học phí" : (isPaymentSettings ? "Ngân hàng" : fieldMeta.tagLabel || "Phân loại / nhãn")}<input required={isPaymentSettings} value={draft.tag} onChange={(event) => setDraft({ ...draft, tag: event.target.value })} placeholder={isTuitionSettings ? "Ví dụ: Bảng mục học phí" : (isPaymentSettings ? "Ví dụ: STB · Sacombank" : fieldMeta.tagPlaceholder || "Ví dụ: Kỹ thuật")} /></label>
+          )}
+
+          {!isPaymentSettings && !isTuitionSettings && draft.collection !== "page-contact" && draft.collection !== "class-details" && (
+            <label className="wide">
+              <span>{fieldMeta.excerptLabel || (section === "sheets" ? "Mô tả ngắn / Tone, nhịp *" : "Mô tả ngắn")}</span>
+              <input
+                value={draft.excerpt}
+                onChange={(event) => setDraft({ ...draft, excerpt: event.target.value })}
+                placeholder={section === "sheets" ? "Ví dụ: Tone C5 · Nhịp 4/4 · Kèm ngón bấm" : (fieldMeta.excerptPlaceholder || "Mô tả ngắn gọn...")}
+              />
+            </label>
+          )}
+
+          {!isPaymentSettings && !isTuitionSettings && draft.collection !== "page-contact" && draft.collection !== "class-details" && draft.collection !== "hero-slides" && draft.collection !== "social-links" && draft.collection !== "flute-tabs" && draft.collection !== "articles" && (
+            <label>
+              <span>{fieldMeta.priceLabel || (section === "sheets" ? "Giá sheet (VNĐ hoặc 'Liên hệ') *" : "Giá (VNĐ hoặc 'Liên hệ')")}</span>
+              <input
+                value={draft.price}
+                onChange={(event) => setDraft({ ...draft, price: event.target.value })}
+                placeholder="Ví dụ: 99.000đ hoặc Liên hệ"
+              />
+            </label>
+          )}
+
+          {!isPaymentSettings && !isTuitionSettings && draft.collection !== "page-contact" && (
+            <div className="wide" style={{ display: "grid", gap: 8 }}>
+              <label>
+                <span>{section === "sheets" ? "Hình ảnh demo Sheet nhạc / Ảnh minh họa" : "Ảnh minh họa / Ảnh đại diện"}</span>
+                <div className="admin-upload">
+                  <input
+                    value={draft.imageUrl}
+                    onChange={(event) => setDraft({ ...draft, imageUrl: event.target.value })}
+                    placeholder="Dán đường dẫn ảnh (URL) hoặc bấm nút Tải ảnh lên..."
+                  />
+                  <span>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/gif"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        if (file) void uploadImage(file);
+                      }}
+                    />
+                    Tải ảnh lên
+                  </span>
+                </div>
+              </label>
+              {draft.imageUrl && (
+                <div style={{ display: "flex", gap: 14, alignItems: "center", background: "#f8fafc", padding: "10px 14px", borderRadius: 8, border: "1px solid #e2e8f0" }}>
+                  <img
+                    src={draft.imageUrl}
+                    alt="Xem trước ảnh demo"
+                    style={{ width: 85, height: 110, objectFit: "cover", borderRadius: 6, border: "1px solid #cbd5e1", background: "#fff" }}
+                    onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }}
+                  />
+                  <div>
+                    <b style={{ color: "#1e293b", fontSize: 13 }}>✓ Xem trước ảnh demo đã tải:</b>
+                    <p style={{ margin: "3px 0 0", color: "#64748b", fontSize: 12 }}>Hình ảnh này sẽ hiển thị trực quan cho người xem trên trang web.</p>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
           
           {isPaymentSettings ? (
