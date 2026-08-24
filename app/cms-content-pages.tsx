@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { PaymentModal, ContactSection } from "./service-pages";
 import { PriceTag, parsePrice } from "./price-helper";
+import { getDisciplineSeo } from "./discipline-seo-data";
 
 export type CmsEntry = {
   id: string;
@@ -859,8 +860,17 @@ export function SubjectDetail() {
   }, [entry, fallback]);
 
   useEffect(() => {
+    if (params.slug) {
+      const seo = getDisciplineSeo(params.slug);
+      if (seo) {
+        document.title = seo.seoTitle;
+        const description = document.querySelector('meta[name="description"]');
+        description?.setAttribute("content", seo.description);
+        return;
+      }
+    }
     if (rawTitle) document.title = `${rawTitle} | Sáo Trúc Âu Cơ`;
-  }, [rawTitle]);
+  }, [params.slug, rawTitle]);
 
   if (entries === null && !fallback) {
     return <main className="subject-page content-page">
