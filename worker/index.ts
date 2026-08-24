@@ -61,10 +61,12 @@ const initialCmsEntries = [
   ["article-03", "articles", "Cách luyện hơi dài mà không bị căng", "cach-luyen-hoi-dai", "Một lịch tập ngắn, an toàn và hiệu quả để cải thiện cột hơi mỗi ngày.", "", "Luyện tập", "", "", 3],
   ["page-contact", "page-contact", "Đăng ký lớp học & Tư vấn", "dang-ky-hoc", "Để lại thông tin, Sáo Trúc Âu Cơ sẽ liên hệ tư vấn lớp học, chọn sáo hoặc dịch vụ phù hợp.", "/hero-flute.webp", "BẮT ĐẦU HÀNH TRÌNH", "0374 261 368", "Để tiếng sáo cất lời.\n\nHọc tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài.\n\n106/72 Hòa Bình, P. Tân Phú, TP.HCM\n\nvanquach999x@gmail.com", 1],
   ["settings-general", "settings", "SÁO TRÚC ÂU CƠ", "general", "Sáo trúc & âm nhạc dân tộc", "/hero-flute.webp", "vanquach999x@gmail.com", "0374 261 368", "106/72 Hòa Bình, P. Tân Phú, TP.HCM", 1],
-  ["settings-payment", "settings", "Thanh toán VietQR", "payment", "QUACH HA VAN", "/vietqr-payment.png", "STB · Sacombank", "030046023451", "Thông tin chuyển khoản dùng chung cho toàn bộ website.", 2],
 ] as const;
 
 const detailedCmsEntries = [
+  // Cài đặt học phí và ưu đãi
+  ["settings-tuition", "settings", "2.400.000đ – 3.200.000đ", "tuition", "4.800.000đ – 6.400.000đ", "Thời gian mỗi buổi 60 phút.", "Bảng mục học phí", "7.200.000đ", "[BUOI_1]\n8 buổi\n\n[BUOI_2]\n16 buổi\n\n[BUOI_3]\n24 buổi\n\n[THOI_LUONG]\nThời gian mỗi buổi 60 phút.\n\n[UU_DAI]\ngiảm 10% – 15%, tặng MV Video thổi sáo khi hết khoá.\n\n[LUU_Y]\nHọc phí đã đăng ký không hoàn lại trong mọi trường hợp. Nếu học viên có việc phát sinh và chưa thể tiếp tục học, số buổi còn lại sẽ được bảo lưu để học viên sắp xếp học lại sau.", 3],
+
   // Thông tin tài khoản và QR dùng chung cho mọi bảng thanh toán trên website.
   ["settings-payment", "settings", "Thanh toán VietQR", "payment", "QUACH HA VAN", "/vietqr-payment.png", "STB · Sacombank", "030046023451", "Thông tin chuyển khoản dùng chung cho toàn bộ website.", 2],
 

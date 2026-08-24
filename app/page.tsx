@@ -415,6 +415,12 @@ export default function Home() {
     .filter(Boolean);
   const contactPhone = generalSettings?.price || "0374 261 368";
   const contactEmail = generalSettings?.tag || "vanquach999x@gmail.com";
+  const tuitionSettings = cmsEntries.find((entry) => entry.collection === "settings" && entry.slug === "tuition");
+  const tuitionTitle = tuitionSettings?.tag || t("Bảng mục học phí", "Tuition Fee Table");
+  const tuition1Month = tuitionSettings?.title || "2.400.000đ – 3.200.000đ";
+  const tuition2Months = tuitionSettings?.excerpt || "4.800.000đ – 6.400.000đ";
+  const tuition3Months = tuitionSettings?.price || "7.200.000đ";
+  const tuitionPromo = tuitionSettings?.content || t("giảm 10% – 15%, tặng MV Video thổi sáo khi hết khoá.", "10% – 15% discount, complimentary flute music video upon completion.");
   const paymentSettings = cmsEntries.find((entry) => entry.collection === "settings" && entry.slug === "payment" && entry.visible);
   const paymentBank = paymentSettings?.tag || "STB · Sacombank";
   const paymentAccount = paymentSettings?.price || "030046023451";
@@ -793,7 +799,7 @@ export default function Home() {
   return (
     <main>
       <div className="top-contact-bar" aria-label={t("Thông tin liên hệ nhanh", "Quick contact info")}>
-        <a className="top-address" href="#contact" onClick={(e) => { e.preventDefault(); openService("#contact"); }}>
+        <Link className="top-address" href="/dang-ky-hoc">
           <span className="top-address-icon">⌖</span>
           <span className="top-address-list">
             {addressLines.length > 0 ? (
@@ -806,7 +812,7 @@ export default function Home() {
               <span className="top-address-line">106/72 Hòa Bình, P. Tân Phú, TP.HCM</span>
             )}
           </span>
-        </a>
+        </Link>
         <a className="top-phone" href={`tel:${contactPhone.replace(/\D/g, "")}`}><span>☎</span><span>{contactPhone}</span><small>{t("Hotline / Zalo", "Hotline / Zalo")}</small></a>
         <LanguageSwitcher className="lang-switcher-top" compact />
       </div>
@@ -822,9 +828,9 @@ export default function Home() {
           <a href="/bai-viet" onClick={() => setMenuOpen(false)}>{t("Bài viết", "Articles")}</a>
           <a href="#classes" onClick={(e) => { e.preventDefault(); openService("#classes"); }}>{t("Lớp học", "Classes")}</a>
           <a href="/cam-am" onClick={() => setMenuOpen(false)}>{t("Cảm âm", "Flute Tabs")}</a>
-          <a href="#contact" onClick={(e) => { e.preventDefault(); openService("#contact"); }}>{t("Liên hệ", "Contact")}</a>
+          <Link href="/dang-ky-hoc" onClick={() => setMenuOpen(false)}>{t("Liên hệ", "Contact")}</Link>
         </nav>
-        <button className="button button-gold header-cta" onClick={() => openService("#contact")}>{t("✦ Đăng ký học", "✦ Enroll Now")}</button>
+        <Link href="/dang-ky-hoc" className="button button-gold header-cta" style={{ textDecoration: "none" }}>{t("✦ Đăng ký học", "✦ Enroll Now")}</Link>
         {searchOpen && <div className="search-panel"><div className="search-box"><span>⌕</span><input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("Tìm lớp học, khóa học, dịch vụ...", "Search classes, courses, services...")} aria-label={t("Tìm kiếm nội dung", "Search content")} /><button onClick={() => { setSearchOpen(false); setQuery(""); }} aria-label={t("Đóng tìm kiếm", "Close search")}>×</button></div>{query && <div className="search-results">{searchItems.length ? searchItems.slice(0, 6).map((item) => <a key={`${item.type}-${item.title}`} href={item.href} onClick={(e) => { e.preventDefault(); openService(item.href); }}><small>{item.type}</small><span>{item.title}</span><b>→</b></a>) : <p>{t("Không tìm thấy nội dung phù hợp.", "No matching content found.")}</p>}</div>}</div>}
       </header>
 
@@ -839,7 +845,7 @@ export default function Home() {
           <p className="hero-copy">{displayedSlides[currentSlide].copy}</p>
           <div className="hero-actions">
             <a className="button button-gold hero-link" href={displayedSlides[currentSlide].href}>{displayedSlides[currentSlide].cta}</a>
-            <button className="button button-outline" onClick={() => openService("#contact")}>{t("Đăng ký học", "Enroll Now")}</button>
+            <Link href="/dang-ky-hoc" className="button button-outline" style={{ textDecoration: "none" }}>{t("Đăng ký học", "Enroll Now")}</Link>
           </div>
         </div>
         <div className="hero-features" aria-label={t("Điểm nổi bật", "Highlights")}>
@@ -876,7 +882,7 @@ export default function Home() {
         </div>
       </section>
 
-      {activeService && <div className="service-detail-bar" id="service-detail">
+      {activeService && activeService !== "contact" && <div className="service-detail-bar" id="service-detail">
         <div><small>{t("NỘI DUNG ĐANG XEM", "CURRENTLY VIEWING")}</small><b>{services.find((service) => service.href === `#${activeService}`)?.title}</b></div>
         <button onClick={closeService}>{t("← Quay lại 8 danh mục", "← Back to 8 categories")}</button>
       </div>}
@@ -1003,57 +1009,6 @@ export default function Home() {
         <div className="section-heading"><span /><div><p className="eyebrow">{t("THEO DÕI SÁO TRÚC ÂU CƠ", "FOLLOW AU CO BAMBOO FLUTE")}</p><h2>{t("Kết nối với chúng tôi", "Connect With Us")}</h2></div><span /></div>
         <div className="social-grid">{displayedSocialLinks.map((item) => <a href={item.href} className={item.slug} target="_blank" rel="noreferrer" key={item.slug}><b>{item.icon}</b><span><small>{item.platform}</small>{item.title}</span><i>↗</i></a>)}</div>
       </section>
-
-      {activeService === "contact" && <section className="contact section" id="contact">
-        <div className="contact-copy">
-          <p className="eyebrow">{t("BẮT ĐẦU HÀNH TRÌNH", "BEGIN YOUR MUSICAL JOURNEY")}</p>
-          <h2>{t("Để tiếng sáo cất lời.", "Let your melody speak.")}</h2>
-          <p>{t("Để lại thông tin, Sáo Trúc Âu Cơ sẽ liên hệ tư vấn lớp học, chọn sáo hoặc dịch vụ phù hợp.", "Leave your information, Au Co Bamboo Flute will contact you for course, instrument, or service advice.")}</p>
-          <ul>
-            {addressLines.map((line, idx) => (
-              <li key={idx}><span style={{ color: "#ddb268" }}>⌖</span> {renderAddressLine(line)}</li>
-            ))}
-            <li>{t("Hotline / Zalo:", "Hotline / Zalo:")} {contactPhone}</li>
-            <li>Email: {contactEmail}</li>
-          </ul>
-        </div>
-        <form onSubmit={submitForm}>
-          <label>{t("Họ và tên", "Full Name")}<input required name="name" placeholder={t("Tên của bạn", "Your full name")} /></label>
-          <label>{t("Số điện thoại / Zalo", "Phone / Zalo")}<input required name="phone" type="tel" placeholder={t("Số điện thoại liên hệ", "Your contact phone/Zalo")} /></label>
-          
-          <div className="full interest-selection-group">
-            <span className="interest-group-label">
-              {t("Đăng ký bộ môn or Tư vấn dịch vụ, sản phẩm", "Course Enrollment or Service & Product Consultation")}
-              <small style={{ display: "block", color: "#8a7e72", fontWeight: 400, marginTop: 3 }}>
-                {t("(Bấm để chọn tích một hoặc nhiều mục cùng lúc)", "(Click to select one or multiple options)")}
-              </small>
-            </span>
-            <div className="interest-checkbox-grid">
-              {allInterestOptions.map((item) => {
-                const isChecked = selectedDisciplines.includes(item);
-                return (
-                  <label key={item} className={`interest-checkbox-chip ${isChecked ? "is-selected" : ""}`}>
-                    <input
-                      type="checkbox"
-                      name="interest"
-                      value={item}
-                      checked={isChecked}
-                      onChange={() => toggleInterest(item)}
-                    />
-                    <span className="interest-check-icon">{isChecked ? "✓" : "+"}</span>
-                    <span className="interest-title">{translate(item)}</span>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-
-          <label className="full">{t("Lời nhắn", "Message")}<textarea name="message" rows={3} placeholder={t("Mục tiêu hoặc nhu cầu của bạn", "Your goals, questions, or specific needs")} /></label>
-          <button className="button button-wine full" type="submit" disabled={requestSubmitting}>{requestSubmitting ? t("Đang gửi…", "Sending…") : t("Gửi yêu cầu →", "Submit Request →")}</button>
-          {sent && <p className="success full" role="status">{t("Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất.", "Request submitted successfully! Au Co Bamboo Flute will contact you shortly.")}</p>}
-          {requestError && <p className="payment-error full" role="alert">{requestError}</p>}
-        </form>
-      </section>}
 
       <footer><div className="brand"><img src="/logo.jpg" alt="Logo Sáo Trúc Âu Cơ" width={46} height={46} style={{ width: 46, height: 46, objectFit: "cover", borderRadius: 8, flex: "0 0 auto" }} /><span><b>{brandName}</b><small>{brandTagline}</small></span></div><p>{t("Đam mê làm nên giá trị · Chất lượng tạo nên uy tín", "Passion creates value · Quality builds trust")}</p><small>{t("© 2026 Sáo Trúc Âu Cơ. All rights reserved.", "© 2026 Au Co Bamboo Flute. All rights reserved.")}</small></footer>
     </main>

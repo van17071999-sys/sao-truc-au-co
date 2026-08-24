@@ -5,7 +5,7 @@ import BrandLogo from "./brand-logo";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { PaymentModal } from "./service-pages";
+import { PaymentModal, ContactSection } from "./service-pages";
 import { PriceTag, parsePrice } from "./price-helper";
 
 export type CmsEntry = {
@@ -93,7 +93,7 @@ function ContentHeader() {
   return (
     <>
       <div className="top-contact-bar" aria-label={t("Thông tin liên hệ nhanh", "Quick contact info")}>
-        <Link className="top-address" href="/#contact">
+        <Link className="top-address" href="/dang-ky-hoc">
           <span className="top-address-icon">⌖</span>
           <span className="top-address-list">
             {addressLines.length > 0 ? (
@@ -121,7 +121,7 @@ function ContentHeader() {
           <Link href="/" onClick={() => setMenuOpen(false)}>{t("Trang chủ", "Home")}</Link>
           <Link href="/bai-viet" onClick={() => setMenuOpen(false)}>{t("Bài viết", "Articles")}</Link>
           <Link href="/cam-am" onClick={() => setMenuOpen(false)}>{t("Cảm âm", "Flute Tabs")}</Link>
-          <Link href="/#contact" onClick={() => setMenuOpen(false)}>{t("Liên hệ", "Contact")}</Link>
+          <Link href="/dang-ky-hoc" onClick={() => setMenuOpen(false)}>{t("Liên hệ", "Contact")}</Link>
         </nav>
       </header>
     </>
@@ -817,12 +817,9 @@ export function SubjectDetail() {
         <div><small>{t("THỜI GIAN", "SCHEDULE")}</small><p>{translate(parsed.schedule)}</p></div>
       </aside>
     </article>
-    <section className="subject-register" id="dang-ky">
-      <p className="eyebrow">{t("BẮT ĐẦU HÀNH TRÌNH", "BEGIN YOUR JOURNEY")}</p>
-      <h2>{t("Đăng ký học", "Enroll in")} {title}</h2>
-      <p>{t("Để lại thông tin tại form đăng ký. Bộ môn sẽ được chọn sẵn khi bạn quay về trang chính.", "Fill in your details in the contact form. This discipline will be preselected on the homepage.")}</p>
-      <Link className="button button-wine" href={`/?subject=${encodeURIComponent(rawTitle)}#contact`}>{t("Đi đến form đăng ký →", "Go to enrollment form →")}</Link>
-    </section>
+    <div className="contact-page-container" style={{ margin: "28px 0 0", width: "100%" }}>
+      <ContactSection initialSubject={rawTitle} id="dang-ky" />
+    </div>
     <ContentFooter />
   </main>;
 }

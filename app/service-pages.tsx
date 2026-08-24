@@ -100,7 +100,7 @@ export function ServicePageHeader() {
   return (
     <>
       <div className="top-contact-bar" aria-label={t("Thông tin liên hệ nhanh", "Quick contact info")}>
-        <Link className="top-address" href="/#contact">
+        <Link className="top-address" href="/dang-ky-hoc">
           <span className="top-address-icon">⌖</span>
           <span className="top-address-list">
             {addressLines.length > 0 ? (
@@ -173,12 +173,14 @@ function useServiceData() {
 
   const paymentSettings = cmsEntries.find((entry) => entry.collection === "settings" && entry.slug === "payment" && entry.visible);
   const generalSettings = cmsEntries.find((entry) => entry.collection === "settings" && entry.slug === "general" && entry.visible);
+  const tuitionSettings = cmsEntries.find((entry) => entry.collection === "settings" && entry.slug === "tuition");
 
   return {
     cmsEntries,
     visibleCollection,
     paymentSettings,
     generalSettings,
+    tuitionSettings,
   };
 }
 
@@ -259,19 +261,54 @@ export function ClassesPage() {
   );
 }
 
-// 02. ĐĂNG KÝ LỚP HỌC / LIÊN HỆ
-export function ContactPage() {
+export function ContactSection({ initialSubject, id }: { initialSubject?: string; id?: string }) {
   const { t, translate } = useLanguage();
-  const { generalSettings, visibleCollection } = useServiceData();
+  const { generalSettings, visibleCollection, tuitionSettings } = useServiceData();
   const [selectedDisciplines, setSelectedDisciplines] = useState<string[]>(["Sáo trúc Việt Nam"]);
   const [sent, setSent] = useState(false);
   const [requestSubmitting, setRequestSubmitting] = useState(false);
   const [requestError, setRequestError] = useState("");
 
+  const parsedTuition = useMemo(() => {
+    const content = tuitionSettings?.content || "";
+    const sectionLines: Record<string, string[]> = {};
+    if (content && content.includes("[")) {
+      let current = "";
+      for (const line of content.split("\n")) {
+        const match = line.trim().match(/^\[([A-ZÀ-Ỹ0-9\s_]+)\]$/i);
+        if (match) {
+          current = match[1]
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/đ/g, "d")
+            .replace(/[^a-z0-9]/g, "_");
+          sectionLines[current] = [];
+        } else if (current) {
+          sectionLines[current].push(line);
+        }
+      }
+    }
+    const sections: Record<string, string> = {};
+    for (const [key, lines] of Object.entries(sectionLines)) {
+      sections[key] = lines.join("\n").trim();
+    }
+    return {
+      title: tuitionSettings?.tag || t("Bảng mục học phí", "Tuition Fee Table"),
+      fee1: tuitionSettings?.title || "2.400.000đ – 3.200.000đ",
+      sessions1: sections["buoi_1"] || "8 buổi",
+      fee2: tuitionSettings?.excerpt || "4.800.000đ – 6.400.000đ",
+      sessions2: sections["buoi_2"] || "16 buổi",
+      fee3: tuitionSettings?.price || "7.200.000đ",
+      sessions3: sections["buoi_3"] || "24 buổi",
+      duration: sections["thoi_luong"] || tuitionSettings?.imageUrl || t("Thời gian mỗi buổi 60 phút.", "60 minutes per session."),
+      promo: sections["uu_dai"] || (content && !content.includes("[") ? content : t("giảm 10% – 15%, tặng MV Video thổi sáo khi hết khoá.", "10% – 15% discount, complimentary flute music video upon completion.")),
+      note: sections["luu_y"] || t("Học phí đã đăng ký không hoàn lại trong mọi trường hợp. Nếu học viên có việc phát sinh và chưa thể tiếp tục học, số buổi còn lại sẽ được bảo lưu để học viên sắp xếp học lại sau.", "Tuition is non-refundable. Remaining sessions can be preserved if postponed."),
+    };
+  }, [tuitionSettings, t]);
+
   const pageContact = visibleCollection("page-contact")[0];
   const pageEyebrow = translate(pageContact?.tag || "BẮT ĐẦU HÀNH TRÌNH");
-  const pageTitle = translate(pageContact?.title || "Đăng ký lớp học & Tư vấn");
-  const pageExcerpt = translate(pageContact?.excerpt || "Để lại thông tin, Sáo Trúc Âu Cơ sẽ liên hệ tư vấn lớp học, chọn sáo hoặc dịch vụ phù hợp.");
 
   const parsedContact = useMemo(() => {
     if (!pageContact?.content) return null;
@@ -290,33 +327,71 @@ export function ContactPage() {
         }
       }
       return {
-        blockTitle: sections["tieu_de_khoi"] || sections["title"] || "Để tiếng sáo cất lời.",
+        blockTitle: sections["tieu_de_khoi"] || sections["title"] || "Đăng Kí Học Sáo, Tư Vấn Các Dịch Vụ",
         blockDesc: sections["mo_ta_khoi"] || sections["desc"] || "Học tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài.",
         address: sections["dia_chi"] || sections["address"] || generalSettings?.content || "106/72 Hòa Bình, P. Tân Phú, TP.HCM",
         email: sections["email"] || generalSettings?.tag || "van17071999@gmail.com",
+        interestTitle: sections["tieu_de_bo_mon"] || sections["interest_title"] || "Đăng ký bộ môn or Tư vấn dịch vụ, sản phẩm",
+        interestNote: sections["ghi_chu_bo_mon"] || sections["interest_note"] || "(Bấm để chọn nhiều mục)",
+        interestItems: sections["danh_sach_bo_mon"] || sections["interest_items"] || "",
+        buttonLabel: sections["nut_gui"] || sections["button_label"] || "GỬI YÊU CẦU ĐĂNG KÝ →",
+        successMsg: sections["thong_bao_thanh_cong"] || sections["success_msg"] || "Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất.",
       };
     }
     const lines = content.split(/\n+/).map((l) => l.trim()).filter(Boolean);
     return {
-      blockTitle: lines[0] || "Để tiếng sáo cất lời.",
+      blockTitle: lines[0] || "Đăng Kí Học Sáo, Tư Vấn Các Dịch Vụ",
       blockDesc: lines[1] || "Học tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài.",
       address: lines[2] || generalSettings?.content || "106/72 Hòa Bình, P. Tân Phú, TP.HCM",
       email: lines[3] || generalSettings?.tag || "van17071999@gmail.com",
+      interestTitle: "Đăng ký bộ môn or Tư vấn dịch vụ, sản phẩm",
+      interestNote: "(Bấm để chọn nhiều mục)",
+      interestItems: "",
+      buttonLabel: "GỬI YÊU CẦU ĐĂNG KÝ →",
+      successMsg: "Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất.",
     };
   }, [pageContact, generalSettings]);
 
-  const blockTitle = translate(parsedContact?.blockTitle || "Để tiếng sáo cất lời.");
+  const blockTitle = translate(parsedContact?.blockTitle || "Đăng Kí Học Sáo, Tư Vấn Các Dịch Vụ");
   const blockDesc = translate(parsedContact?.blockDesc || "Học tại trung tâm (TP.HCM), gia sư tại nhà hoặc online 1 kèm 1 linh động cho học viên ở xa và nước ngoài.");
   const contactAddress = translate(parsedContact?.address || generalSettings?.content || "106/72 Hòa Bình, P. Tân Phú, TP.HCM");
   const contactPhone = pageContact?.price || generalSettings?.price || "0374 261 368";
   const contactEmail = parsedContact?.email || generalSettings?.tag || "van17071999@gmail.com";
 
+  const allInterestOptions = useMemo(() => {
+    if (parsedContact?.interestItems && parsedContact.interestItems.trim()) {
+      return parsedContact.interestItems.split(/\n+/).map((s) => s.trim()).filter(Boolean);
+    }
+    return [
+      "Sáo trúc Việt Nam",
+      "Sáo Dizi Trung Quốc",
+      "Sáo Recorder",
+      "Động tiêu & Xiao",
+      "Flute phương Tây",
+      "Sáo H'Mông",
+      "Sáo mèo & Sáo bầu",
+      "Mua sáo & phụ kiện",
+      "Khóa học video quay sẵn",
+      "Sheet nhạc & giáo trình",
+      "Thu âm & quay MV",
+      "Booking biểu diễn",
+    ];
+  }, [parsedContact?.interestItems]);
+
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (initialSubject) {
+      const match = allInterestOptions.find(
+        (opt) =>
+          opt.toLowerCase() === initialSubject.toLowerCase() ||
+          opt.toLowerCase().includes(initialSubject.toLowerCase().replace("sáo ", "").trim()) ||
+          initialSubject.toLowerCase().includes(opt.toLowerCase().replace("sáo ", "").trim())
+      );
+      setSelectedDisciplines([match || initialSubject]);
+    } else if (typeof window !== "undefined") {
       const requested = new URLSearchParams(window.location.search).get("subject");
       if (requested) setSelectedDisciplines([requested]);
     }
-  }, []);
+  }, [initialSubject, allInterestOptions]);
 
   function toggleInterest(item: string) {
     setSelectedDisciplines((prev) => {
@@ -342,82 +417,122 @@ export function ContactPage() {
         body: JSON.stringify({
           name: data.get("name"),
           phone: data.get("phone"),
-          interest: interestsString,
-          message: data.get("message"),
+          discipline: interestsString,
+          message: data.get("message") || "",
+          type: "Đăng ký học / Tư vấn chung",
         }),
       });
-      if (!response.ok) throw new Error("request_failed");
-      setSent(true);
-      try { form.reset(); } catch {}
+      if (response.ok) {
+        setSent(true);
+        form.reset();
+      } else {
+        const resJson = await response.json().catch(() => ({}));
+        setRequestError(resJson.error || "Gửi yêu cầu không thành công. Vui lòng thử lại hoặc gọi Hotline / Zalo.");
+      }
     } catch {
-      setRequestError(t("Chưa gửi được yêu cầu. Vui lòng liên hệ trực tiếp qua Zalo / Hotline.", "Could not send request. Please contact directly via Hotline / Zalo."));
+      setRequestError("Lỗi kết nối. Vui lòng liên hệ trực tiếp qua số Hotline / Zalo.");
     } finally {
       setRequestSubmitting(false);
     }
   }
 
   return (
-    <main className="subject-page content-page">
-      <ServicePageHeader />
-      <section className="content-list-hero">
-        <p className="eyebrow">{pageEyebrow}</p>
-        <h1>{pageTitle}</h1>
-        <p>{pageExcerpt}</p>
-      </section>
+    <section className="contact section" id={id || "contact"}>
+      <div className="contact-copy">
+        <p className="eyebrow">{pageEyebrow || t("THÔNG TIN LIÊN HỆ", "CONTACT INFORMATION")}</p>
+        <h2 className="contact-title-refined">{blockTitle}</h2>
+        <p className="contact-intro">{blockDesc}</p>
+        <ul className="contact-bullet-list">
+          {((contactAddress || "").split(/\n+/).map((l) => l.trim()).filter(Boolean)).map((line, idx) => (
+            <li key={idx}><span style={{ color: "#ddb268" }}>⌖</span> {renderAddressLine(line)}</li>
+          ))}
+          <li><span style={{ color: "#ddb268" }}>☎</span> {t("Hotline / Zalo:", "Hotline / Zalo:")} <a href={`tel:${contactPhone.replace(/\D/g, "")}`} style={{ color: "inherit", fontWeight: 700 }}>{contactPhone}</a></li>
+          <li><span style={{ color: "#ddb268" }}>✉</span> Email: {contactEmail}</li>
+        </ul>
 
-      <section className="contact section" style={{ maxWidth: 1000, margin: "0 auto", padding: "20px 20px 60px" }}>
-        <div className="contact-copy">
-          <p className="eyebrow">{t("THÔNG TIN LIÊN HỆ", "CONTACT INFORMATION")}</p>
-          <h2>{blockTitle}</h2>
-          <p>{blockDesc}</p>
-          <ul>
-            {((contactAddress || "").split(/\n+/).map((l) => l.trim()).filter(Boolean)).map((line, idx) => (
-              <li key={idx}><span style={{ color: "#ddb268" }}>⌖</span> {renderAddressLine(line)}</li>
-            ))}
-            <li>{t("Hotline / Zalo:", "Hotline / Zalo:")} <a href={`tel:${contactPhone.replace(/\D/g, "")}`} style={{ color: "inherit", fontWeight: 700 }}>{contactPhone}</a></li>
-            <li>Email: {contactEmail}</li>
-          </ul>
-        </div>
-        <form onSubmit={submitForm}>
-          <label>{t("Họ và tên", "Full Name")}<input required name="name" placeholder={t("Tên của bạn", "Your full name")} /></label>
-          <label>{t("Số điện thoại / Zalo", "Phone / Zalo")}<input required name="phone" type="tel" placeholder={t("Số điện thoại liên hệ", "Your contact phone/Zalo")} /></label>
-          
-          <div className="full interest-selection-group">
-            <span className="interest-group-label">
-              {t("Đăng ký bộ môn or Tư vấn dịch vụ, sản phẩm", "Course Enrollment or Service & Product Consultation")}
-              <small style={{ display: "block", color: "#8a7e72", fontWeight: 400, marginTop: 3 }}>
-                {t("(Bấm để chọn tích một hoặc nhiều mục cùng lúc)", "(Click to select one or multiple options)")}
-              </small>
-            </span>
-            <div className="interest-checkbox-grid">
-              {allInterestOptions.map((item) => {
-                const isChecked = selectedDisciplines.includes(item);
-                return (
-                  <label key={item} className={`interest-checkbox-chip ${isChecked ? "is-selected" : ""}`}>
-                    <input
-                      type="checkbox"
-                      name="interest"
-                      value={item}
-                      checked={isChecked}
-                      onChange={() => toggleInterest(item)}
-                    />
-                    <span className="interest-check-icon">{isChecked ? "✓" : "+"}</span>
-                    <span className="interest-title">{translate(item)}</span>
-                  </label>
-                );
-              })}
+        <div className="tuition-card">
+          <div className="tuition-card-head">
+            <h3 className="tuition-card-title"><span>✦</span>{parsedTuition.title}</h3>
+            <span className="tuition-duration-tag">⏱ {parsedTuition.duration}</span>
+          </div>
+          <div className="tuition-grid">
+            <div className="tuition-row">
+              <span className="tuition-duration">{t("Khóa 1 tháng", "1-Month Course")} <small className="tuition-sessions">({parsedTuition.sessions1})</small></span>
+              <span className="tuition-fee">{parsedTuition.fee1}</span>
+            </div>
+            <div className="tuition-row">
+              <span className="tuition-duration">{t("Khóa 2 tháng", "2-Month Course")} <small className="tuition-sessions">({parsedTuition.sessions2})</small></span>
+              <span className="tuition-fee">{parsedTuition.fee2}</span>
+            </div>
+            <div className="tuition-row">
+              <span className="tuition-duration">{t("Khóa 3 tháng", "3-Month Course")} <small className="tuition-sessions">({parsedTuition.sessions3})</small></span>
+              <span className="tuition-fee">{parsedTuition.fee3}</span>
             </div>
           </div>
+          {parsedTuition.promo && (
+            <div className="tuition-promo">
+              <div className="tuition-promo-title"><span>🎁</span>{t("Ưu đãi khi đăng ký khóa 2, 3 tháng:", "Special offers for 2 & 3-month courses:")}</div>
+              <div>{parsedTuition.promo}</div>
+            </div>
+          )}
+          {parsedTuition.note && (
+            <div className="tuition-note">
+              <b>📌 {t("Lưu ý:", "Note:")}</b> {parsedTuition.note}
+            </div>
+          )}
+        </div>
+      </div>
 
-          <label className="full">{t("Lời nhắn", "Message")}<textarea name="message" rows={4} placeholder={t("Mục tiêu, trình độ hiện tại hoặc nhu cầu của bạn", "Your goals, current experience, or questions")} /></label>
-          <button className="button button-wine full" type="submit" disabled={requestSubmitting}>{requestSubmitting ? t("Đang gửi…", "Sending…") : t("Gửi yêu cầu đăng ký →", "Submit Enrollment →")}</button>
-          {sent && <p className="success full" role="status">{t("Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất.", "Request submitted successfully! Au Co Bamboo Flute will contact you shortly.")}</p>}
-          {requestError && <p className="payment-error full" role="alert">{requestError}</p>}
-        </form>
-      </section>
+      <form onSubmit={submitForm}>
+        <div className="contact-form-row-2">
+          <label>{t("Họ và tên", "Full Name")}<input required name="name" placeholder={t("Tên của bạn", "Your full name")} /></label>
+          <label>{t("Số điện thoại / Zalo", "Phone / Zalo")}<input required name="phone" type="tel" placeholder={t("Số điện thoại liên hệ", "Your phone/Zalo")} /></label>
+        </div>
+        
+        <div className="full interest-selection-group">
+          <span className="interest-group-label">
+            {translate(parsedContact?.interestTitle || "Đăng ký bộ môn or Tư vấn dịch vụ, sản phẩm")}
+            <small style={{ display: "inline-block", marginLeft: 6, color: "#8a7e72", fontWeight: 400 }}>
+              {translate(parsedContact?.interestNote || "(Bấm để chọn nhiều mục)")}
+            </small>
+          </span>
+          <div className="interest-checkbox-grid">
+            {allInterestOptions.map((item) => {
+              const isChecked = selectedDisciplines.includes(item);
+              return (
+                <label key={item} className={`interest-checkbox-chip ${isChecked ? "is-selected" : ""}`}>
+                  <input
+                    type="checkbox"
+                    name="interest"
+                    value={item}
+                    checked={isChecked}
+                    onChange={() => toggleInterest(item)}
+                  />
+                  <span className="interest-check-icon">{isChecked ? "✓" : "+"}</span>
+                  <span className="interest-title">{translate(item)}</span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
 
-      <div style={{ textAlign: "center", paddingBottom: 40 }}>
-        <Link className="button button-outline" href="/">{t("← Quay lại trang chủ", "← Back to Homepage")}</Link>
+        <label className="full">{t("Lời nhắn", "Message")}<textarea name="message" rows={2} placeholder={t("Mục tiêu, trình độ hiện tại hoặc nhu cầu của bạn", "Your goals, current experience, or questions")} /></label>
+        <button className="button button-wine full" type="submit" disabled={requestSubmitting}>
+          {requestSubmitting ? t("Đang gửi…", "Sending…") : translate(parsedContact?.buttonLabel || "GỬI YÊU CẦU ĐĂNG KÝ →")}
+        </button>
+        {sent && <p className="success full" role="status">{translate(parsedContact?.successMsg || "Yêu cầu đã được gửi thành công. Sáo Trúc Âu Cơ sẽ liên hệ lại với bạn sớm nhất.")}</p>}
+        {requestError && <p className="payment-error full" role="alert">{requestError}</p>}
+      </form>
+    </section>
+  );
+}
+
+export function ContactPage() {
+  return (
+    <main className="subject-page content-page contact-page-wrapper">
+      <ServicePageHeader />
+      <div className="contact-page-container">
+        <ContactSection />
       </div>
       <ServicePageFooter />
     </main>
