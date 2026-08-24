@@ -121,6 +121,8 @@ function ContentHeader() {
         <nav className={menuOpen ? "open" : ""}>
           <Link href="/" onClick={() => setMenuOpen(false)}>{t("Trang chủ", "Home")}</Link>
           <Link href="/bai-viet" onClick={() => setMenuOpen(false)}>{t("Bài viết", "Articles")}</Link>
+          <Link href="/huong-dan" onClick={() => setMenuOpen(false)}>{t("Hướng dẫn", "Tutorials")}</Link>
+          <Link href="/lop-hoc" onClick={() => setMenuOpen(false)}>{t("Lớp học", "Classes")}</Link>
           <Link href="/cam-am" onClick={() => setMenuOpen(false)}>{t("Cảm âm", "Flute Tabs")}</Link>
           <Link href="/dang-ky-hoc" onClick={() => setMenuOpen(false)}>{t("Liên hệ", "Contact")}</Link>
         </nav>
@@ -1365,6 +1367,249 @@ export function SubjectDetail() {
         <FeaturedReferenceLinks />
       </div>
 
+      <ContentFooter />
+    </main>
+  );
+}
+
+export function GuideIndex() {
+  const { t, translate } = useLanguage();
+  const entries = useCmsEntries("free-guides");
+  const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
+
+  const fallbackGuides: CmsEntry[] = [
+    {
+      id: "guide-01",
+      collection: "free-guides",
+      title: "Cách lấy hơi và tạo tiếng sáo tròn, rõ",
+      slug: "cach-lay-hoi-va-tao-tieng-sao-tron-ro",
+      tag: "YouTube",
+      price: "Sáo trúc căn bản",
+      excerpt: "Hướng dẫn kỹ thuật lấy hơi bằng cơ hoành, khẩu hình chuẩn và cách tạo luồng hơi ổn định khi mới học.",
+      content: "https://www.youtube.com/@saotrucauco",
+      imageUrl: "/carousel-saotruc.webp",
+      visible: true,
+      sortOrder: 1,
+      publishedAt: "2026-08-01",
+    },
+    {
+      id: "guide-02",
+      collection: "free-guides",
+      title: "Mẹo sửa lỗi xì tiếng và rung ngón",
+      slug: "meo-sua-loi-xi-tieng-va-rung-ngon",
+      tag: "TikTok",
+      price: "Mẹo luyện tập nhanh",
+      excerpt: "Video ngắn chia sẻ mẹo khắc phục lỗi xì tiếng sáo, cách đặt môi êm và linh hoạt ngón tay.",
+      content: "https://www.tiktok.com/@saotrucauco",
+      imageUrl: "/carousel-dizi.webp",
+      visible: true,
+      sortOrder: 2,
+      publishedAt: "2026-08-05",
+    },
+    {
+      id: "guide-03",
+      collection: "free-guides",
+      title: "Chọn sáo tone nào cho người mới bắt đầu?",
+      slug: "chon-sao-tone-nao-cho-nguoi-moi-bat-dau",
+      tag: "Bài viết",
+      price: "Kiến thức chuyên sâu",
+      excerpt: "So sánh chi tiết ưu nhược điểm của các tone sáo C5, A4, G4 để người mới lựa chọn phù hợp nhất.",
+      content: "/bai-viet/nguoi-moi-chon-sao-tone-nao",
+      imageUrl: "/carousel-tieu.webp",
+      visible: true,
+      sortOrder: 3,
+      publishedAt: "2026-08-10",
+    },
+  ];
+
+  const guideList = (entries && entries.length > 0) ? entries : (entries === null ? null : fallbackGuides);
+
+  const filtered = (guideList || []).filter((item) => {
+    const matchesFilter =
+      filter === "all" ||
+      (filter === "youtube" && (item.tag || "").toLowerCase().includes("youtube")) ||
+      (filter === "tiktok" && (item.tag || "").toLowerCase().includes("tiktok")) ||
+      (filter === "article" && ((item.tag || "").toLowerCase().includes("bài viết") || (item.tag || "").toLowerCase().includes("kỹ thuật") || (!(item.tag || "").toLowerCase().includes("youtube") && !(item.tag || "").toLowerCase().includes("tiktok"))));
+    const matchesSearch =
+      !search ||
+      item.title.toLowerCase().includes(search.toLowerCase()) ||
+      item.excerpt.toLowerCase().includes(search.toLowerCase()) ||
+      item.tag.toLowerCase().includes(search.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
+
+  return (
+    <main className="subject-page content-page">
+      <ContentHeader />
+      <section className="content-list-hero">
+        <p className="eyebrow">{t("CHIA SẺ KIẾN THỨC · VIDEO & BÀI HƯỚNG DẪN", "KNOWLEDGE SHARING · VIDEOS & TUTORIALS")}</p>
+        <h1>{t("Hướng dẫn & Video", "Tutorials & Videos")}</h1>
+        <p>{t("Tổng hợp các bài viết hướng dẫn chi tiết, video bài giảng YouTube và clip mẹo luyện sáo TikTok từ Sáo Trúc Âu Cơ.", "Collection of detailed guides, YouTube video lessons, and TikTok flute practice tips by Au Co Bamboo Flute.")}</p>
+      </section>
+      <section className="content-index" style={{ paddingTop: 30 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16, marginBottom: 32 }}>
+          <div className="recorded-tabs" role="tablist" style={{ margin: 0 }}>
+            <button role="tab" className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>
+              {t("✦ Tất cả", "✦ All")}
+            </button>
+            <button role="tab" className={filter === "youtube" ? "active" : ""} onClick={() => setFilter("youtube")}>
+              {t("▶ Video YouTube", "▶ YouTube Videos")}
+            </button>
+            <button role="tab" className={filter === "tiktok" ? "active" : ""} onClick={() => setFilter("tiktok")}>
+              {t("♪ Video TikTok", "♪ TikTok Videos")}
+            </button>
+            <button role="tab" className={filter === "article" ? "active" : ""} onClick={() => setFilter("article")}>
+              {t("✎ Bài hướng dẫn", "✎ Written Guides")}
+            </button>
+          </div>
+          <div style={{ position: "relative", minWidth: 240, maxWidth: 360, flex: "1 1 240px" }}>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t("Tìm kiếm hướng dẫn, video...", "Search guides, videos...")}
+              style={{
+                width: "100%",
+                padding: "10px 16px 10px 36px",
+                borderRadius: 24,
+                border: "1px solid rgba(124,28,56,0.25)",
+                background: "#fffaf1",
+                fontSize: 14,
+                color: "#47101e",
+                outline: "none",
+              }}
+            />
+            <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#8a243d", pointerEvents: "none" }}>⌕</span>
+          </div>
+        </div>
+
+        {guideList === null ? (
+          <p className="content-state">{t("Đang tải danh sách hướng dẫn…", "Loading guides…")}</p>
+        ) : filtered.length ? (
+          <div className="free-guides-grid" style={{ marginTop: 0 }}>
+            {filtered.map((guide) => {
+              const isYouTube = (guide.tag || "").toLowerCase().includes("youtube");
+              const isTikTok = (guide.tag || "").toLowerCase().includes("tiktok");
+              const icon = isYouTube ? "▶" : isTikTok ? "♪" : "✎";
+              const targetHref = guide.content && (guide.content.startsWith("http") || guide.content.startsWith("/"))
+                ? guide.content
+                : `/huong-dan/${guide.slug}`;
+              const isExternal = targetHref.startsWith("http");
+
+              return (
+                <article key={guide.id} style={{ display: "flex", flexDirection: "column" }}>
+                  <div className="guide-visual">
+                    <span>{icon}</span>
+                    <small>{translate(guide.tag) || (isYouTube ? "YouTube" : isTikTok ? "TikTok" : "Bài viết")}</small>
+                  </div>
+                  <div className="guide-copy" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                    <small>{translate(guide.price) || t("Hướng dẫn miễn phí", "Free Guide")}</small>
+                    <h3 style={{ fontSize: 20, margin: "8px 0 10px", lineHeight: 1.35 }}>{translate(guide.title)}</h3>
+                    <p style={{ flex: 1, minHeight: 60 }}>{translate(guide.excerpt)}</p>
+                    <a
+                      href={targetHref}
+                      target={isExternal ? "_blank" : undefined}
+                      rel={isExternal ? "noopener noreferrer" : undefined}
+                      style={{ marginTop: "auto" }}
+                    >
+                      {isYouTube
+                        ? t("Xem video trên YouTube ↗", "Watch on YouTube ↗")
+                        : isTikTok
+                        ? t("Xem video trên TikTok ↗", "Watch on TikTok ↗")
+                        : t("Xem chi tiết hướng dẫn →", "Read full guide →")}
+                      <span>→</span>
+                    </a>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="content-state">{t("Không tìm thấy hướng dẫn phù hợp.", "No matching guides found.")}</p>
+        )}
+
+        <div className="free-guides-note" style={{ marginTop: 45 }}>
+          <span>✦</span>
+          <p>
+            <b>{t("Bạn muốn được hướng dẫn trực tiếp?", "Want personal flute coaching?")}</b>
+            <small>
+              {t(
+                "Đăng ký tham gia lớp học 1 kèm 1 (Trực tiếp hoặc Online) để được giảng viên theo sát và chỉnh sửa kỹ thuật chuẩn xác nhất.",
+                "Join our 1-on-1 flute coaching (In-person or Online) to get direct feedback from our master instructors."
+              )}
+            </small>
+          </p>
+          <Link href="/dang-ky-hoc" className="button button-gold" style={{ textDecoration: "none", alignSelf: "center" }}>
+            {t("Đăng ký học ngay →", "Enroll Now →")}
+          </Link>
+        </div>
+      </section>
+      <ContentFooter />
+    </main>
+  );
+}
+
+export function GuideDetail() {
+  const { t, translate } = useLanguage();
+  const params = useParams<{ slug: string }>();
+  const entries = useCmsEntries("free-guides");
+  const entry = entries?.find((item) => item.slug === params.slug);
+
+  if (entries === null) {
+    return (
+      <main className="subject-page content-page">
+        <ContentHeader />
+        <p className="content-state content-detail-state">{t("Đang tải hướng dẫn…", "Loading guide…")}</p>
+        <ContentFooter />
+      </main>
+    );
+  }
+
+  if (!entry) {
+    return (
+      <main className="subject-page content-page">
+        <ContentHeader />
+        <section className="content-state content-detail-state">
+          <h1>{t("Không tìm thấy bài hướng dẫn", "Guide not found")}</h1>
+          <Link href="/huong-dan">{t("Quay lại danh sách hướng dẫn", "Back to guides list")}</Link>
+        </section>
+        <ContentFooter />
+      </main>
+    );
+  }
+
+  const isExternalVideo = entry.content && entry.content.startsWith("http");
+
+  return (
+    <main className="subject-page content-page">
+      <ContentHeader />
+      <section className="content-detail-hero">
+        <p className="eyebrow">{translate(entry.tag) || t("HƯỚNG DẪN", "TUTORIAL")}</p>
+        <h1>{translate(entry.title)}</h1>
+        <p>{translate(entry.excerpt)}</p>
+        {entry.publishedAt && <span>{new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN")}</span>}
+      </section>
+      <article className="content-detail-body prose-content">
+        {entry.imageUrl && <img src={entry.imageUrl} alt={entry.title} onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }} />}
+        {isExternalVideo ? (
+          <div style={{ margin: "24px 0", textAlign: "center", padding: "30px 20px", background: "rgba(124,28,56,0.06)", borderRadius: 12 }}>
+            <p style={{ fontSize: 18, fontWeight: 700, color: "#621730", marginBottom: 16 }}>
+              {t("Video hướng dẫn có sẵn trên nền tảng:", "Video tutorial is available on:")} {entry.tag}
+            </p>
+            <a href={entry.content} target="_blank" rel="noopener noreferrer" className="button button-gold" style={{ display: "inline-block", textDecoration: "none" }}>
+              {t("Bấm để xem video ngay ↗", "Click to watch video now ↗")}
+            </a>
+          </div>
+        ) : (
+          <div className="article-formatted-content">{renderArticleFormatting(translate(entry.content || entry.excerpt || ""))}</div>
+        )}
+        <FeaturedReferenceLinks />
+        <div className="content-detail-actions">
+          <Link href="/huong-dan">{t("← Tất cả hướng dẫn & video", "← All Guides & Videos")}</Link>
+          <ShareButton title={translate(entry.title)} />
+        </div>
+      </article>
       <ContentFooter />
     </main>
   );

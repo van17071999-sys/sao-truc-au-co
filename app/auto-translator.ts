@@ -23,6 +23,8 @@ const exactPhraseMap: Record<string, string> = {
   // Navigations & Search
   "Trang chủ": "Home",
   "Bài viết": "Articles",
+  "Hướng dẫn": "Tutorials",
+  "Hướng dẫn & Video": "Tutorials & Videos",
   "Lớp học": "Classes",
   "Cảm âm": "Flute Tabs",
   "Liên hệ": "Contact",

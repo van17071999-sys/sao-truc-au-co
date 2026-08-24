@@ -37,7 +37,7 @@ const collections = [
   { key: "booking-packages", label: "Gói booking nghệ sĩ", note: "Từng đội hình biểu diễn, giá và quyền lợi", tagLabel: "Biểu tượng", priceLabel: "Giá booking (VNĐ hoặc 'Liên hệ')", contentLabel: "Quyền lợi (mỗi dòng một ý)" },
   { key: "recording-instruments", label: "Thu âm nhạc cụ thật", note: "Từng nhạc cụ nhận thu và giá", tagLabel: "Biểu tượng", priceLabel: "Giá thu (VNĐ hoặc 'Liên hệ')", contentLabel: "Thông tin bổ sung" },
   { key: "flute-tabs", label: "Cảm âm sáo trúc", note: "Đăng từng bài cảm âm (1 dòng Lời ở trên, 1 dòng Nốt ở dưới)", tagLabel: "Tone / nhịp / độ khó (Ví dụ: Tone C5 · Nhịp 4/4)", excerptLabel: "Tên đầy đủ của bài", priceLabel: "Thông tin phụ", contentLabel: "Lời và nốt cảm âm (1 dòng Lời, 1 dòng Nốt bên dưới)" },
-  { key: "free-guides", label: "Hướng dẫn miễn phí", note: "Gắn video YouTube, TikTok hoặc bài chia sẻ", tagLabel: "Nền tảng", tagPlaceholder: "YouTube hoặc TikTok", priceLabel: "Chủ đề", contentLabel: "Đường dẫn YouTube / TikTok / bài viết" },
+  { key: "free-guides", label: "Hướng dẫn & Video", note: "Video YouTube, TikTok hoặc bài viết hướng dẫn chia sẻ (/huong-dan)", tagLabel: "Nền tảng / Thể loại (YouTube, TikTok, Kỹ thuật)", tagPlaceholder: "Ví dụ: YouTube hoặc TikTok", priceLabel: "Chủ đề / Nhãn", excerptLabel: "Mô tả ngắn gọn", contentLabel: "Link video (YouTube / TikTok) hoặc nội dung bài hướng dẫn chi tiết" },
   { key: "articles", label: "Bài viết", note: "Bài viết chia sẻ, kiến thức và blog" },
 ];
 
@@ -88,6 +88,7 @@ function entryHref(entry: CmsEntry) {
   if (entry.collection === "single-videos") return `/video/${entry.slug}`;
   if (entry.collection === "articles") return `/bai-viet/${entry.slug}`;
   if (entry.collection === "flute-tabs") return `/cam-am/${entry.slug}`;
+  if (entry.collection === "free-guides") return entry.content?.startsWith("http") ? entry.content : `/huong-dan/${entry.slug}`;
   return "";
 }
 

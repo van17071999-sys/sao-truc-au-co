@@ -27,6 +27,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: baseUrl, changeFrequency: "daily", priority: 1.0 },
     ...servicePages.map((path) => ({ url: `${baseUrl}${path}`, changeFrequency: "weekly" as const, priority: 0.95 })),
     { url: `${baseUrl}/bai-viet`, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${baseUrl}/huong-dan`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${baseUrl}/cam-am`, changeFrequency: "weekly", priority: 0.9 },
     ...articleSlugs.map((slug) => ({ url: `${baseUrl}/bai-viet/${slug}`, changeFrequency: "monthly" as const, priority: 0.85 })),
     ...fluteTabSlugs.map((slug) => ({ url: `${baseUrl}/cam-am/${slug}`, changeFrequency: "monthly" as const, priority: 0.85 })),

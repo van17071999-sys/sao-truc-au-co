@@ -133,6 +133,7 @@ export function ServicePageHeader() {
           <Link href="/sao-va-phu-kien" onClick={() => setMenuOpen(false)}>{t("Sáo & Phụ kiện", "Flutes")}</Link>
           <Link href="/khoa-hoc-quay-san" onClick={() => setMenuOpen(false)}>{t("Khóa học", "Courses")}</Link>
           <Link href="/bai-viet" onClick={() => setMenuOpen(false)}>{t("Bài viết", "Articles")}</Link>
+          <Link href="/huong-dan" onClick={() => setMenuOpen(false)}>{t("Hướng dẫn", "Tutorials")}</Link>
           <Link href="/cam-am" onClick={() => setMenuOpen(false)}>{t("Cảm âm", "Flute Tabs")}</Link>
           <Link href="/dang-ky-hoc" onClick={() => setMenuOpen(false)}>{t("Liên hệ", "Contact")}</Link>
         </nav>

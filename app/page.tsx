@@ -826,6 +826,7 @@ export default function Home() {
           <a href="#top" onClick={() => setMenuOpen(false)}>{t("Trang chủ", "Home")}</a>
           <button className="nav-search" onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false); }}>{t("⌕ Tìm kiếm", "⌕ Search")}</button>
           <a href="/bai-viet" onClick={() => setMenuOpen(false)}>{t("Bài viết", "Articles")}</a>
+          <a href="/huong-dan" onClick={() => setMenuOpen(false)}>{t("Hướng dẫn", "Tutorials")}</a>
           <a href="#classes" onClick={(e) => { e.preventDefault(); openService("#classes"); }}>{t("Lớp học", "Classes")}</a>
           <a href="/cam-am" onClick={() => setMenuOpen(false)}>{t("Cảm âm", "Flute Tabs")}</a>
           <Link href="/dang-ky-hoc" onClick={() => setMenuOpen(false)}>{t("Liên hệ", "Contact")}</Link>
