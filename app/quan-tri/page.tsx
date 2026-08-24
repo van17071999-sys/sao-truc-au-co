@@ -2554,15 +2554,7 @@ export default function ContentAdmin() {
 
               {/* 1. Tiêu đề H1 & Giới thiệu */}
               <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "14px 16px", display: "grid", gap: 12 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#7c1c38" }}>1. TIÊU ĐỀ H1 & GIỚI THIỆU TỔNG QUAN</span>
-                <label>
-                  <span>Tiêu đề phụ / Dòng nhấn mạnh (Headline)</span>
-                  <input 
-                    value={classForm.headline} 
-                    onChange={(e) => setClassForm({ ...classForm, headline: e.target.value })} 
-                    placeholder="Ví dụ: Một lộ trình rõ ràng để chơi nhạc bằng chính cảm xúc của bạn." 
-                  />
-                </label>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#7c1c38" }}>1. GIỚI THIỆU TỔNG QUAN BỘ MÔN</span>
                 <label>
                   <span>Đoạn văn giới thiệu chi tiết bộ môn</span>
                   <textarea 

@@ -948,24 +948,12 @@ export function SubjectDetail() {
                 </span>
                 <p className="eyebrow" style={{ margin: 0, fontSize: 11 }}>{t("BÀI GIỚI THIỆU BỘ MÔN & ĐÀO TẠO", "DISCIPLINE OVERVIEW & COURSES")}</p>
               </div>
-              <h1 style={{ fontSize: "clamp(24px, 3.8vw, 42px)", lineHeight: 1.2, margin: "0 0 8px", color: "var(--wine)", fontFamily: "Georgia, serif" }}>
+              <h1 style={{ fontSize: "clamp(24px, 3.8vw, 42px)", lineHeight: 1.2, margin: "0 0 12px", color: "var(--wine)", fontFamily: "Georgia, serif" }}>
                 {h1Title}
               </h1>
-              <p style={{ margin: "0 0 16px", color: "#6a524e", fontSize: 15, lineHeight: 1.55 }}>
-                {lead}
-              </p>
-              
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-                <a className="button button-wine" href="#dang-ky" style={{ padding: "9px 20px", fontSize: 13.5 }}>
-                  {t("Đăng ký tư vấn →", "Get Consultation →")}
-                </a>
-                <a className="button button-gold" href="#hoc-phi" style={{ padding: "9px 20px", fontSize: 13.5 }}>
-                  {t("Xem học phí & lịch học", "View tuition & schedule")}
-                </a>
-              </div>
 
               {/* Hướng dẫn và Lưới tab 2 dọc 3 ngang */}
-              <div style={{ margin: "14px 0 0", paddingTop: 12, borderTop: "1px dashed rgba(124, 28, 56, 0.18)" }}>
+              <div style={{ margin: "4px 0 0", paddingTop: 10, borderTop: "1px dashed rgba(124, 28, 56, 0.18)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
                   <span style={{ fontSize: 13 }}>💡</span>
                   <b style={{ fontSize: 12.5, color: "#7c1c38", letterSpacing: "0.02em" }}>
