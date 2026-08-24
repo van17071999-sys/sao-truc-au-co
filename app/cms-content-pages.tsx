@@ -5,7 +5,7 @@ import BrandLogo from "./brand-logo";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { PaymentModal } from "./service-pages";
+import { PaymentModal, ContactSection } from "./service-pages";
 import { PriceTag, parsePrice } from "./price-helper";
 
 export type CmsEntry = {
@@ -793,7 +793,7 @@ export function SubjectDetail() {
         <span className="subject-symbol">{icon}</span>
         <h1>{title}</h1>
         <p>{lead}</p>
-        <Link className="button button-wine" href={`/dang-ky-hoc?subject=${encodeURIComponent(rawTitle)}`}>{t("Đăng ký tư vấn →", "Get Consultation →")}</Link>
+        <a className="button button-wine" href="#dang-ky">{t("Đăng ký tư vấn →", "Get Consultation →")}</a>
       </div>
     </section>
     <article className="subject-article">
@@ -817,12 +817,9 @@ export function SubjectDetail() {
         <div><small>{t("THỜI GIAN", "SCHEDULE")}</small><p>{translate(parsed.schedule)}</p></div>
       </aside>
     </article>
-    <section className="subject-register" id="dang-ky">
-      <p className="eyebrow">{t("BẮT ĐẦU HÀNH TRÌNH", "BEGIN YOUR JOURNEY")}</p>
-      <h2>{t("Đăng ký học", "Enroll in")} {title}</h2>
-      <p>{t("Để lại thông tin tại form đăng ký. Bộ môn sẽ được chọn sẵn khi bạn chuyển đến trang đăng ký.", "Fill in your details in the registration form. This discipline will be preselected.")}</p>
-      <Link className="button button-wine" href={`/dang-ky-hoc?subject=${encodeURIComponent(rawTitle)}`}>{t("Đi đến form đăng ký →", "Go to enrollment form →")}</Link>
-    </section>
+    <div className="contact-page-container" style={{ margin: "28px 0 0", width: "100%" }}>
+      <ContactSection initialSubject={rawTitle} id="dang-ky" />
+    </div>
     <ContentFooter />
   </main>;
 }
