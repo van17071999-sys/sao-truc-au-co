@@ -702,7 +702,7 @@ export function SalesDetail({ collection, typeLabel, backHref, backLabel }: { co
 
   useEffect(() => {
     if (!entry) return;
-    document.title = `${entry.title} | Sáo Trúc Âu Cơ`;
+    document.title = entry.title.includes("Sáo Trúc Âu Cơ") ? entry.title : `${entry.title} | Sáo Trúc Âu Cơ`;
     const description = document.querySelector('meta[name="description"]');
     description?.setAttribute("content", entry.excerpt || `${typeLabel} ${entry.title} tại Sáo Trúc Âu Cơ.`);
   }, [entry, typeLabel]);

@@ -28,19 +28,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       type: "website",
       locale: "vi_VN",
       siteName: "Sáo Trúc Âu Cơ",
-      title: seo.seoTitle,
+      title: `${seo.seoTitle} | Sáo Trúc Âu Cơ`,
       description: seo.description,
       url: canonicalUrl,
       images: [
         {
           url: `${siteUrl}${seo.image}`,
-          alt: seo.seoTitle,
+          alt: `${seo.seoTitle} | Sáo Trúc Âu Cơ`,
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: seo.seoTitle,
+      title: `${seo.seoTitle} | Sáo Trúc Âu Cơ`,
       description: seo.description,
       images: [`${siteUrl}${seo.image}`],
     },
