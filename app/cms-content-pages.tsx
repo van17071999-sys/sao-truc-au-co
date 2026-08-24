@@ -935,185 +935,187 @@ export function SubjectDetail() {
   return (
     <main className="subject-page">
       <ContentHeader />
-      <section className="subject-hero" style={{ padding: "0", minHeight: "auto", background: "radial-gradient(circle at 85% 20%, rgba(214, 173, 102, 0.22), transparent 40%), linear-gradient(120deg, #f7ecde, #fffaf1)" }}>
-        <div style={{ maxWidth: 1250, margin: "0 auto", padding: "36px clamp(14px, 3vw, 24px) 24px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
-            <span style={{ display: "grid", placeItems: "center", width: 40, height: 40, border: "1px solid var(--gold)", borderRadius: "50%", fontSize: 20, color: "var(--wine)", background: "#fff", flexShrink: 0 }}>
-              {icon}
-            </span>
-            <p className="eyebrow" style={{ margin: 0, fontSize: 11 }}>{t("BÀI GIỚI THIỆU BỘ MÔN & ĐÀO TẠO", "DISCIPLINE OVERVIEW & COURSES")}</p>
-          </div>
-          <h1 style={{ fontSize: "clamp(24px, 3.8vw, 42px)", lineHeight: 1.2, margin: "0 0 8px", color: "var(--wine)", fontFamily: "Georgia, serif" }}>
-            {h1Title}
-          </h1>
-          <p style={{ margin: "0 0 16px", color: "#6a524e", fontSize: 15, lineHeight: 1.55, maxWidth: 850 }}>
-            {lead}
-          </p>
-          
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-            <a className="button button-wine" href="#dang-ky" style={{ padding: "9px 20px", fontSize: 13.5 }}>
-              {t("Đăng ký tư vấn →", "Get Consultation →")}
-            </a>
-            <a className="button button-gold" href="#hoc-phi" style={{ padding: "9px 20px", fontSize: 13.5 }}>
-              {t("Xem học phí & lịch học", "View tuition & schedule")}
-            </a>
-          </div>
 
-          {/* Hướng dẫn và Lưới tab 2 dọc 3 ngang căn lề trái chuẩn */}
-          <div style={{ margin: "14px 0 0", paddingTop: 12, borderTop: "1px dashed rgba(124, 28, 56, 0.18)", maxWidth: 900 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-              <span style={{ fontSize: 13 }}>💡</span>
-              <b style={{ fontSize: 12.5, color: "#7c1c38", letterSpacing: "0.02em" }}>
-                {t("Hướng dẫn: Bấm để xem nhanh", "Guide: Tap to view quickly")}
-              </b>
-            </div>
-
-            <nav style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
-              <button
-                type="button"
-                onClick={() => setActiveTab(activeTab === "intro" ? "all" : "intro")}
-                style={{
-                  padding: "8px 4px",
-                  border: activeTab === "intro" ? "1px solid #7c1c38" : "1px solid rgba(124, 28, 56, 0.18)",
-                  borderRadius: 8,
-                  fontSize: "clamp(10.5px, 2.7vw, 12.5px)",
-                  fontWeight: 700,
-                  textAlign: "center",
-                  cursor: "pointer",
-                  background: activeTab === "intro" ? "#7c1c38" : "#fff",
-                  color: activeTab === "intro" ? "#fff" : "#63172f",
-                  boxShadow: "0 2px 5px rgba(124, 28, 56, 0.04)",
-                  minHeight: 38,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  lineHeight: 1.25,
-                }}
-              >
-                ✦ 1. Giới thiệu
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab(activeTab === "course" ? "all" : "course")}
-                style={{
-                  padding: "8px 4px",
-                  border: activeTab === "course" ? "1px solid #7c1c38" : "1px solid rgba(124, 28, 56, 0.18)",
-                  borderRadius: 8,
-                  fontSize: "clamp(10.5px, 2.7vw, 12.5px)",
-                  fontWeight: 700,
-                  textAlign: "center",
-                  cursor: "pointer",
-                  background: activeTab === "course" ? "#7c1c38" : "#fff",
-                  color: activeTab === "course" ? "#fff" : "#63172f",
-                  boxShadow: "0 2px 5px rgba(124, 28, 56, 0.04)",
-                  minHeight: 38,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  lineHeight: 1.25,
-                }}
-              >
-                ✦ 2. Khóa học & Lộ trình
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab(activeTab === "formats" ? "all" : "formats")}
-                style={{
-                  padding: "8px 4px",
-                  border: activeTab === "formats" ? "1px solid #7c1c38" : "1px solid rgba(124, 28, 56, 0.18)",
-                  borderRadius: 8,
-                  fontSize: "clamp(10.5px, 2.7vw, 12.5px)",
-                  fontWeight: 700,
-                  textAlign: "center",
-                  cursor: "pointer",
-                  background: activeTab === "formats" ? "#7c1c38" : "#fff",
-                  color: activeTab === "formats" ? "#fff" : "#63172f",
-                  boxShadow: "0 2px 5px rgba(124, 28, 56, 0.04)",
-                  minHeight: 38,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  lineHeight: 1.25,
-                }}
-              >
-                ✦ 3. Địa chỉ học và học online
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab(activeTab === "tuition" ? "all" : "tuition")}
-                style={{
-                  padding: "8px 4px",
-                  border: activeTab === "tuition" ? "1px solid #7c1c38" : "1px solid rgba(124, 28, 56, 0.18)",
-                  borderRadius: 8,
-                  fontSize: "clamp(10.5px, 2.7vw, 12.5px)",
-                  fontWeight: 700,
-                  textAlign: "center",
-                  cursor: "pointer",
-                  background: activeTab === "tuition" ? "#7c1c38" : "#fff",
-                  color: activeTab === "tuition" ? "#fff" : "#63172f",
-                  boxShadow: "0 2px 5px rgba(124, 28, 56, 0.04)",
-                  minHeight: 38,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  lineHeight: 1.25,
-                }}
-              >
-                ✦ 4. Học phí & Lịch học
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab(activeTab === "faq" ? "all" : "faq")}
-                style={{
-                  padding: "8px 4px",
-                  border: activeTab === "faq" ? "1px solid #7c1c38" : "1px solid rgba(124, 28, 56, 0.18)",
-                  borderRadius: 8,
-                  fontSize: "clamp(10.5px, 2.7vw, 12.5px)",
-                  fontWeight: 700,
-                  textAlign: "center",
-                  cursor: "pointer",
-                  background: activeTab === "faq" ? "#7c1c38" : "#fff",
-                  color: activeTab === "faq" ? "#fff" : "#63172f",
-                  boxShadow: "0 2px 5px rgba(124, 28, 56, 0.04)",
-                  minHeight: 38,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  lineHeight: 1.25,
-                }}
-              >
-                ✦ 5. Câu hỏi thường gặp
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("all")}
-                style={{
-                  padding: "8px 4px",
-                  border: activeTab === "all" ? "1px solid #7c1c38" : "1px dashed rgba(124, 28, 56, 0.4)",
-                  borderRadius: 8,
-                  fontSize: "clamp(10.5px, 2.7vw, 12.5px)",
-                  fontWeight: 700,
-                  textAlign: "center",
-                  cursor: "pointer",
-                  background: activeTab === "all" ? "#7c1c38" : "#fffdf8",
-                  color: activeTab === "all" ? "#fff" : "#7c1c38",
-                  boxShadow: "0 2px 5px rgba(124, 28, 56, 0.04)",
-                  minHeight: 38,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  lineHeight: 1.25,
-                }}
-              >
-                ✦ 6. Xem tất cả
-              </button>
-            </nav>
-          </div>
-        </div>
-      </section>
-
-      <article className="subject-article" style={{ maxWidth: 1250, margin: "0 auto", padding: "24px clamp(14px, 3vw, 24px)", display: "grid", gridTemplateColumns: "1fr 310px", gap: 20 }}>
+      <article className="subject-article" style={{ maxWidth: 1250, margin: "0 auto", padding: "28px clamp(14px, 3vw, 24px)", display: "grid", gridTemplateColumns: "1fr 310px", gap: 20 }}>
         <div className="article-main" id="subject-content-view" style={{ maxWidth: "100%", display: "grid", gap: 18 }}>
+          
+          {/* KHỐI HERO BỘ MÔN (Nằm gọn trong cột chính bên trái, thẳng hàng hoàn hảo với các thẻ bên dưới) */}
+          <section className="subject-hero" style={{ padding: "28px 24px 22px", minHeight: "auto", background: "radial-gradient(circle at 85% 20%, rgba(214, 173, 102, 0.22), transparent 40%), linear-gradient(120deg, #f7ecde, #fffaf1)", border: "1px solid var(--line)", borderRadius: 12 }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
+                <span style={{ display: "grid", placeItems: "center", width: 40, height: 40, border: "1px solid var(--gold)", borderRadius: "50%", fontSize: 20, color: "var(--wine)", background: "#fff", flexShrink: 0 }}>
+                  {icon}
+                </span>
+                <p className="eyebrow" style={{ margin: 0, fontSize: 11 }}>{t("BÀI GIỚI THIỆU BỘ MÔN & ĐÀO TẠO", "DISCIPLINE OVERVIEW & COURSES")}</p>
+              </div>
+              <h1 style={{ fontSize: "clamp(24px, 3.8vw, 42px)", lineHeight: 1.2, margin: "0 0 8px", color: "var(--wine)", fontFamily: "Georgia, serif" }}>
+                {h1Title}
+              </h1>
+              <p style={{ margin: "0 0 16px", color: "#6a524e", fontSize: 15, lineHeight: 1.55 }}>
+                {lead}
+              </p>
+              
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                <a className="button button-wine" href="#dang-ky" style={{ padding: "9px 20px", fontSize: 13.5 }}>
+                  {t("Đăng ký tư vấn →", "Get Consultation →")}
+                </a>
+                <a className="button button-gold" href="#hoc-phi" style={{ padding: "9px 20px", fontSize: 13.5 }}>
+                  {t("Xem học phí & lịch học", "View tuition & schedule")}
+                </a>
+              </div>
+
+              {/* Hướng dẫn và Lưới tab 2 dọc 3 ngang */}
+              <div style={{ margin: "14px 0 0", paddingTop: 12, borderTop: "1px dashed rgba(124, 28, 56, 0.18)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                  <span style={{ fontSize: 13 }}>💡</span>
+                  <b style={{ fontSize: 12.5, color: "#7c1c38", letterSpacing: "0.02em" }}>
+                    {t("Hướng dẫn: Bấm để xem nhanh", "Guide: Tap to view quickly")}
+                  </b>
+                </div>
+
+                <nav style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab(activeTab === "intro" ? "all" : "intro")}
+                    style={{
+                      padding: "8px 4px",
+                      border: activeTab === "intro" ? "1px solid #7c1c38" : "1px solid rgba(124, 28, 56, 0.18)",
+                      borderRadius: 8,
+                      fontSize: "clamp(10.5px, 2.7vw, 12.5px)",
+                      fontWeight: 700,
+                      textAlign: "center",
+                      cursor: "pointer",
+                      background: activeTab === "intro" ? "#7c1c38" : "#fff",
+                      color: activeTab === "intro" ? "#fff" : "#63172f",
+                      boxShadow: "0 2px 5px rgba(124, 28, 56, 0.04)",
+                      minHeight: 38,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      lineHeight: 1.25,
+                    }}
+                  >
+                    ✦ 1. Giới thiệu
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab(activeTab === "course" ? "all" : "course")}
+                    style={{
+                      padding: "8px 4px",
+                      border: activeTab === "course" ? "1px solid #7c1c38" : "1px solid rgba(124, 28, 56, 0.18)",
+                      borderRadius: 8,
+                      fontSize: "clamp(10.5px, 2.7vw, 12.5px)",
+                      fontWeight: 700,
+                      textAlign: "center",
+                      cursor: "pointer",
+                      background: activeTab === "course" ? "#7c1c38" : "#fff",
+                      color: activeTab === "course" ? "#fff" : "#63172f",
+                      boxShadow: "0 2px 5px rgba(124, 28, 56, 0.04)",
+                      minHeight: 38,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      lineHeight: 1.25,
+                    }}
+                  >
+                    ✦ 2. Khóa học & Lộ trình
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab(activeTab === "formats" ? "all" : "formats")}
+                    style={{
+                      padding: "8px 4px",
+                      border: activeTab === "formats" ? "1px solid #7c1c38" : "1px solid rgba(124, 28, 56, 0.18)",
+                      borderRadius: 8,
+                      fontSize: "clamp(10.5px, 2.7vw, 12.5px)",
+                      fontWeight: 700,
+                      textAlign: "center",
+                      cursor: "pointer",
+                      background: activeTab === "formats" ? "#7c1c38" : "#fff",
+                      color: activeTab === "formats" ? "#fff" : "#63172f",
+                      boxShadow: "0 2px 5px rgba(124, 28, 56, 0.04)",
+                      minHeight: 38,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      lineHeight: 1.25,
+                    }}
+                  >
+                    ✦ 3. Địa chỉ học và học online
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab(activeTab === "tuition" ? "all" : "tuition")}
+                    style={{
+                      padding: "8px 4px",
+                      border: activeTab === "tuition" ? "1px solid #7c1c38" : "1px solid rgba(124, 28, 56, 0.18)",
+                      borderRadius: 8,
+                      fontSize: "clamp(10.5px, 2.7vw, 12.5px)",
+                      fontWeight: 700,
+                      textAlign: "center",
+                      cursor: "pointer",
+                      background: activeTab === "tuition" ? "#7c1c38" : "#fff",
+                      color: activeTab === "tuition" ? "#fff" : "#63172f",
+                      boxShadow: "0 2px 5px rgba(124, 28, 56, 0.04)",
+                      minHeight: 38,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      lineHeight: 1.25,
+                    }}
+                  >
+                    ✦ 4. Học phí & Lịch học
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab(activeTab === "faq" ? "all" : "faq")}
+                    style={{
+                      padding: "8px 4px",
+                      border: activeTab === "faq" ? "1px solid #7c1c38" : "1px solid rgba(124, 28, 56, 0.18)",
+                      borderRadius: 8,
+                      fontSize: "clamp(10.5px, 2.7vw, 12.5px)",
+                      fontWeight: 700,
+                      textAlign: "center",
+                      cursor: "pointer",
+                      background: activeTab === "faq" ? "#7c1c38" : "#fff",
+                      color: activeTab === "faq" ? "#fff" : "#63172f",
+                      boxShadow: "0 2px 5px rgba(124, 28, 56, 0.04)",
+                      minHeight: 38,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      lineHeight: 1.25,
+                    }}
+                  >
+                    ✦ 5. Câu hỏi thường gặp
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("all")}
+                    style={{
+                      padding: "8px 4px",
+                      border: activeTab === "all" ? "1px solid #7c1c38" : "1px dashed rgba(124, 28, 56, 0.4)",
+                      borderRadius: 8,
+                      fontSize: "clamp(10.5px, 2.7vw, 12.5px)",
+                      fontWeight: 700,
+                      textAlign: "center",
+                      cursor: "pointer",
+                      background: activeTab === "all" ? "#7c1c38" : "#fffdf8",
+                      color: activeTab === "all" ? "#fff" : "#7c1c38",
+                      boxShadow: "0 2px 5px rgba(124, 28, 56, 0.04)",
+                      minHeight: 38,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      lineHeight: 1.25,
+                    }}
+                  >
+                    ✦ 6. Xem tất cả
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </section>
           
           {(activeTab === "all" || activeTab === "intro") && (
             <div id="tong-quan" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
