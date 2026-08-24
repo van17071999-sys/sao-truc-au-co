@@ -648,12 +648,18 @@ export function NewsDetail({ initialEntry }: { initialEntry?: CmsEntry }) {
   const { t, translate } = useLanguage();
   const params = useParams<{ slug: string }>();
   const entries = useCmsEntries("articles", initialEntry ? [initialEntry] : undefined);
-  const entry = entries?.find((item) => item.slug === params.slug);
-  const articleContent = translate(entry?.content || entry?.excerpt || "");
+  const cmsEntry = entries?.find((item) => item.slug === params.slug);
+  const entry = cmsEntry || initialEntry;
+
+  // Ưu tiên nội dung có đầy đủ liên kết điều hướng bộ môn & form đăng ký
+  const rawContent = (initialEntry && initialEntry.slug === params.slug && (!cmsEntry?.content || !cmsEntry.content.includes("bo-mon")))
+    ? initialEntry.content
+    : (entry?.content || entry?.excerpt || "");
+  const articleContent = translate(rawContent);
 
   return <main className="subject-page content-page">
     <ContentHeader />
-    {entries === null ? <p className="content-state content-detail-state">{t("Đang tải bài viết…", "Loading article…")}</p> : entry ? <>
+    {entries === null && !initialEntry ? <p className="content-state content-detail-state">{t("Đang tải bài viết…", "Loading article…")}</p> : entry ? <>
       <section className="content-detail-hero"><p className="eyebrow">{translate(entry.tag) || t("BÀI VIẾT", "ARTICLE")}</p><h1>{translate(entry.title)}</h1><p>{translate(entry.excerpt)}</p><span>{entry.publishedAt ? new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN") : ""}</span></section>
       <article className="content-detail-body prose-content">
         {entry.imageUrl && <img src={entry.imageUrl} alt={entry.title} onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }} />}
