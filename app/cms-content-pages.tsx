@@ -651,10 +651,22 @@ export function NewsDetail({ initialEntry }: { initialEntry?: CmsEntry }) {
   const cmsEntry = entries?.find((item) => item.slug === params.slug);
   const entry = cmsEntry || initialEntry;
 
-  // Ưu tiên nội dung có đầy đủ liên kết điều hướng bộ môn & form đăng ký
-  const rawContent = (initialEntry && initialEntry.slug === params.slug && (!cmsEntry?.content || !cmsEntry.content.includes("bo-mon")))
+  // Ưu tiên nội dung mới chuẩn hóa và loại bỏ sạch sẽ mọi dòng "Nhấp vào liên kết" / "Tham khảo chi tiết"
+  let rawContent = (initialEntry && initialEntry.slug === params.slug)
     ? initialEntry.content
     : (entry?.content || entry?.excerpt || "");
+
+  // Lọc sạch toàn bộ dòng "Nhấp vào liên kết" / "Tham khảo chi tiết"
+  rawContent = rawContent
+    .split("\n")
+    .filter((line) => {
+      const trimmed = line.trim();
+      if (/^👉?\s*\*(?:Nhấp vào liên kết|Tham khảo chi tiết)/i.test(trimmed)) return false;
+      if (/^(?:Nhấp vào liên kết|Tham khảo chi tiết)/i.test(trimmed)) return false;
+      return true;
+    })
+    .join("\n");
+
   const articleContent = translate(rawContent);
 
   return <main className="subject-page content-page">
