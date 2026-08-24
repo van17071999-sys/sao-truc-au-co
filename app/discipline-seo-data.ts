@@ -25,7 +25,7 @@ export type DisciplineSeoConfig = {
 export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
   "sao-truc-viet-nam": {
     h1Title: "Lớp Học Sáo Trúc Việt Nam tại TP.HCM & Online",
-    seoTitle: "Học Sáo Trúc tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    seoTitle: "Học Sáo Trúc tại TP.HCM & Online",
     instrumentName: "Sáo Trúc Việt Nam",
     instrumentShortName: "sáo trúc",
     whatIsTitle: "Sáo trúc Việt Nam là gì?",
@@ -78,7 +78,7 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
   },
   "sao-truc": {
     h1Title: "Lớp Học Sáo Trúc Việt Nam tại TP.HCM & Online",
-    seoTitle: "Học Sáo Trúc tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    seoTitle: "Học Sáo Trúc tại TP.HCM & Online",
     instrumentName: "Sáo Trúc Việt Nam",
     instrumentShortName: "sáo trúc",
     whatIsTitle: "Sáo trúc Việt Nam là gì?",
@@ -116,7 +116,7 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
   },
   "sao-dizi": {
     h1Title: "Lớp Học Sáo Dizi tại TP.HCM & Online",
-    seoTitle: "Học Sáo Dizi tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    seoTitle: "Học Sáo Dizi tại TP.HCM & Online",
     instrumentName: "Sáo Dizi",
     instrumentShortName: "sáo Dizi",
     whatIsTitle: "Sáo Dizi là gì?",
@@ -160,7 +160,7 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
   },
   "dizi": {
     h1Title: "Lớp Học Sáo Dizi tại TP.HCM & Online",
-    seoTitle: "Học Sáo Dizi tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    seoTitle: "Học Sáo Dizi tại TP.HCM & Online",
     instrumentName: "Sáo Dizi",
     instrumentShortName: "sáo Dizi",
     whatIsTitle: "Sáo Dizi là gì?",
@@ -197,7 +197,7 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
   },
   "sao-meo": {
     h1Title: "Lớp Học Sáo Mèo tại TP.HCM & Online",
-    seoTitle: "Học Sáo Mèo tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    seoTitle: "Học Sáo Mèo tại TP.HCM & Online",
     instrumentName: "Sáo Mèo",
     instrumentShortName: "sáo mèo",
     whatIsTitle: "Sáo Mèo (Sáo H’Mông) là gì?",
@@ -236,7 +236,7 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
   },
   "sao-hmong": {
     h1Title: "Lớp Học Sáo Mèo tại TP.HCM & Online",
-    seoTitle: "Học Sáo Mèo tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    seoTitle: "Học Sáo Mèo tại TP.HCM & Online",
     instrumentName: "Sáo Mèo (Sáo H’Mông)",
     instrumentShortName: "sáo mèo",
     whatIsTitle: "Sáo Mèo (Sáo H’Mông) là gì?",
@@ -273,7 +273,7 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
   },
   "dong-tieu-xiao": {
     h1Title: "Lớp Học Tiêu & Xiao tại TP.HCM & Online",
-    seoTitle: "Học Tiêu, Động Tiêu tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    seoTitle: "Học Tiêu, Động Tiêu tại TP.HCM & Online",
     instrumentName: "Động Tiêu & Xiao",
     instrumentShortName: "tiêu và Xiao",
     whatIsTitle: "Động tiêu và Xiao là gì?",
@@ -313,7 +313,7 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
   },
   "tieu-xiao": {
     h1Title: "Lớp Học Tiêu & Xiao tại TP.HCM & Online",
-    seoTitle: "Học Tiêu, Động Tiêu tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    seoTitle: "Học Tiêu, Động Tiêu tại TP.HCM & Online",
     instrumentName: "Động Tiêu & Xiao",
     instrumentShortName: "tiêu và Xiao",
     whatIsTitle: "Động tiêu và Xiao là gì?",
@@ -350,7 +350,7 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
   },
   "sao-recorder": {
     h1Title: "Lớp Học Sáo Recorder tại TP.HCM & Online",
-    seoTitle: "Học Sáo Recorder tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    seoTitle: "Học Sáo Recorder tại TP.HCM & Online",
     instrumentName: "Sáo Recorder",
     instrumentShortName: "sáo Recorder",
     whatIsTitle: "Sáo Recorder là gì?",
@@ -388,7 +388,7 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
   },
   "recorder": {
     h1Title: "Lớp Học Sáo Recorder tại TP.HCM & Online",
-    seoTitle: "Học Sáo Recorder tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    seoTitle: "Học Sáo Recorder tại TP.HCM & Online",
     instrumentName: "Sáo Recorder",
     instrumentShortName: "sáo Recorder",
     whatIsTitle: "Sáo Recorder là gì?",
@@ -424,7 +424,7 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
   },
   "flute": {
     h1Title: "Lớp Học Sáo Flute tại TP.HCM & Online",
-    seoTitle: "Học Sáo Flute tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    seoTitle: "Học Sáo Flute tại TP.HCM & Online",
     instrumentName: "Sáo Flute",
     instrumentShortName: "sáo Flute",
     whatIsTitle: "Sáo Flute là gì?",
@@ -463,7 +463,7 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
   },
   "sao-flute": {
     h1Title: "Lớp Học Sáo Flute tại TP.HCM & Online",
-    seoTitle: "Học Sáo Flute tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    seoTitle: "Học Sáo Flute tại TP.HCM & Online",
     instrumentName: "Sáo Flute",
     instrumentShortName: "sáo Flute",
     whatIsTitle: "Sáo Flute là gì?",

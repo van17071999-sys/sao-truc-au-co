@@ -907,13 +907,17 @@ export function SubjectDetail() {
     if (params.slug) {
       const disciplineSeo = getDisciplineSeo(params.slug);
       if (disciplineSeo) {
-        document.title = disciplineSeo.seoTitle;
+        document.title = disciplineSeo.seoTitle.includes("Sáo Trúc Âu Cơ")
+          ? disciplineSeo.seoTitle
+          : `${disciplineSeo.seoTitle} | Sáo Trúc Âu Cơ`;
         const description = document.querySelector('meta[name="description"]');
         description?.setAttribute("content", disciplineSeo.description);
         return;
       }
     }
-    if (rawTitle) document.title = `${rawTitle} | Sáo Trúc Âu Cơ`;
+    if (rawTitle) {
+      document.title = rawTitle.includes("Sáo Trúc Âu Cơ") ? rawTitle : `${rawTitle} | Sáo Trúc Âu Cơ`;
+    }
   }, [params.slug, rawTitle]);
 
   if (entries === null && !fallback) {
