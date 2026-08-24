@@ -309,14 +309,18 @@ function assembleRecommendFields(f: RecommendFields): string {
 type ClassDetailFields = {
   headline: string;
   intro: string;
+  whoIsFor: string;
   learn: string;
   stage1: string;
   stage2: string;
   stage3: string;
   stage4: string;
   quote: string;
+  onsite: string;
+  online: string;
   formats: string;
   schedule: string;
+  faqs: string;
 };
 
 function parseClassContentToFields(content: string, excerpt: string): ClassDetailFields {
@@ -327,28 +331,37 @@ function parseClassContentToFields(content: string, excerpt: string): ClassDetai
   return {
     headline: sections["tieu_de_bai"] ?? sections["headline"] ?? "Một lộ trình rõ ràng để chơi nhạc bằng chính cảm xúc của bạn.",
     intro: sections["gioi_thieu"] ?? sections["intro"] ?? excerpt ?? "",
+    whoIsFor: sections["ai_phu_hop"] ?? sections["doi_tuong"] ?? "",
     learn: sections["ban_se_hoc_duoc_gi"] ?? sections["hoc_gi"] ?? sections["learn"] ?? (!content.includes("[") ? content : ""),
     stage1: pathLines[0] ?? "Giai đoạn 1 · Làm quen & tạo tiếng",
     stage2: pathLines[1] ?? "Giai đoạn 2 · Nốt nhạc & nhịp điệu",
     stage3: pathLines[2] ?? "Giai đoạn 3 · Kỹ thuật biểu cảm",
     stage4: pathLines[3] ?? "Giai đoạn 4 · Hoàn thiện tác phẩm",
     quote: sections["trich_dan"] ?? sections["quote"] ?? "Học đúng kỹ thuật để tự do thể hiện cảm xúc — đó là nền tảng của mỗi chương trình giảng dạy.",
+    onsite: sections["hoc_tai_tphcm"] ?? sections["dao_tao_truc_tiep"] ?? sections["tphcm"] ?? "",
+    online: sections["hoc_online"] ?? sections["dao_tao_tu_xa"] ?? sections["online"] ?? "",
     formats: sections["hinh_thuc_hoc"] ?? sections["hinh_thuc"] ?? "Trực tiếp tại trung tâm\nGia sư tại nhà\nOnline 1 kèm 1",
     schedule: sections["thoi_gian"] ?? sections["schedule"] ?? "Linh động theo lịch học viên",
+    faqs: sections["cau_hoi_thuong_gap"] ?? sections["faq"] ?? "",
   };
 }
 
 function assembleFieldsToContent(fields: ClassDetailFields): string {
   const pathCombined = [fields.stage1, fields.stage2, fields.stage3, fields.stage4].join("\n");
-  return [
+  const parts = [
     `[TIÊU ĐỀ BÀI]\n${fields.headline}`,
     `[GIỚI THIỆU]\n${fields.intro}`,
-    `[BẠN SẼ HỌC ĐƯỢC GÌ]\n${fields.learn}`,
-    `[LỘ TRÌNH HỌC]\n${pathCombined}`,
-    `[TRÍCH DẪN]\n${fields.quote}`,
-    `[HÌNH THỨC HỌC]\n${fields.formats}`,
-    `[THỜI GIAN]\n${fields.schedule}`,
-  ].join("\n\n");
+  ];
+  if (fields.whoIsFor) parts.push(`[AI PHÙ HỢP]\n${fields.whoIsFor}`);
+  parts.push(`[BẠN SẼ HỌC ĐƯỢC GÌ]\n${fields.learn}`);
+  parts.push(`[LỘ TRÌNH HỌC]\n${pathCombined}`);
+  parts.push(`[TRÍCH DẪN]\n${fields.quote}`);
+  if (fields.onsite) parts.push(`[HỌC TẠI TPHCM]\n${fields.onsite}`);
+  if (fields.online) parts.push(`[HỌC ONLINE]\n${fields.online}`);
+  parts.push(`[HÌNH THỨC HỌC]\n${fields.formats}`);
+  parts.push(`[THỜI GIAN]\n${fields.schedule}`);
+  if (fields.faqs) parts.push(`[CÂU HỎI THƯỜNG GẶP]\n${fields.faqs}`);
+  return parts.join("\n\n");
 }
 
 function PriceVoucherEditor({
@@ -2532,83 +2545,145 @@ export default function ContentAdmin() {
           ) : draft.collection === "class-details" ? (
             <div className="wide" style={{ display: "grid", gap: 16, borderTop: "2px solid #e2e8f0", paddingTop: 20, marginTop: 10 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
-                <h3 style={{ margin: 0, color: "#7c1c38", fontSize: 16, fontWeight: 800 }}>✦ NỘI DUNG BÀI GIỚI THIỆU ĐẦY ĐỦ (/bo-mon/{draft.slug})</h3>
-                <a href={`/bo-mon/${draft.slug}`} target="_blank" rel="noreferrer" style={{ fontSize: 13, color: "#7c1c38", fontWeight: 700, textDecoration: "underline" }}>🔗 Xem bài giới thiệu đầy đủ trên web ↗</a>
+                <div>
+                  <h3 style={{ margin: 0, color: "#7c1c38", fontSize: 16, fontWeight: 800 }}>✦ NỘI DUNG TRANG BỘ MÔN (/bo-mon/{draft.slug})</h3>
+                  <small style={{ color: "#64748b" }}>Tùy chỉnh tiêu đề H1 và các thẻ H2 (Giới thiệu, Ai phù hợp, Khóa học, Lộ trình, TP.HCM & Online, Hỏi đáp)</small>
+                </div>
+                <a href={`/bo-mon/${draft.slug}`} target="_blank" rel="noreferrer" style={{ fontSize: 13, color: "#7c1c38", fontWeight: 700, textDecoration: "underline" }}>🔗 Xem bài giới thiệu trên web ↗</a>
               </div>
 
-              <label className="wide">
-                <span>Tiêu đề bài viết (Headline lớn) *</span>
-                <input 
-                  value={classForm.headline} 
-                  onChange={(e) => setClassForm({ ...classForm, headline: e.target.value })} 
-                  placeholder="Ví dụ: Một lộ trình rõ ràng để chơi nhạc bằng chính cảm xúc của bạn." 
-                />
-              </label>
-
-              <label className="wide">
-                <span>Đoạn văn giới thiệu chi tiết bộ môn</span>
-                <textarea 
-                  rows={4} 
-                  value={classForm.intro} 
-                  onChange={(e) => setClassForm({ ...classForm, intro: e.target.value })} 
-                  placeholder="Đoạn văn mô tả chi tiết về bộ môn..." 
-                />
-              </label>
-
-              <label className="wide">
-                <span>Bạn sẽ học được gì? (Mỗi dòng một ý hiển thị dấu ✓)</span>
-                <textarea 
-                  rows={6} 
-                  value={classForm.learn} 
-                  onChange={(e) => setClassForm({ ...classForm, learn: e.target.value })} 
-                  placeholder="Tư thế cầm sáo, khẩu hình và điểm đặt môi&#10;Kiểm soát cột hơi, cao độ và chất lượng âm thanh&#10;Ngón bấm, đánh lưỡi, rung hơi, láy và vuốt..." 
-                />
-              </label>
-
-              <div className="wide" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              {/* 1. Tiêu đề H1 & Giới thiệu */}
+              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "14px 16px", display: "grid", gap: 12 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#7c1c38" }}>1. TIÊU ĐỀ H1 & GIỚI THIỆU TỔNG QUAN</span>
                 <label>
-                  <span>Lộ trình - Giai đoạn 1 (01)</span>
-                  <input value={classForm.stage1} onChange={(e) => setClassForm({ ...classForm, stage1: e.target.value })} placeholder="Giai đoạn 1 · Làm quen & tạo tiếng" />
-                </label>
-                <label>
-                  <span>Lộ trình - Giai đoạn 2 (02)</span>
-                  <input value={classForm.stage2} onChange={(e) => setClassForm({ ...classForm, stage2: e.target.value })} placeholder="Giai đoạn 2 · Nốt nhạc & nhịp điệu" />
-                </label>
-                <label>
-                  <span>Lộ trình - Giai đoạn 3 (03)</span>
-                  <input value={classForm.stage3} onChange={(e) => setClassForm({ ...classForm, stage3: e.target.value })} placeholder="Giai đoạn 3 · Kỹ thuật biểu cảm" />
-                </label>
-                <label>
-                  <span>Lộ trình - Giai đoạn 4 (04)</span>
-                  <input value={classForm.stage4} onChange={(e) => setClassForm({ ...classForm, stage4: e.target.value })} placeholder="Giai đoạn 4 · Hoàn thiện tác phẩm" />
-                </label>
-              </div>
-
-              <label className="wide">
-                <span>Câu trích dẫn / Châm ngôn truyền cảm hứng (Quote)</span>
-                <input 
-                  value={classForm.quote} 
-                  onChange={(e) => setClassForm({ ...classForm, quote: e.target.value })} 
-                  placeholder="Ví dụ: Học đúng kỹ thuật để tự do thể hiện cảm xúc — đó là nền tảng của mỗi chương trình giảng dạy." 
-                />
-              </label>
-
-              <div className="wide" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <label>
-                  <span>Hình thức học (mỗi dòng một hình thức)</span>
-                  <textarea 
-                    rows={3} 
-                    value={classForm.formats} 
-                    onChange={(e) => setClassForm({ ...classForm, formats: e.target.value })} 
-                    placeholder="Trực tiếp tại trung tâm&#10;Gia sư tại nhà&#10;Online 1 kèm 1" 
+                  <span>Tiêu đề phụ / Dòng nhấn mạnh (Headline)</span>
+                  <input 
+                    value={classForm.headline} 
+                    onChange={(e) => setClassForm({ ...classForm, headline: e.target.value })} 
+                    placeholder="Ví dụ: Một lộ trình rõ ràng để chơi nhạc bằng chính cảm xúc của bạn." 
                   />
                 </label>
                 <label>
-                  <span>Thời gian học</span>
+                  <span>Đoạn văn giới thiệu chi tiết bộ môn</span>
+                  <textarea 
+                    rows={4} 
+                    value={classForm.intro} 
+                    onChange={(e) => setClassForm({ ...classForm, intro: e.target.value })} 
+                    placeholder="Đoạn văn mô tả chi tiết về nguồn gốc, âm sắc đặc trưng của bộ môn..." 
+                  />
+                </label>
+              </div>
+
+              {/* 2. Ai phù hợp học */}
+              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "14px 16px", display: "grid", gap: 12 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#7c1c38" }}>2. ĐỐI TƯỢNG HỌC VIÊN (AI PHÙ HỢP HỌC?)</span>
+                <label>
+                  <span>Các đối tượng phù hợp (Mỗi dòng một ý)</span>
+                  <textarea 
+                    rows={4} 
+                    value={classForm.whoIsFor} 
+                    onChange={(e) => setClassForm({ ...classForm, whoIsFor: e.target.value })} 
+                    placeholder="Người mới bắt đầu chưa từng học nhạc cụ, chưa biết đọc nốt nhạc.&#10;Người từng tự học thổi sáo nhưng hay bị hụt hơi hoặc xì tiếng.&#10;Học viên muốn rèn luyện cột hơi và giải tỏa căng thẳng sau giờ làm việc..." 
+                  />
+                </label>
+              </div>
+
+              {/* 3. Nội dung khóa học */}
+              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "14px 16px", display: "grid", gap: 12 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#7c1c38" }}>3. NỘI DUNG KHÓA HỌC (BẠN SẼ HỌC ĐƯỢC GÌ)</span>
+                <label>
+                  <span>Bạn sẽ học được gì? (Mỗi dòng một ý hiển thị dấu ✓)</span>
+                  <textarea 
+                    rows={5} 
+                    value={classForm.learn} 
+                    onChange={(e) => setClassForm({ ...classForm, learn: e.target.value })} 
+                    placeholder="Tư thế cầm sáo, khẩu hình và điểm đặt môi&#10;Kiểm soát cột hơi, cao độ và chất lượng âm thanh&#10;Ngón bấm, đánh lưỡi, rung hơi, láy và vuốt&#10;Đọc nhạc, cảm âm và luyện tập cùng beat&#10;Xử lý dân ca, nhạc trữ tình và ca khúc hiện đại" 
+                  />
+                </label>
+              </div>
+
+              {/* 4. Lộ trình học */}
+              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "14px 16px", display: "grid", gap: 12 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#7c1c38" }}>4. LỘ TRÌNH ĐÀO TẠO 4 GIAI ĐOẠN & CHÂM NGÔN</span>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <label>
+                    <span>Lộ trình - Giai đoạn 1 (01)</span>
+                    <input value={classForm.stage1} onChange={(e) => setClassForm({ ...classForm, stage1: e.target.value })} placeholder="Giai đoạn 1 · Làm quen & tạo tiếng" />
+                  </label>
+                  <label>
+                    <span>Lộ trình - Giai đoạn 2 (02)</span>
+                    <input value={classForm.stage2} onChange={(e) => setClassForm({ ...classForm, stage2: e.target.value })} placeholder="Giai đoạn 2 · Nốt nhạc & nhịp điệu" />
+                  </label>
+                  <label>
+                    <span>Lộ trình - Giai đoạn 3 (03)</span>
+                    <input value={classForm.stage3} onChange={(e) => setClassForm({ ...classForm, stage3: e.target.value })} placeholder="Giai đoạn 3 · Kỹ thuật biểu cảm" />
+                  </label>
+                  <label>
+                    <span>Lộ trình - Giai đoạn 4 (04)</span>
+                    <input value={classForm.stage4} onChange={(e) => setClassForm({ ...classForm, stage4: e.target.value })} placeholder="Giai đoạn 4 · Hoàn thiện tác phẩm" />
+                  </label>
+                </div>
+                <label>
+                  <span>Câu trích dẫn / Châm ngôn truyền cảm hứng (Quote)</span>
                   <input 
-                    value={classForm.schedule} 
-                    onChange={(e) => setClassForm({ ...classForm, schedule: e.target.value })} 
-                    placeholder="Ví dụ: Linh động theo lịch học viên" 
+                    value={classForm.quote} 
+                    onChange={(e) => setClassForm({ ...classForm, quote: e.target.value })} 
+                    placeholder="Ví dụ: Học đúng kỹ thuật để tự do thể hiện cảm xúc — đó là nền tảng của mỗi chương trình giảng dạy." 
+                  />
+                </label>
+              </div>
+
+              {/* 5. Trực tiếp & Online */}
+              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "14px 16px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <label>
+                  <span style={{ fontWeight: 700, color: "#7c1c38" }}>5. Ghi chú Lớp học tại TP.HCM</span>
+                  <textarea 
+                    rows={3} 
+                    value={classForm.onsite} 
+                    onChange={(e) => setClassForm({ ...classForm, onsite: e.target.value })} 
+                    placeholder="Tổ chức tại 106/72 Hòa Bình, Tân Phú và Gia sư tại nhà các quận..." 
+                  />
+                </label>
+                <label>
+                  <span style={{ fontWeight: 700, color: "#7c1c38" }}>Ghi chú Lớp học Online 1 kèm 1</span>
+                  <textarea 
+                    rows={3} 
+                    value={classForm.online} 
+                    onChange={(e) => setClassForm({ ...classForm, online: e.target.value })} 
+                    placeholder="Học qua Zoom/Meet/Zalo HD, chỉnh khẩu hình từng phút..." 
+                  />
+                </label>
+              </div>
+
+              {/* 6. Thời gian & FAQs */}
+              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "14px 16px", display: "grid", gap: 12 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#7c1c38" }}>6. HÌNH THỨC, THỜI GIAN & CÂU HỎI THƯỜNG GẶP (FAQS)</span>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <label>
+                    <span>Hình thức học (mỗi dòng một hình thức)</span>
+                    <textarea 
+                      rows={3} 
+                      value={classForm.formats} 
+                      onChange={(e) => setClassForm({ ...classForm, formats: e.target.value })} 
+                      placeholder="Trực tiếp tại trung tâm&#10;Gia sư tại nhà&#10;Online 1 kèm 1" 
+                    />
+                  </label>
+                  <label>
+                    <span>Thời gian học</span>
+                    <input 
+                      value={classForm.schedule} 
+                      onChange={(e) => setClassForm({ ...classForm, schedule: e.target.value })} 
+                      placeholder="Ví dụ: Linh động theo lịch học viên" 
+                    />
+                  </label>
+                </div>
+                <label>
+                  <span>Câu hỏi thường gặp (Mỗi câu hỏi cách câu trả lời bằng dấu xuống dòng, giữa các câu hỏi cách nhau 1 dòng trống)</span>
+                  <textarea 
+                    rows={5} 
+                    value={classForm.faqs} 
+                    onChange={(e) => setClassForm({ ...classForm, faqs: e.target.value })} 
+                    placeholder="Chưa biết gì về nhạc lý có học được không?&#10;Hoàn toàn được, lộ trình thiết kế riêng từ con số 0.&#10;&#10;Chưa có sáo trung tâm có hỗ trợ không?&#10;Được mượn sáo tập thử tại lớp và tư vấn chọn cây sáo chuẩn âm." 
                   />
                 </label>
               </div>

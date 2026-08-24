@@ -813,6 +813,11 @@ function parseSubjectContent(content: string, fallback?: { lead: string; intro: 
   const headline = sections["tieu_de_bai"] || sections["headline"] || fallback?.lead || "Một lộ trình rõ ràng để chơi nhạc bằng chính cảm xúc của bạn.";
   const intro = sections["gioi_thieu"] || sections["intro"] || fallback?.intro || "";
 
+  const rawWhoIsFor = sections["ai_phu_hop"] || sections["doi_tuong"];
+  const whoIsForItems = rawWhoIsFor
+    ? rawWhoIsFor.split(/\n+/).map((l) => l.trim().replace(/^[✦✓•\-\*]\s*/, "")).filter(Boolean)
+    : undefined;
+
   const rawLearn = sections["ban_se_hoc_duoc_gi"] || sections["hoc_gi"] || sections["learn"] || (!content.includes("[") ? content : "");
   const learnItems = rawLearn
     ? rawLearn.split(/\n+/).map((l) => l.trim().replace(/^[✓•\-\*]\s*/, "")).filter(Boolean)
@@ -830,6 +835,9 @@ function parseSubjectContent(content: string, fallback?: { lead: string; intro: 
 
   const quote = sections["trich_dan"] || sections["quote"] || "Học đúng kỹ thuật để tự do thể hiện cảm xúc — đó là nền tảng của mỗi chương trình giảng dạy.";
 
+  const onsiteCustom = sections["hoc_tai_tphcm"] || sections["dao_tao_truc_tiep"] || sections["tphcm"];
+  const onlineCustom = sections["hoc_online"] || sections["dao_tao_tu_xa"] || sections["online"];
+
   const rawFormats = sections["hinh_thuc_hoc"] || sections["hinh_thuc"];
   const formatItems = rawFormats
     ? rawFormats.split(/\n+/).map((l) => l.trim()).filter(Boolean)
@@ -837,12 +845,24 @@ function parseSubjectContent(content: string, fallback?: { lead: string; intro: 
 
   const schedule = sections["thoi_gian"] || sections["schedule"] || "Linh động theo lịch học viên";
 
-  return { headline, intro, learnItems, pathItems, quote, formatItems, schedule };
+  const rawFaqs = sections["cau_hoi_thuong_gap"] || sections["faq"];
+  const customFaqs = rawFaqs
+    ? rawFaqs.split(/\n\n+/).map((block) => {
+        const lines = block.split(/\n/);
+        return {
+          q: lines[0]?.replace(/^(\?|Q:|Hỏi:)\s*/i, "").trim() || "",
+          a: lines.slice(1).join("\n").replace(/^(A:|Đáp:|Trả lời:)\s*/i, "").trim() || "",
+        };
+      }).filter((item) => item.q && item.a)
+    : undefined;
+
+  return { headline, intro, whoIsForItems, learnItems, pathItems, quote, onsiteCustom, onlineCustom, formatItems, schedule, customFaqs };
 }
 
 export function SubjectDetail() {
   const { t, translate } = useLanguage();
   const params = useParams<{ slug: string }>();
+  const [activeTab, setActiveTab] = useState<"all" | "intro" | "course" | "formats" | "tuition" | "faq">("all");
   const entries = useCmsEntries("class-details");
   const settingsEntries = useCmsEntries("settings");
   const entry = entries?.find((item) => item.slug === params.slug);
@@ -909,280 +929,327 @@ export function SubjectDetail() {
   const tuitionTitle = seo?.tuitionTitle || "Học phí và lịch học";
   const faqTitle = seo?.faqTitle || "Câu hỏi thường gặp";
 
+  const effectiveWhoIsFor = (parsed.whoIsForItems && parsed.whoIsForItems.length > 0) ? parsed.whoIsForItems : seo?.whoIsForContent;
+  const effectiveFaqs = (parsed.customFaqs && parsed.customFaqs.length > 0) ? parsed.customFaqs : seo?.faqs;
+
   return (
     <main className="subject-page">
       <ContentHeader />
-      <section className="subject-hero" style={{ padding: "50px clamp(20px, 5vw, 60px)", minHeight: "auto", background: "radial-gradient(circle at 85% 20%, rgba(214, 173, 102, 0.22), transparent 40%), linear-gradient(120deg, #f7ecde, #fffaf1)" }}>
+      <section className="subject-hero" style={{ padding: "40px clamp(16px, 4vw, 50px) 30px", minHeight: "auto", background: "radial-gradient(circle at 85% 20%, rgba(214, 173, 102, 0.22), transparent 40%), linear-gradient(120deg, #f7ecde, #fffaf1)" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
-            <span style={{ display: "grid", placeItems: "center", width: 44, height: 44, border: "1px solid var(--gold)", borderRadius: "50%", fontSize: 22, color: "var(--wine)", background: "#fff", flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
+            <span style={{ display: "grid", placeItems: "center", width: 40, height: 40, border: "1px solid var(--gold)", borderRadius: "50%", fontSize: 20, color: "var(--wine)", background: "#fff", flexShrink: 0 }}>
               {icon}
             </span>
-            <p className="eyebrow" style={{ margin: 0 }}>{t("BÀI GIỚI THIỆU BỘ MÔN & ĐÀO TẠO", "DISCIPLINE OVERVIEW & COURSES")}</p>
+            <p className="eyebrow" style={{ margin: 0, fontSize: 11 }}>{t("BÀI GIỚI THIỆU BỘ MÔN & ĐÀO TẠO", "DISCIPLINE OVERVIEW & COURSES")}</p>
           </div>
-          <h1 style={{ fontSize: "clamp(26px, 4vw, 44px)", lineHeight: 1.2, margin: "0 0 10px", color: "var(--wine)", fontFamily: "Georgia, serif" }}>
+          <h1 style={{ fontSize: "clamp(24px, 3.8vw, 42px)", lineHeight: 1.2, margin: "0 0 8px", color: "var(--wine)", fontFamily: "Georgia, serif" }}>
             {h1Title}
           </h1>
-          <p style={{ margin: "0 0 18px", color: "#6a524e", fontSize: 16, lineHeight: 1.6, maxWidth: 850 }}>
+          <p style={{ margin: "0 0 16px", color: "#6a524e", fontSize: 15, lineHeight: 1.55, maxWidth: 850 }}>
             {lead}
           </p>
           
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-            <a className="button button-wine" href="#dang-ky" style={{ padding: "10px 22px", fontSize: 14 }}>
+            <a className="button button-wine" href="#dang-ky" style={{ padding: "9px 20px", fontSize: 13.5 }}>
               {t("Đăng ký tư vấn →", "Get Consultation →")}
             </a>
-            <a className="button button-gold" href="#hoc-phi" style={{ padding: "10px 22px", fontSize: 14 }}>
+            <a className="button button-gold" href="#hoc-phi" style={{ padding: "9px 20px", fontSize: 13.5 }}>
               {t("Xem học phí & lịch học", "View tuition & schedule")}
             </a>
           </div>
 
-          {/* Thanh chuyển nhanh các mục */}
-          <nav style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 20, paddingTop: 14, borderTop: "1px dashed rgba(124, 28, 56, 0.15)" }}>
-            <a href="#tong-quan" style={{ padding: "5px 12px", background: "rgba(124, 28, 56, 0.06)", color: "#63172f", borderRadius: 20, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>✦ 1. Tổng quan & Đối tượng</a>
-            <a href="#khoa-hoc" style={{ padding: "5px 12px", background: "rgba(124, 28, 56, 0.06)", color: "#63172f", borderRadius: 20, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>✦ 2. Khóa học & Lộ trình</a>
-            <a href="#hinh-thuc" style={{ padding: "5px 12px", background: "rgba(124, 28, 56, 0.06)", color: "#63172f", borderRadius: 20, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>✦ 3. TP.HCM & Online</a>
-            <a href="#hoc-phi" style={{ padding: "5px 12px", background: "rgba(124, 28, 56, 0.06)", color: "#63172f", borderRadius: 20, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>✦ 4. Học phí & Lịch học</a>
-            <a href="#faq" style={{ padding: "5px 12px", background: "rgba(124, 28, 56, 0.06)", color: "#63172f", borderRadius: 20, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>✦ 5. Câu hỏi thường gặp</a>
+          <nav style={{ display: "flex", gap: 6, overflowX: "auto", WebkitOverflowScrolling: "touch", marginTop: 16, paddingTop: 12, borderTop: "1px dashed rgba(124, 28, 56, 0.15)", scrollbarWidth: "none" }}>
+            <button
+              type="button"
+              onClick={() => setActiveTab(activeTab === "intro" ? "all" : "intro")}
+              style={{ padding: "5px 12px", border: 0, borderRadius: 20, fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", cursor: "pointer", background: activeTab === "intro" ? "#7c1c38" : "rgba(124, 28, 56, 0.08)", color: activeTab === "intro" ? "#fff" : "#63172f" }}
+            >
+              ✦ 1. Giới thiệu
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab(activeTab === "course" ? "all" : "course")}
+              style={{ padding: "5px 12px", border: 0, borderRadius: 20, fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", cursor: "pointer", background: activeTab === "course" ? "#7c1c38" : "rgba(124, 28, 56, 0.08)", color: activeTab === "course" ? "#fff" : "#63172f" }}
+            >
+              ✦ 2. Khóa học & Lộ trình
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab(activeTab === "formats" ? "all" : "formats")}
+              style={{ padding: "5px 12px", border: 0, borderRadius: 20, fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", cursor: "pointer", background: activeTab === "formats" ? "#7c1c38" : "rgba(124, 28, 56, 0.08)", color: activeTab === "formats" ? "#fff" : "#63172f" }}
+            >
+              ✦ 3. TP.HCM & Online
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab(activeTab === "tuition" ? "all" : "tuition")}
+              style={{ padding: "5px 12px", border: 0, borderRadius: 20, fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", cursor: "pointer", background: activeTab === "tuition" ? "#7c1c38" : "rgba(124, 28, 56, 0.08)", color: activeTab === "tuition" ? "#fff" : "#63172f" }}
+            >
+              ✦ 4. Học phí & Lịch học
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab(activeTab === "faq" ? "all" : "faq")}
+              style={{ padding: "5px 12px", border: 0, borderRadius: 20, fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", cursor: "pointer", background: activeTab === "faq" ? "#7c1c38" : "rgba(124, 28, 56, 0.08)", color: activeTab === "faq" ? "#fff" : "#63172f" }}
+            >
+              ✦ 5. Câu hỏi thường gặp
+            </button>
+            {activeTab !== "all" && (
+              <button
+                type="button"
+                onClick={() => setActiveTab("all")}
+                style={{ padding: "5px 12px", border: "1px dashed #7c1c38", borderRadius: 20, fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", cursor: "pointer", background: "#fff", color: "#7c1c38" }}
+              >
+                ✕ Hiện tất cả
+              </button>
+            )}
           </nav>
         </div>
       </section>
 
-      <article className="subject-article" style={{ maxWidth: 1250, margin: "0 auto", padding: "40px 24px", display: "grid", gridTemplateColumns: "1fr 310px", gap: 32 }}>
-        <div className="article-main" style={{ maxWidth: "100%", display: "grid", gap: 24 }}>
+      <article className="subject-article" style={{ maxWidth: 1250, margin: "0 auto", padding: "28px clamp(16px, 3vw, 24px)", display: "grid", gridTemplateColumns: "1fr 310px", gap: 24 }}>
+        <div className="article-main" style={{ maxWidth: "100%", display: "grid", gap: 20 }}>
           
-          {/* KHỐI 1 (Lưới 2 cột): Tổng quan nhạc cụ & Ai phù hợp học */}
-          <div id="tong-quan" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
-            {/* H2 - 1: Nhạc cụ là gì? */}
-            <section className="subject-section" id="gioi-thieu" style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: 12, padding: "22px 24px", display: "flex", flexDirection: "column" }}>
-              <p className="article-kicker" style={{ margin: "0 0 6px" }}>{t("TỔNG QUAN NHẠC CỤ", "INSTRUMENT OVERVIEW")}</p>
-              <h2 style={{ fontSize: 22, margin: "0 0 12px", lineHeight: 1.3, color: "var(--wine)" }}>{whatIsTitle}</h2>
-              {parsed.headline && parsed.headline !== whatIsTitle && (
-                <p style={{ fontSize: 14, margin: "0 0 10px", color: "#8a243c", fontStyle: "italic", fontWeight: 600 }}>
-                  {translate(parsed.headline)}
+          {(activeTab === "all" || activeTab === "intro") && (
+            <div id="tong-quan" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
+              <section className="subject-section" id="gioi-thieu" style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: 12, padding: "20px 22px", display: "flex", flexDirection: "column" }}>
+                <p className="article-kicker" style={{ margin: "0 0 4px", fontSize: 10 }}>{t("TỔNG QUAN NHẠC CỤ", "INSTRUMENT OVERVIEW")}</p>
+                <h2 style={{ fontSize: 20, margin: "0 0 10px", lineHeight: 1.3, color: "var(--wine)" }}>{whatIsTitle}</h2>
+                {parsed.headline && parsed.headline !== whatIsTitle && (
+                  <p style={{ fontSize: 13.5, margin: "0 0 8px", color: "#8a243c", fontStyle: "italic", fontWeight: 600 }}>
+                    {translate(parsed.headline)}
+                  </p>
+                )}
+                <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.65, color: "#5a4542", flex: 1 }}>
+                  {translate(parsed.intro)}
                 </p>
-              )}
-              <p style={{ margin: 0, fontSize: 14, lineHeight: 1.7, color: "#5a4542", flex: 1 }}>
-                {translate(parsed.intro)}
-              </p>
-              {seo?.whatIsContent && seo.whatIsContent !== parsed.intro && (
-                <p style={{ margin: "10px 0 0", fontSize: 13.5, lineHeight: 1.65, color: "#6a524e" }}>
-                  {seo.whatIsContent}
-                </p>
-              )}
-            </section>
+                {seo?.whatIsContent && seo.whatIsContent !== parsed.intro && (
+                  <p style={{ margin: "8px 0 0", fontSize: 13, lineHeight: 1.6, color: "#6a524e" }}>
+                    {seo.whatIsContent}
+                  </p>
+                )}
+              </section>
 
-            {/* H2 - 2: Ai phù hợp học? */}
-            <section className="subject-section" id="doi-tuong" style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: 12, padding: "22px 24px", display: "flex", flexDirection: "column" }}>
-              <p className="article-kicker" style={{ margin: "0 0 6px" }}>{t("ĐỐI TƯỢNG HỌC VIÊN", "TARGET LEARNERS")}</p>
-              <h2 style={{ fontSize: 22, margin: "0 0 12px", lineHeight: 1.3, color: "var(--wine)" }}>{whoIsForTitle}</h2>
-              <p style={{ margin: "0 0 12px", fontSize: 14, lineHeight: 1.6, color: "#5a4542" }}>{suitable}</p>
-              {seo?.whoIsForContent && seo.whoIsForContent.length > 0 && (
-                <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, lineHeight: 1.65, color: "#5a4542", display: "grid", gap: 6 }}>
-                  {seo.whoIsForContent.map((item, idx) => (
-                    <li key={idx}>{item}</li>
+              <section className="subject-section" id="doi-tuong" style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: 12, padding: "20px 22px", display: "flex", flexDirection: "column" }}>
+                <p className="article-kicker" style={{ margin: "0 0 4px", fontSize: 10 }}>{t("ĐỐI TƯỢNG HỌC VIÊN", "TARGET LEARNERS")}</p>
+                <h2 style={{ fontSize: 20, margin: "0 0 10px", lineHeight: 1.3, color: "var(--wine)" }}>{whoIsForTitle}</h2>
+                <p style={{ margin: "0 0 10px", fontSize: 13.5, lineHeight: 1.6, color: "#5a4542" }}>{suitable}</p>
+                {effectiveWhoIsFor && effectiveWhoIsFor.length > 0 && (
+                  <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, lineHeight: 1.6, color: "#5a4542", display: "grid", gap: 5 }}>
+                    {effectiveWhoIsFor.map((item, idx) => (
+                      <li key={idx}>{item}</li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            </div>
+          )}
+
+          {(activeTab === "all" || activeTab === "course") && (
+            <div id="khoa-hoc" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
+              {/* H2 - 3: Nội dung khóa học */}
+              <section className="subject-section" id="noi-dung" style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: 12, padding: "20px 22px" }}>
+                <p className="article-kicker" style={{ margin: "0 0 4px", fontSize: 10 }}>{t("CHƯƠNG TRÌNH ĐÀO TẠO", "COURSE CURRICULUM")}</p>
+                <h2 style={{ fontSize: 20, margin: "0 0 12px", lineHeight: 1.3, color: "var(--wine)" }}>{courseContentTitle}</h2>
+                <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 7 }}>
+                  {parsed.learnItems.map((item) => (
+                    <li key={item} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "7px 10px", background: "#fffaf1", borderRadius: 6, fontSize: 13, color: "#5a4542", border: "1px solid rgba(226,186,115,0.3)" }}>
+                      <span style={{ color: "#7c1c38", fontWeight: 800, marginTop: 1 }}>✓</span>
+                      <span>{translate(item)}</span>
+                    </li>
                   ))}
                 </ul>
-              )}
-            </section>
-          </div>
+              </section>
 
-          {/* KHỐI 2 (Lưới 2 cột): Nội dung khóa học & Lộ trình */}
-          <div id="khoa-hoc" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
-            {/* H2 - 3: Nội dung khóa học */}
-            <section className="subject-section" id="noi-dung" style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: 12, padding: "22px 24px" }}>
-              <p className="article-kicker" style={{ margin: "0 0 6px" }}>{t("CHƯƠNG TRÌNH ĐÀO TẠO", "COURSE CURRICULUM")}</p>
-              <h2 style={{ fontSize: 22, margin: "0 0 14px", lineHeight: 1.3, color: "var(--wine)" }}>{courseContentTitle}</h2>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 8 }}>
-                {parsed.learnItems.map((item) => (
-                  <li key={item} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "8px 12px", background: "#fffaf1", borderRadius: 6, fontSize: 13.5, color: "#5a4542", border: "1px solid rgba(226,186,115,0.3)" }}>
-                    <span style={{ color: "#7c1c38", fontWeight: 800, marginTop: 1 }}>✓</span>
-                    <span>{translate(item)}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
+              {/* H2 - 4: Lộ trình học từ cơ bản đến nâng cao */}
+              <section className="subject-section" id="lo-trinh" style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: 12, padding: "20px 22px", display: "flex", flexDirection: "column" }}>
+                <p className="article-kicker" style={{ margin: "0 0 4px", fontSize: 10 }}>{t("LỘ TRÌNH ĐÀO TẠO", "LEARNING ROADMAP")}</p>
+                <h2 style={{ fontSize: 20, margin: "0 0 12px", lineHeight: 1.3, color: "var(--wine)" }}>{roadmapTitle}</h2>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7, flex: 1 }}>
+                  {parsed.pathItems.map((item, i) => (
+                    <div key={item} style={{ padding: "8px 10px", background: "#f5ebdd", borderRadius: 6, display: "flex", flexDirection: "column", gap: 2 }}>
+                      <b style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#8a5829" }}>0{i + 1}</b>
+                      <span style={{ fontSize: 12, color: "#54383d", lineHeight: 1.35 }}>{translate(item)}</span>
+                    </div>
+                  ))}
+                </div>
+                {parsed.quote && (
+                  <blockquote style={{ margin: "12px 0 0", padding: "8px 12px", borderLeft: "3px solid var(--gold)", background: "#fffaf1", color: "var(--wine)", fontSize: 12.5, fontStyle: "italic", lineHeight: 1.5 }}>
+                    “{translate(parsed.quote)}”
+                  </blockquote>
+                )}
+              </section>
+            </div>
+          )}
 
-            {/* H2 - 4: Lộ trình học từ cơ bản đến nâng cao */}
-            <section className="subject-section" id="lo-trinh" style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: 12, padding: "22px 24px", display: "flex", flexDirection: "column" }}>
-              <p className="article-kicker" style={{ margin: "0 0 6px" }}>{t("LỘ TRÌNH ĐÀO TẠO", "LEARNING ROADMAP")}</p>
-              <h2 style={{ fontSize: 22, margin: "0 0 14px", lineHeight: 1.3, color: "var(--wine)" }}>{roadmapTitle}</h2>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, flex: 1 }}>
-                {parsed.pathItems.map((item, i) => (
-                  <div key={item} style={{ padding: "10px 12px", background: "#f5ebdd", borderRadius: 6, display: "flex", flexDirection: "column", gap: 2 }}>
-                    <b style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#8a5829" }}>0{i + 1}</b>
-                    <span style={{ fontSize: 12.5, color: "#54383d", lineHeight: 1.4 }}>{translate(item)}</span>
+          {/* KHỐI 3 (Lưới 2 cột): Học tại TP.HCM & Học Online */}
+          {(activeTab === "all" || activeTab === "formats") && (
+            <div id="hinh-thuc" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
+              {/* H2 - 5: Học tại TP.HCM */}
+              <section className="subject-section" id="tai-tphcm" style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: 12, padding: "20px 22px" }}>
+                <p className="article-kicker" style={{ margin: "0 0 4px", fontSize: 10 }}>{t("ĐÀO TẠO TRỰC TIẾP", "ONSITE LEARNING")}</p>
+                <h2 style={{ fontSize: 20, margin: "0 0 10px", lineHeight: 1.3, color: "var(--wine)" }}>{onsiteTitle}</h2>
+                <p style={{ margin: "0 0 10px", fontSize: 13, lineHeight: 1.55, color: "#5a4542" }}>
+                  {parsed.onsiteCustom || seo?.onsiteContent || `Khóa học trực tiếp tại TP.HCM được tổ chức tại trung tâm Sáo Trúc Âu Cơ và gia sư 1 kèm 1 tại nhà học viên ở các quận.`}
+                </p>
+                <div style={{ display: "grid", gap: 6, fontSize: 12.5, color: "#5a4542" }}>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <span>📍</span>
+                    <span><b>Địa chỉ:</b> 106/72 Hòa Bình, P. Tân Phú, TP.HCM</span>
+                  </div>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <span>🏡</span>
+                    <span><b>Gia sư tại nhà:</b> Nhận kèm 1:1 các quận TP.HCM</span>
+                  </div>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <span>🎵</span>
+                    <span><b>Phòng học:</b> Cách âm, chuẩn âm mẫu, máy đo cao độ</span>
+                  </div>
+                </div>
+              </section>
+
+              {/* H2 - 6: Học online */}
+              <section className="subject-section" id="online" style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: 12, padding: "20px 22px" }}>
+                <p className="article-kicker" style={{ margin: "0 0 4px", fontSize: 10 }}>{t("ĐÀO TẠO TỪ XA", "ONLINE 1 ON 1")}</p>
+                <h2 style={{ fontSize: 20, margin: "0 0 10px", lineHeight: 1.3, color: "var(--wine)" }}>{onlineTitle}</h2>
+                <p style={{ margin: "0 0 10px", fontSize: 13, lineHeight: 1.55, color: "#5a4542" }}>
+                  {parsed.onlineCustom || seo?.onlineContent || `Khóa học Online 1 kèm 1 qua Zoom / Google Meet / Zalo Video chất lượng cao cho học viên ở xa hoặc nước ngoài.`}
+                </p>
+                <div style={{ display: "grid", gap: 6, fontSize: 12.5, color: "#5a4542" }}>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <span>💻</span>
+                    <span><b>Hình thức:</b> Video HD 1 kèm 1, chỉnh khẩu hình từng phút</span>
+                  </div>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <span>🎥</span>
+                    <span><b>Học liệu:</b> Video bài giảng + Sheet nét xem lại trọn đời</span>
+                  </div>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <span>🌍</span>
+                    <span><b>Phù hợp:</b> Học viên toàn quốc và kiều bào nước ngoài</span>
+                  </div>
+                </div>
+              </section>
+            </div>
+          )}
+
+          {/* KHỐI 4 (Toàn chiều rộng): Học phí và lịch học */}
+          {(activeTab === "all" || activeTab === "tuition") && (
+            <section className="subject-section" id="hoc-phi" style={{
+              background: "linear-gradient(135deg, #fffaf1, #fcedd8)",
+              border: "1px solid #e2ba73",
+              borderRadius: 12,
+              padding: "20px 22px",
+              boxShadow: "0 4px 16px rgba(75, 20, 34, 0.05)",
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+                <div>
+                  <p className="article-kicker" style={{ margin: "0 0 3px", fontSize: 10 }}>{t("CHI PHÍ & THỜI GIAN", "TUITION & SCHEDULE")}</p>
+                  <h2 style={{ fontSize: 22, margin: 0, color: "var(--wine)" }}>{tuitionTitle}</h2>
+                </div>
+                <div style={{ fontSize: 12.5, color: "#705d59" }}>
+                  ⏱ <b>60 phút/buổi</b> · 📅 <b>Lịch học:</b> {translate(parsed.schedule)}
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10 }}>
+                <div style={{ background: "#fff", padding: "12px 14px", borderRadius: 8, borderLeft: "4px solid #7c1c38" }}>
+                  <small style={{ color: "#7c1c38", fontWeight: 700, textTransform: "uppercase", fontSize: 10.5 }}>Khóa 1 Tháng (8 buổi)</small>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: "#63172f", margin: "3px 0 2px" }}>
+                    {tuitionEntry?.title || "2.400.000đ – 3.200.000đ"}
+                  </div>
+                  <span style={{ fontSize: 11.5, color: "#705d59" }}>Tạo tiếng & nốt cơ bản</span>
+                </div>
+                <div style={{ background: "#fff", padding: "12px 14px", borderRadius: 8, borderLeft: "4px solid #c99238" }}>
+                  <small style={{ color: "#c99238", fontWeight: 700, textTransform: "uppercase", fontSize: 10.5 }}>Khóa 2 Tháng (16 buổi)</small>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: "#63172f", margin: "3px 0 2px" }}>
+                    {tuitionEntry?.excerpt || "4.800.000đ – 6.400.000đ"}
+                  </div>
+                  <span style={{ fontSize: 11.5, color: "#705d59" }}>Kỹ thuật & tác phẩm</span>
+                </div>
+                <div style={{ background: "#fff", padding: "12px 14px", borderRadius: 8, borderLeft: "4px solid #7c1c38" }}>
+                  <small style={{ color: "#7c1c38", fontWeight: 700, textTransform: "uppercase", fontSize: 10.5 }}>Khóa 3 Tháng (24 buổi)</small>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: "#63172f", margin: "3px 0 2px" }}>
+                    {tuitionEntry?.price || "7.200.000đ"}
+                  </div>
+                  <span style={{ fontSize: 11.5, color: "#705d59" }}>Biểu diễn & cảm âm</span>
+                </div>
+              </div>
+
+              <div style={{ marginTop: 12, padding: "8px 12px", background: "rgba(124, 28, 56, 0.08)", borderRadius: 6, fontSize: 12, color: "#63172f", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
+                <span>🎁 <b>Ưu đãi:</b> Giảm 10% – 15% khi đăng ký khóa 2–3 tháng và tặng MV Video tốt nghiệp!</span>
+                <a href="#dang-ky" style={{ padding: "4px 10px", background: "#7c1c38", color: "#fff", borderRadius: 4, textDecoration: "none", fontWeight: 700, fontSize: 11.5 }}>
+                  Đăng ký ngay →
+                </a>
+              </div>
+            </section>
+          )}
+
+          {/* KHỐI 5 (Lưới 2 cột FAQ): Câu hỏi thường gặp */}
+          {(activeTab === "all" || activeTab === "faq") && (
+            <section className="subject-section" id="faq" style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: 12, padding: "20px 22px" }}>
+              <p className="article-kicker" style={{ margin: "0 0 4px", fontSize: 10 }}>{t("GIẢI ĐÁP THẮC MẮC", "FREQUENTLY ASKED QUESTIONS")}</p>
+              <h2 style={{ fontSize: 20, margin: "0 0 12px", color: "var(--wine)" }}>{faqTitle}</h2>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 10 }}>
+                {(effectiveFaqs || [
+                  {
+                    q: `Chưa biết gì về nhạc lý có học ${title} được không?`,
+                    a: "Hoàn toàn được. Lộ trình được cá nhân hóa cho người mới bắt đầu từ con số 0, giúp bạn tạo tiếng và cảm âm dễ hiểu nhất.",
+                  },
+                  {
+                    q: "Học viên chưa có nhạc cụ thì trung tâm có hỗ trợ không?",
+                    a: "Bạn được mượn nhạc cụ tại lớp để luyện tập và được giáo viên kiểm tra, tư vấn chọn cây sáo chuẩn âm tốt nhất.",
+                  },
+                  {
+                    q: "Nếu bận việc đột xuất có được bảo lưu hoặc học bù không?",
+                    a: "Học viên được bảo lưu số buổi còn lại và linh động sắp xếp học bù theo thời gian rảnh.",
+                  },
+                ]).map((faq, idx) => (
+                  <div key={idx} style={{ background: "#fffaf1", border: "1px solid var(--line)", borderRadius: 8, padding: "12px 14px" }}>
+                    <h3 style={{ margin: "0 0 4px", fontSize: 14, color: "#63172f", fontFamily: "Georgia, serif" }}>
+                      ❓ {faq.q}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.55, color: "#705d59" }}>
+                      {faq.a}
+                    </p>
                   </div>
                 ))}
               </div>
-              {parsed.quote && (
-                <blockquote style={{ margin: "14px 0 0", padding: "10px 14px", borderLeft: "3px solid var(--gold)", background: "#fffaf1", color: "var(--wine)", fontSize: 13, fontStyle: "italic", lineHeight: 1.5 }}>
-                  “{translate(parsed.quote)}”
-                </blockquote>
-              )}
             </section>
-          </div>
-
-          {/* KHỐI 3 (Lưới 2 cột): Học tại TP.HCM & Học Online */}
-          <div id="hinh-thuc" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
-            {/* H2 - 5: Học tại TP.HCM */}
-            <section className="subject-section" id="tai-tphcm" style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: 12, padding: "22px 24px" }}>
-              <p className="article-kicker" style={{ margin: "0 0 6px" }}>{t("ĐÀO TẠO TRỰC TIẾP", "ONSITE LEARNING")}</p>
-              <h2 style={{ fontSize: 22, margin: "0 0 12px", lineHeight: 1.3, color: "var(--wine)" }}>{onsiteTitle}</h2>
-              <p style={{ margin: "0 0 12px", fontSize: 13.5, lineHeight: 1.6, color: "#5a4542" }}>
-                {seo?.onsiteContent || `Khóa học trực tiếp tại TP.HCM được tổ chức tại trung tâm Sáo Trúc Âu Cơ và gia sư 1 kèm 1 tại nhà học viên ở các quận.`}
-              </p>
-              <div style={{ display: "grid", gap: 8, fontSize: 13, color: "#5a4542" }}>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <span>📍</span>
-                  <span><b>Địa chỉ:</b> 106/72 Hòa Bình, P. Tân Phú, TP.HCM</span>
-                </div>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <span>🏡</span>
-                  <span><b>Gia sư tại nhà:</b> Nhận kèm 1:1 các quận TP.HCM</span>
-                </div>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <span>🎵</span>
-                  <span><b>Phòng học:</b> Cách âm, chuẩn âm mẫu, máy đo cao độ</span>
-                </div>
-              </div>
-            </section>
-
-            {/* H2 - 6: Học online */}
-            <section className="subject-section" id="online" style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: 12, padding: "22px 24px" }}>
-              <p className="article-kicker" style={{ margin: "0 0 6px" }}>{t("ĐÀO TẠO TỪ XA", "ONLINE 1 ON 1")}</p>
-              <h2 style={{ fontSize: 22, margin: "0 0 12px", lineHeight: 1.3, color: "var(--wine)" }}>{onlineTitle}</h2>
-              <p style={{ margin: "0 0 12px", fontSize: 13.5, lineHeight: 1.6, color: "#5a4542" }}>
-                {seo?.onlineContent || `Khóa học Online 1 kèm 1 qua Zoom / Google Meet / Zalo Video chất lượng cao cho học viên ở xa hoặc nước ngoài.`}
-              </p>
-              <div style={{ display: "grid", gap: 8, fontSize: 13, color: "#5a4542" }}>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <span>💻</span>
-                  <span><b>Hình thức:</b> Video HD 1 kèm 1, chỉnh khẩu hình từng phút</span>
-                </div>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <span>🎥</span>
-                  <span><b>Học liệu:</b> Video bài giảng + Sheet nét xem lại trọn đời</span>
-                </div>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <span>🌍</span>
-                  <span><b>Phù hợp:</b> Học viên toàn quốc và kiều bào nước ngoài</span>
-                </div>
-              </div>
-            </section>
-          </div>
-
-          {/* KHỐI 4 (Toàn chiều rộng): Học phí và lịch học */}
-          <section className="subject-section" id="hoc-phi" style={{
-            background: "linear-gradient(135deg, #fffaf1, #fcedd8)",
-            border: "1px solid #e2ba73",
-            borderRadius: 12,
-            padding: "24px 26px",
-            boxShadow: "0 4px 16px rgba(75, 20, 34, 0.05)",
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, marginBottom: 14 }}>
-              <div>
-                <p className="article-kicker" style={{ margin: "0 0 4px" }}>{t("CHI PHÍ & THỜI GIAN", "TUITION & SCHEDULE")}</p>
-                <h2 style={{ fontSize: 24, margin: 0, color: "var(--wine)" }}>{tuitionTitle}</h2>
-              </div>
-              <div style={{ fontSize: 13, color: "#705d59" }}>
-                ⏱ <b>60 phút/buổi</b> · 📅 <b>Lịch học linh động:</b> {translate(parsed.schedule)}
-              </div>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
-              <div style={{ background: "#fff", padding: "14px 16px", borderRadius: 8, borderLeft: "4px solid #7c1c38" }}>
-                <small style={{ color: "#7c1c38", fontWeight: 700, textTransform: "uppercase", fontSize: 11 }}>Khóa 1 Tháng (8 buổi)</small>
-                <div style={{ fontSize: 19, fontWeight: 800, color: "#63172f", margin: "4px 0 2px" }}>
-                  {tuitionEntry?.title || "2.400.000đ – 3.200.000đ"}
-                </div>
-                <span style={{ fontSize: 12, color: "#705d59" }}>Nền tảng tạo tiếng & nốt cơ bản</span>
-              </div>
-              <div style={{ background: "#fff", padding: "14px 16px", borderRadius: 8, borderLeft: "4px solid #c99238" }}>
-                <small style={{ color: "#c99238", fontWeight: 700, textTransform: "uppercase", fontSize: 11 }}>Khóa 2 Tháng (16 buổi)</small>
-                <div style={{ fontSize: 19, fontWeight: 800, color: "#63172f", margin: "4px 0 2px" }}>
-                  {tuitionEntry?.excerpt || "4.800.000đ – 6.400.000đ"}
-                </div>
-                <span style={{ fontSize: 12, color: "#705d59" }}>Kỹ thuật luyến láy & tác phẩm</span>
-              </div>
-              <div style={{ background: "#fff", padding: "14px 16px", borderRadius: 8, borderLeft: "4px solid #7c1c38" }}>
-                <small style={{ color: "#7c1c38", fontWeight: 700, textTransform: "uppercase", fontSize: 11 }}>Khóa 3 Tháng (24 buổi)</small>
-                <div style={{ fontSize: 19, fontWeight: 800, color: "#63172f", margin: "4px 0 2px" }}>
-                  {tuitionEntry?.price || "7.200.000đ"}
-                </div>
-                <span style={{ fontSize: 12, color: "#705d59" }}>Biểu diễn nâng cao & cảm âm</span>
-              </div>
-            </div>
-
-            <div style={{ marginTop: 14, padding: "10px 14px", background: "rgba(124, 28, 56, 0.08)", borderRadius: 8, fontSize: 12.5, color: "#63172f", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-              <span>🎁 <b>Ưu đãi đặc biệt:</b> Giảm 10% – 15% khi đăng ký khóa 2–3 tháng và tặng MV Video tốt nghiệp!</span>
-              <a href="#dang-ky" style={{ padding: "4px 12px", background: "#7c1c38", color: "#fff", borderRadius: 4, textDecoration: "none", fontWeight: 700, fontSize: 12 }}>
-                Đăng ký ngay →
-              </a>
-            </div>
-          </section>
-
-          {/* KHỐI 5 (Lưới 2 cột FAQ): Câu hỏi thường gặp */}
-          <section className="subject-section" id="faq" style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: 12, padding: "22px 24px" }}>
-            <p className="article-kicker" style={{ margin: "0 0 6px" }}>{t("GIẢI ĐÁP THẮC MẮC", "FREQUENTLY ASKED QUESTIONS")}</p>
-            <h2 style={{ fontSize: 22, margin: "0 0 14px", color: "var(--wine)" }}>{faqTitle}</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 12 }}>
-              {(seo?.faqs || [
-                {
-                  q: `Chưa biết gì về nhạc lý có học ${title} được không?`,
-                  a: "Hoàn toàn được. Lộ trình được cá nhân hóa cho người mới bắt đầu từ con số 0, giúp bạn tạo tiếng và cảm âm dễ hiểu nhất.",
-                },
-                {
-                  q: "Học viên chưa có nhạc cụ thì trung tâm có hỗ trợ không?",
-                  a: "Bạn được mượn nhạc cụ tại lớp để luyện tập và được giáo viên kiểm tra, tư vấn chọn cây sáo chuẩn âm tốt nhất.",
-                },
-                {
-                  q: "Nếu bận việc đột xuất có được bảo lưu hoặc học bù không?",
-                  a: "Học viên được bảo lưu số buổi còn lại và linh động sắp xếp học bù theo thời gian rảnh.",
-                },
-              ]).map((faq, idx) => (
-                <div key={idx} style={{ background: "#fffaf1", border: "1px solid var(--line)", borderRadius: 8, padding: "14px 16px" }}>
-                  <h3 style={{ margin: "0 0 6px", fontSize: 14.5, color: "#63172f", fontFamily: "Georgia, serif" }}>
-                    ❓ {faq.q}
-                  </h3>
-                  <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: "#705d59" }}>
-                    {faq.a}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
+          )}
         </div>
 
         {/* CỘT PHẢI: Sticky Widget */}
-        <aside style={{ position: "sticky", top: 95, alignSelf: "start", display: "flex", flexDirection: "column", gap: 14 }}>
-          <div style={{ background: "#fffaf1", border: "1px solid var(--line)", borderRadius: 10, padding: 18 }}>
+        <aside style={{ position: "sticky", top: 95, alignSelf: "start", display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ background: "#fffaf1", border: "1px solid var(--line)", borderRadius: 10, padding: 16 }}>
             <small style={{ color: "var(--gold)", fontSize: 9, fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase" }}>{t("HÌNH THỨC HỌC", "STUDY FORMAT")}</small>
-            <ul style={{ margin: "8px 0 0", paddingLeft: 16, fontSize: 13, color: "#5a4542", lineHeight: 1.6 }}>
+            <ul style={{ margin: "6px 0 0", paddingLeft: 16, fontSize: 12.5, color: "#5a4542", lineHeight: 1.55 }}>
               {parsed.formatItems.map((f) => <li key={f}>{translate(f)}</li>)}
             </ul>
           </div>
 
-          <div style={{ background: "linear-gradient(135deg, #7c1c38, #591024)", color: "#fff", borderRadius: 10, padding: "18px 20px" }}>
-            <small style={{ color: "#fce3b8", fontSize: 10, fontWeight: 700, letterSpacing: ".12em" }}>{t("TƯ VẤN NHANH", "QUICK INQUIRY")}</small>
-            <h4 style={{ margin: "6px 0 6px", color: "#fff", fontSize: 15 }}>Hotline & Zalo</h4>
-            <a href="tel:0374261368" style={{ color: "#fce3b8", fontSize: 18, fontWeight: 800, textDecoration: "none", display: "block" }}>
+          <div style={{ background: "linear-gradient(135deg, #7c1c38, #591024)", color: "#fff", borderRadius: 10, padding: "16px 18px" }}>
+            <small style={{ color: "#fce3b8", fontSize: 9.5, fontWeight: 700, letterSpacing: ".12em" }}>{t("TƯ VẤN NHANH", "QUICK INQUIRY")}</small>
+            <h4 style={{ margin: "4px 0 4px", color: "#fff", fontSize: 14.5 }}>Hotline & Zalo</h4>
+            <a href="tel:0374261368" style={{ color: "#fce3b8", fontSize: 17, fontWeight: 800, textDecoration: "none", display: "block" }}>
               0374 261 368
             </a>
-            <p style={{ fontSize: 11.5, color: "#f3d2bb", margin: "6px 0 12px", lineHeight: 1.4 }}>
+            <p style={{ fontSize: 11, color: "#f3d2bb", margin: "4px 0 10px", lineHeight: 1.35 }}>
               Nhận bài kiểm tra khẩu hình và tư vấn lộ trình học miễn phí!
             </p>
-            <a href="#dang-ky" className="button button-gold" style={{ width: "100%", textAlign: "center", display: "block", padding: "8px 14px", fontSize: 13 }}>
+            <a href="#dang-ky" className="button button-gold" style={{ width: "100%", textAlign: "center", display: "block", padding: "7px 12px", fontSize: 12.5 }}>
               Đăng ký ngay ↓
             </a>
           </div>
         </aside>
       </article>
 
-      <div className="contact-page-container" style={{ margin: "20px 0 0", width: "100%" }}>
+      <div className="contact-page-container" style={{ margin: "16px 0 0", width: "100%" }}>
         <ContactSection initialSubject={rawTitle} id="dang-ky" />
       </div>
 
-      <div style={{ maxWidth: 1250, margin: "0 auto", padding: "0 24px 40px", width: "100%" }}>
+      <div style={{ maxWidth: 1250, margin: "0 auto", padding: "0 20px 36px", width: "100%" }}>
         <FeaturedReferenceLinks />
       </div>
 
