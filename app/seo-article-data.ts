@@ -115,6 +115,53 @@ bạn có thể tham khảo các chương trình học tại Sáo Trúc Âu Cơ 
   sortOrder: 1,
 };
 
+const defaultArticleEntries: CmsEntry[] = [
+  {
+    id: "article-01",
+    collection: "articles",
+    title: "5 bước tạo tiếng sáo trong và ổn định",
+    slug: "5-buoc-tao-tieng-sao",
+    publishedAt: "2026-08-08",
+    excerpt: "Từ tư thế, khẩu hình đến luồng hơi — nền tảng dành cho người mới bắt đầu.",
+    imageUrl: "",
+    tag: "Kỹ thuật",
+    price: "",
+    content: "Từ tư thế, khẩu hình đến luồng hơi — nền tảng dành cho người mới bắt đầu.",
+    visible: true,
+    sortOrder: 2,
+  },
+  {
+    id: "article-02",
+    collection: "articles",
+    title: "Người mới nên bắt đầu với sáo tone nào?",
+    slug: "nguoi-moi-chon-sao-tone-nao",
+    publishedAt: "2026-08-08",
+    excerpt: "So sánh sáo Đô C5, La A4 và Sol G4 để chọn cây sáo phù hợp với mục tiêu học.",
+    imageUrl: "",
+    tag: "Chọn nhạc cụ",
+    price: "",
+    content: "So sánh sáo Đô C5, La A4 và Sol G4 để chọn cây sáo phù hợp với mục tiêu học.",
+    visible: true,
+    sortOrder: 3,
+  },
+  {
+    id: "article-03",
+    collection: "articles",
+    title: "Cách luyện hơi dài mà không bị căng",
+    slug: "cach-luyen-hoi-dai",
+    publishedAt: "2026-08-08",
+    excerpt: "Một lịch tập ngắn, an toàn và hiệu quả để cải thiện cột hơi mỗi ngày.",
+    imageUrl: "",
+    tag: "Luyện tập",
+    price: "",
+    content: "Một lịch tập ngắn, an toàn và hiệu quả để cải thiện cột hơi mỗi ngày.",
+    visible: true,
+    sortOrder: 4,
+  },
+];
+
+export const articleIndexEntries = [hocThoiSaoHcmArticle, ...defaultArticleEntries];
+
 export function getSeoArticle(slug: string): CmsEntry | undefined {
-  return slug === hocThoiSaoHcmArticle.slug ? hocThoiSaoHcmArticle : undefined;
+  return articleIndexEntries.find((article) => article.slug === slug);
 }

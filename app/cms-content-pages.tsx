@@ -296,9 +296,9 @@ export function FluteDetail() {
   </main>;
 }
 
-export function NewsIndex() {
+export function NewsIndex({ initialEntries }: { initialEntries?: CmsEntry[] }) {
   const { t, translate } = useLanguage();
-  const entries = useCmsEntries("articles");
+  const entries = useCmsEntries("articles", initialEntries);
   return <main className="subject-page content-page">
     <ContentHeader />
     <section className="content-list-hero"><p className="eyebrow">{t("BÀI VIẾT · BLOG · CHIA SẺ", "ARTICLES · BLOG · KNOWLEDGE")}</p><h1>{t("Bài viết", "Articles")}</h1><p>{t("Bài viết về sáo trúc, kỹ thuật luyện tập, chọn nhạc cụ và âm nhạc dân tộc.", "Guides on bamboo flute practice, technique mastery, instrument selection, and traditional music.")}</p></section>
@@ -769,7 +769,7 @@ export function SubjectDetail() {
     if (rawTitle) document.title = `${rawTitle} | Sáo Trúc Âu Cơ`;
   }, [rawTitle]);
 
-  if (entries === null) {
+  if (entries === null && !fallback) {
     return <main className="subject-page content-page">
       <ContentHeader />
       <p className="content-state content-detail-state">{t("Đang tải thông tin lớp học…", "Loading course details…")}</p>

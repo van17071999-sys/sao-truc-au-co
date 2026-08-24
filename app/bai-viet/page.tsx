@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { NewsIndex } from "../cms-content-pages";
+import { articleIndexEntries } from "../seo-article-data";
 
 export const metadata: Metadata = {
   title: "Bài viết & Chia sẻ kiến thức | Sáo Trúc Âu Cơ",
@@ -16,5 +17,5 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <NewsIndex />;
+  return <NewsIndex initialEntries={articleIndexEntries} />;
 }

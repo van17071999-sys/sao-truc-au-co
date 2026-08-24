@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const article = getSeoArticle(slug);
 
-  if (!article) {
+  if (!article || article.slug !== hocThoiSaoHcmArticle.slug) {
     return {
       title: "Bài viết",
       alternates: { canonical: `/bai-viet/${slug}` },
@@ -70,9 +70,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function Page({ params }: PageProps) {
   const { slug } = await params;
   const article = getSeoArticle(slug);
+  const isTargetArticle = article?.slug === hocThoiSaoHcmArticle.slug;
   const canonicalUrl = `${siteUrl}${targetPath}`;
 
-  const structuredData = article ? {
+  const structuredData = isTargetArticle ? {
     "@context": "https://schema.org",
     "@graph": [
       {
