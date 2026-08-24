@@ -844,8 +844,10 @@ export function SubjectDetail() {
   const { t, translate } = useLanguage();
   const params = useParams<{ slug: string }>();
   const entries = useCmsEntries("class-details");
+  const settingsEntries = useCmsEntries("settings");
   const entry = entries?.find((item) => item.slug === params.slug);
   const fallback = params.slug ? fallbackSubjects[params.slug] : undefined;
+  const seo = params.slug ? getDisciplineSeo(params.slug) : undefined;
 
   const rawTitle = entry?.title || fallback?.title || "";
   const title = translate(rawTitle);
@@ -855,17 +857,19 @@ export function SubjectDetail() {
   const rawSuitable = entry?.price || fallback?.suitable || "Người mới bắt đầu hoặc học viên muốn nâng cao khả năng biểu diễn.";
   const suitable = translate(rawSuitable);
 
+  const tuitionEntry = settingsEntries?.find((e) => e.slug === "tuition");
+
   const parsed = useMemo(() => {
     return parseSubjectContent(entry?.content || "", fallback);
   }, [entry, fallback]);
 
   useEffect(() => {
     if (params.slug) {
-      const seo = getDisciplineSeo(params.slug);
-      if (seo) {
-        document.title = seo.seoTitle;
+      const disciplineSeo = getDisciplineSeo(params.slug);
+      if (disciplineSeo) {
+        document.title = disciplineSeo.seoTitle;
         const description = document.querySelector('meta[name="description"]');
-        description?.setAttribute("content", seo.description);
+        description?.setAttribute("content", disciplineSeo.description);
         return;
       }
     }
@@ -873,56 +877,281 @@ export function SubjectDetail() {
   }, [params.slug, rawTitle]);
 
   if (entries === null && !fallback) {
-    return <main className="subject-page content-page">
-      <ContentHeader />
-      <p className="content-state content-detail-state">{t("Đang tải thông tin lớp học…", "Loading course details…")}</p>
-      <ContentFooter />
-    </main>;
+    return (
+      <main className="subject-page content-page">
+        <ContentHeader />
+        <p className="content-state content-detail-state">{t("Đang tải thông tin lớp học…", "Loading course details…")}</p>
+        <ContentFooter />
+      </main>
+    );
   }
 
   if (!entry && !fallback) {
-    return <main className="subject-page content-page">
-      <ContentHeader />
-      <section className="content-state content-detail-state"><h1>{t("Không tìm thấy bộ môn", "Discipline not found")}</h1><Link href="/#classes">{t("Quay lại danh sách lớp học", "Back to classes list")}</Link></section>
-      <ContentFooter />
-    </main>;
+    return (
+      <main className="subject-page content-page">
+        <ContentHeader />
+        <section className="content-state content-detail-state">
+          <h1>{t("Không tìm thấy bộ môn", "Discipline not found")}</h1>
+          <Link href="/#classes">{t("Quay lại danh sách lớp học", "Back to classes list")}</Link>
+        </section>
+        <ContentFooter />
+      </main>
+    );
   }
 
-  return <main className="subject-page">
-    <ContentHeader />
-    <section className="subject-hero">
-      <div>
-        <p className="eyebrow">{t("BÀI GIỚI THIỆU BỘ MÔN", "DISCIPLINE OVERVIEW")}</p>
-        <span className="subject-symbol">{icon}</span>
-        <h1>{title}</h1>
-        <p>{lead}</p>
-        <a className="button button-wine" href="#dang-ky">{t("Đăng ký tư vấn →", "Get Consultation →")}</a>
-      </div>
-    </section>
-    <article className="subject-article">
-      <div className="article-main">
-        <p className="article-kicker">{t("HIỂU VỀ BỘ MÔN", "ABOUT THIS DISCIPLINE")}</p>
-        <h2>{translate(parsed.headline)}</h2>
-        <p className="article-lead">{translate(parsed.intro)}</p>
-        <h3>{t("Bạn sẽ học được gì?", "What will you learn?")}</h3>
-        <ul className="learn-list">
-          {parsed.learnItems.map((item) => <li key={item}><span>✓</span>{translate(item)}</li>)}
-        </ul>
-        <h3>{t("Lộ trình học", "Learning Roadmap")}</h3>
-        <div className="path-grid">
-          {parsed.pathItems.map((item, i) => <div key={item}><b>0{i + 1}</b><span>{translate(item)}</span></div>)}
+  const h1Title = seo?.h1Title || `Lớp Học ${title} tại TP.HCM & Online`;
+  const whatIsTitle = seo?.whatIsTitle || `${title} là gì?`;
+  const whoIsForTitle = seo?.whoIsForTitle || `Ai phù hợp học ${seo?.instrumentShortName || title}?`;
+  const courseContentTitle = seo?.courseContentTitle || `Nội dung khóa học ${seo?.instrumentShortName || title}`;
+  const roadmapTitle = seo?.roadmapTitle || "Lộ trình học từ cơ bản đến nâng cao";
+  const onsiteTitle = seo?.onsiteTitle || `Học ${seo?.instrumentShortName || title} tại TP.HCM`;
+  const onlineTitle = seo?.onlineTitle || `Học ${seo?.instrumentShortName || title} online`;
+  const tuitionTitle = seo?.tuitionTitle || "Học phí và lịch học";
+  const faqTitle = seo?.faqTitle || "Câu hỏi thường gặp";
+
+  return (
+    <main className="subject-page">
+      <ContentHeader />
+      <section className="subject-hero">
+        <div>
+          <p className="eyebrow">{t("BÀI GIỚI THIỆU BỘ MÔN & ĐÀO TẠO", "DISCIPLINE OVERVIEW & COURSES")}</p>
+          <span className="subject-symbol">{icon}</span>
+          <h1 style={{ fontSize: "clamp(32px, 5vw, 62px)", lineHeight: 1.15 }}>{h1Title}</h1>
+          <p>{lead}</p>
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 24 }}>
+            <a className="button button-wine" href="#dang-ky">{t("Đăng ký tư vấn →", "Get Consultation →")}</a>
+            <a className="button button-gold" href="#hoc-phi">{t("Xem học phí & lịch học", "View tuition & schedule")}</a>
+          </div>
         </div>
-        <blockquote>“{translate(parsed.quote)}”</blockquote>
+      </section>
+
+      <article className="subject-article">
+        <div className="article-main">
+          {/* H2 - 1: Nhạc cụ là gì? */}
+          <section className="subject-section" id="gioi-thieu" style={{ marginBottom: 48 }}>
+            <p className="article-kicker">{t("TỔNG QUAN NHẠC CỤ", "INSTRUMENT OVERVIEW")}</p>
+            <h2>{whatIsTitle}</h2>
+            {parsed.headline && parsed.headline !== whatIsTitle && (
+              <h3 style={{ fontSize: 18, margin: "0 0 16px", color: "#8a243c", fontStyle: "italic", fontFamily: "Georgia, serif", fontWeight: 600 }}>
+                {translate(parsed.headline)}
+              </h3>
+            )}
+            <p className="article-lead">{translate(parsed.intro)}</p>
+            {seo?.whatIsContent && seo.whatIsContent !== parsed.intro && (
+              <p style={{ marginTop: 14, lineHeight: 1.8, color: "#5a4542" }}>{seo.whatIsContent}</p>
+            )}
+          </section>
+
+          {/* H2 - 2: Ai phù hợp học? */}
+          <section className="subject-section" id="doi-tuong" style={{ marginBottom: 48 }}>
+            <p className="article-kicker">{t("ĐỐI TƯỢNG HỌC VIÊN", "TARGET LEARNERS")}</p>
+            <h2>{whoIsForTitle}</h2>
+            <p className="article-lead">{suitable}</p>
+            {seo?.whoIsForContent && seo.whoIsForContent.length > 0 && (
+              <ul className="learn-list" style={{ marginTop: 18 }}>
+                {seo.whoIsForContent.map((item, idx) => (
+                  <li key={idx}>
+                    <span style={{ color: "#7c1c38" }}>✦</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          {/* H2 - 3: Nội dung khóa học */}
+          <section className="subject-section" id="noi-dung" style={{ marginBottom: 48 }}>
+            <p className="article-kicker">{t("CHƯƠNG TRÌNH ĐÀO TẠO", "COURSE CURRICULUM")}</p>
+            <h2>{courseContentTitle}</h2>
+            <ul className="learn-list">
+              {parsed.learnItems.map((item) => (
+                <li key={item}>
+                  <span>✓</span>
+                  {translate(item)}
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {/* H2 - 4: Lộ trình học từ cơ bản đến nâng cao */}
+          <section className="subject-section" id="lo-trinh" style={{ marginBottom: 48 }}>
+            <p className="article-kicker">{t("LỘ TRÌNH ĐÀO TẠO", "LEARNING ROADMAP")}</p>
+            <h2>{roadmapTitle}</h2>
+            <div className="path-grid">
+              {parsed.pathItems.map((item, i) => (
+                <div key={item}>
+                  <b>0{i + 1}</b>
+                  <span>{translate(item)}</span>
+                </div>
+              ))}
+            </div>
+            {parsed.quote && <blockquote>“{translate(parsed.quote)}”</blockquote>}
+          </section>
+
+          {/* H2 - 5: Học tại TP.HCM */}
+          <section className="subject-section" id="tai-tphcm" style={{ marginBottom: 48 }}>
+            <p className="article-kicker">{t("ĐÀO TẠO TRỰC TIẾP", "ONSITE LEARNING")}</p>
+            <h2>{onsiteTitle}</h2>
+            <p className="article-lead">
+              {seo?.onsiteContent || `Khóa học trực tiếp tại TP.HCM được tổ chức tại trung tâm Sáo Trúc Âu Cơ (106/72 Hòa Bình, P. Tân Phú, TP.HCM) và hình thức gia sư 1 kèm 1 tại nhà học viên ở các quận.`}
+            </p>
+            <div style={{ background: "#fffaf1", border: "1px solid var(--line)", borderRadius: 10, padding: "20px 24px", marginTop: 16, display: "grid", gap: 10 }}>
+              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <span style={{ fontSize: 20 }}>📍</span>
+                <span><b>Địa chỉ trung tâm:</b> 106/72 Hòa Bình, P. Tân Phú, TP.HCM</span>
+              </div>
+              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <span style={{ fontSize: 20 }}>🏡</span>
+                <span><b>Gia sư tại nhà:</b> Nhận kèm 1:1 tận nơi tại tất cả các quận nội thành TP.HCM</span>
+              </div>
+              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <span style={{ fontSize: 20 }}>🎵</span>
+                <span><b>Trang thiết bị:</b> Phòng học cách âm, nhạc cụ chuẩn âm mẫu, máy đo tần số cao độ</span>
+              </div>
+            </div>
+          </section>
+
+          {/* H2 - 6: Học online */}
+          <section className="subject-section" id="online" style={{ marginBottom: 48 }}>
+            <p className="article-kicker">{t("ĐÀO TẠO TỪ XA", "ONLINE 1 ON 1")}</p>
+            <h2>{onlineTitle}</h2>
+            <p className="article-lead">
+              {seo?.onlineContent || `Khóa học Online 1 kèm 1 qua Zoom / Google Meet / Zalo Video chất lượng cao dành riêng cho học viên ở xa hoặc nước ngoài.`}
+            </p>
+            <div style={{ background: "#fffaf1", border: "1px solid var(--line)", borderRadius: 10, padding: "20px 24px", marginTop: 16, display: "grid", gap: 10 }}>
+              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <span style={{ fontSize: 20 }}>💻</span>
+                <span><b>Hình thức học:</b> Gọi video trực tiếp 1 kèm 1, giáo viên thị phạm và sửa khẩu hình từng phút</span>
+              </div>
+              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <span style={{ fontSize: 20 }}>🎥</span>
+                <span><b>Học liệu đính kèm:</b> Tặng trọn bộ video bài giảng và sheet nhạc độ phân giải cao</span>
+              </div>
+              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <span style={{ fontSize: 20 }}>🌍</span>
+                <span><b>Phù hợp:</b> Học viên mọi tỉnh thành trên cả nước và kiều bào tại nước ngoài</span>
+              </div>
+            </div>
+          </section>
+
+          {/* H2 - 7: Học phí và lịch học */}
+          <section className="subject-section" id="hoc-phi" style={{ marginBottom: 48 }}>
+            <p className="article-kicker">{t("CHI PHÍ & THỜI GIAN", "TUITION & SCHEDULE")}</p>
+            <h2>{tuitionTitle}</h2>
+            
+            <div style={{
+              background: "linear-gradient(135deg, #fffaf1, #fcedd8)",
+              border: "1px solid #e2ba73",
+              borderRadius: 12,
+              padding: "24px 28px",
+              boxShadow: "0 4px 18px rgba(75, 20, 34, 0.06)",
+              marginTop: 16,
+            }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14 }}>
+                <div style={{ background: "#fff", padding: "16px 18px", borderRadius: 8, borderLeft: "4px solid #7c1c38" }}>
+                  <small style={{ color: "#7c1c38", fontWeight: 700, textTransform: "uppercase", fontSize: 11 }}>Khóa 1 Tháng (8 buổi)</small>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: "#63172f", margin: "6px 0 4px" }}>
+                    {tuitionEntry?.title || "2.400.000đ – 3.200.000đ"}
+                  </div>
+                  <span style={{ fontSize: 12, color: "#705d59" }}>Nền tảng tạo tiếng & nốt cơ bản</span>
+                </div>
+                <div style={{ background: "#fff", padding: "16px 18px", borderRadius: 8, borderLeft: "4px solid #c99238" }}>
+                  <small style={{ color: "#c99238", fontWeight: 700, textTransform: "uppercase", fontSize: 11 }}>Khóa 2 Tháng (16 buổi)</small>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: "#63172f", margin: "6px 0 4px" }}>
+                    {tuitionEntry?.excerpt || "4.800.000đ – 6.400.000đ"}
+                  </div>
+                  <span style={{ fontSize: 12, color: "#705d59" }}>Kỹ thuật luyến láy & tác phẩm</span>
+                </div>
+                <div style={{ background: "#fff", padding: "16px 18px", borderRadius: 8, borderLeft: "4px solid #7c1c38" }}>
+                  <small style={{ color: "#7c1c38", fontWeight: 700, textTransform: "uppercase", fontSize: 11 }}>Khóa 3 Tháng (24 buổi)</small>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: "#63172f", margin: "6px 0 4px" }}>
+                    {tuitionEntry?.price || "7.200.000đ"}
+                  </div>
+                  <span style={{ fontSize: 12, color: "#705d59" }}>Biểu diễn nâng cao & cảm âm</span>
+                </div>
+              </div>
+
+              <div style={{ marginTop: 18, padding: "12px 16px", background: "rgba(124, 28, 56, 0.08)", borderRadius: 8, fontSize: 13, color: "#63172f" }}>
+                <b>🎁 Ưu đãi đặc biệt:</b> Giảm 10% – 15% khi đăng ký khóa 2–3 tháng và tặng MV Video biểu diễn tốt nghiệp!
+              </div>
+
+              <div style={{ marginTop: 14, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10, fontSize: 13, color: "#705d59" }}>
+                <span>⏱ <b>Thời lượng:</b> 60 phút / buổi</span>
+                <span>📅 <b>Lịch học:</b> {translate(parsed.schedule)} (Sáng, Chiều, Tối linh động)</span>
+              </div>
+            </div>
+          </section>
+
+          {/* H2 - 8: Câu hỏi thường gặp */}
+          <section className="subject-section" id="faq" style={{ marginBottom: 48 }}>
+            <p className="article-kicker">{t("GIẢI ĐÁP THẮC MẮC", "FREQUENTLY ASKED QUESTIONS")}</p>
+            <h2>{faqTitle}</h2>
+            <div style={{ display: "grid", gap: 14, marginTop: 18 }}>
+              {(seo?.faqs || [
+                {
+                  q: `Chưa biết gì về nhạc lý có học ${title} được không?`,
+                  a: "Hoàn toàn được. Lộ trình được cá nhân hóa cho người mới bắt đầu từ con số 0, giúp bạn tạo tiếng và cảm âm dễ hiểu nhất.",
+                },
+                {
+                  q: "Học viên chưa có nhạc cụ thì trung tâm có hỗ trợ không?",
+                  a: "Bạn được mượn nhạc cụ tại lớp để luyện tập và được giáo viên kiểm tra, tư vấn chọn cây sáo chuẩn âm tốt nhất.",
+                },
+                {
+                  q: "Nếu bận việc đột xuất có được bảo lưu hoặc học bù không?",
+                  a: "Học viên được bảo lưu số buổi còn lại và linh động sắp xếp học bù theo thời gian rảnh.",
+                },
+              ]).map((faq, idx) => (
+                <div key={idx} style={{ background: "#fffaf1", border: "1px solid var(--line)", borderRadius: 8, padding: "18px 22px" }}>
+                  <h3 style={{ margin: "0 0 8px", fontSize: 16, color: "#63172f", fontFamily: "Georgia, serif" }}>
+                    ❓ {faq.q}
+                  </h3>
+                  <p style={{ margin: 0, fontSize: 14, lineHeight: 1.7, color: "#705d59" }}>
+                    {faq.a}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        <aside>
+          <div>
+            <small>{t("PHÙ HỢP VỚI", "SUITABLE FOR")}</small>
+            <p>{suitable}</p>
+          </div>
+          <div>
+            <small>{t("HÌNH THỨC HỌC", "STUDY FORMAT")}</small>
+            <ul>{parsed.formatItems.map((f) => <li key={f}>{translate(f)}</li>)}</ul>
+          </div>
+          <div>
+            <small>{t("THỜI GIAN", "SCHEDULE")}</small>
+            <p>{translate(parsed.schedule)}</p>
+          </div>
+          <div style={{ background: "linear-gradient(135deg, #7c1c38, #591024)", color: "#fff", border: 0, borderRadius: 10, padding: 22 }}>
+            <small style={{ color: "#fce3b8" }}>{t("TƯ VẤN NHANH", "QUICK INQUIRY")}</small>
+            <h4 style={{ margin: "8px 0 10px", color: "#fff", fontSize: 16 }}>Hotline & Zalo</h4>
+            <a href="tel:0374261368" style={{ color: "#fce3b8", fontSize: 18, fontWeight: 800, textDecoration: "none", display: "block" }}>
+              0374 261 368
+            </a>
+            <p style={{ fontSize: 12, color: "#f3d2bb", margin: "8px 0 14px", lineHeight: 1.5 }}>
+              Liên hệ ngay để nhận bài kiểm tra khẩu hình và tư vấn lộ trình học miễn phí!
+            </p>
+            <a href="#dang-ky" className="button button-gold" style={{ width: "100%", textAlign: "center", display: "block" }}>
+              Đăng ký ngay ↓
+            </a>
+          </div>
+        </aside>
+      </article>
+
+      <div className="contact-page-container" style={{ margin: "28px 0 0", width: "100%" }}>
+        <ContactSection initialSubject={rawTitle} id="dang-ky" />
       </div>
-      <aside>
-        <div><small>{t("PHÙ HỢP VỚI", "SUITABLE FOR")}</small><p>{suitable}</p></div>
-        <div><small>{t("HÌNH THỨC HỌC", "STUDY FORMAT")}</small><ul>{parsed.formatItems.map((f) => <li key={f}>{translate(f)}</li>)}</ul></div>
-        <div><small>{t("THỜI GIAN", "SCHEDULE")}</small><p>{translate(parsed.schedule)}</p></div>
-      </aside>
-    </article>
-    <div className="contact-page-container" style={{ margin: "28px 0 0", width: "100%" }}>
-      <ContactSection initialSubject={rawTitle} id="dang-ky" />
-    </div>
-    <ContentFooter />
-  </main>;
+
+      <div style={{ maxWidth: 1250, margin: "0 auto", padding: "0 28px 48px", width: "100%" }}>
+        <FeaturedReferenceLinks />
+      </div>
+
+      <ContentFooter />
+    </main>
+  );
 }

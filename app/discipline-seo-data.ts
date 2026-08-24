@@ -1,14 +1,41 @@
 export type DisciplineSeoConfig = {
+  h1Title: string;
   seoTitle: string;
+  instrumentName: string;
+  instrumentShortName: string;
+  whatIsTitle: string;
+  whoIsForTitle: string;
+  courseContentTitle: string;
+  roadmapTitle: string;
+  onsiteTitle: string;
+  onlineTitle: string;
+  tuitionTitle: string;
+  faqTitle: string;
   primaryKeyword: string;
   keywords: string[];
   description: string;
   image: string;
+  whatIsContent: string;
+  whoIsForContent: string[];
+  onsiteContent: string;
+  onlineContent: string;
+  faqs: { q: string; a: string }[];
 };
 
 export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
   "sao-truc-viet-nam": {
+    h1Title: "Lớp Học Sáo Trúc Việt Nam tại TP.HCM & Online",
     seoTitle: "Học Sáo Trúc tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    instrumentName: "Sáo Trúc Việt Nam",
+    instrumentShortName: "sáo trúc",
+    whatIsTitle: "Sáo trúc Việt Nam là gì?",
+    whoIsForTitle: "Ai phù hợp học sáo trúc?",
+    courseContentTitle: "Nội dung khóa học sáo trúc",
+    roadmapTitle: "Lộ trình học từ cơ bản đến nâng cao",
+    onsiteTitle: "Học sáo trúc tại TP.HCM",
+    onlineTitle: "Học sáo trúc online",
+    tuitionTitle: "Học phí và lịch học",
+    faqTitle: "Câu hỏi thường gặp",
     primaryKeyword: "học sáo trúc TP.HCM",
     keywords: [
       "học sáo trúc TP.HCM",
@@ -21,9 +48,47 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
     ],
     description: "Lớp học sáo trúc tại TP.HCM và Online 1 kèm 1 cho người mới bắt đầu đến nâng cao. Lộ trình bài bản, chỉnh khẩu hình, cột hơi và cảm âm cùng Sáo Trúc Âu Cơ.",
     image: "/carousel-saotruc.webp",
+    whatIsContent: "Sáo trúc Việt Nam là nhạc cụ thổi ngang truyền thống được chế tác từ thân tre, trúc hoặc nứa tự nhiên. Với âm sắc mộc mạc, trong trẻo và ngân vang, tiếng sáo trúc gắn liền với tâm hồn dân gian Việt Nam, có khả năng biểu đạt trọn vẹn từ các làn điệu dân ca da diết đến nhạc trữ tình, nhạc trẻ hiện đại.",
+    whoIsForContent: [
+      "Người mới bắt đầu chưa từng học nhạc cụ, chưa biết đọc nốt nhạc hoặc chưa biết nhạc lý.",
+      "Người từng tự học thổi sáo nhưng hay bị hụt hơi, tiếng sáo bị xì rè hoặc chưa bấm ngón chuẩn xác.",
+      "Học viên muốn rèn luyện cột hơi, giải tỏa căng thẳng sau giờ làm việc và tự tin biểu diễn những ca khúc yêu thích.",
+      "Người yêu thích âm nhạc truyền thống, muốn tham gia biểu diễn hoặc theo đuổi con đường nghệ thuật chuyên sâu.",
+    ],
+    onsiteContent: "Lớp học trực tiếp tại TP.HCM diễn ra tại không gian âm nhạc Sáo Trúc Âu Cơ (106/72 Hòa Bình, P. Tân Phú) hoặc hình thức Gia sư 1 kèm 1 tại nhà học viên ở các quận. Phòng học cách âm, yên tĩnh, đầy đủ nhạc cụ chuẩn âm và trang thiết bị hỗ trợ tối đa cho việc luyện tập.",
+    onlineContent: "Khóa học Online 1 kèm 1 tương tác trực tiếp qua video HD (Zoom / Google Meet / Zalo). Giáo viên trực tiếp thị phạm, soi từng góc môi, tư thế tay và chỉnh cột hơi ngay trong buổi học, kết hợp video giáo trình xem lại trọn đời.",
+    faqs: [
+      {
+        q: "Chưa biết gì về nhạc lý có học thổi sáo trúc được không?",
+        a: "Hoàn toàn được. Khóa học được thiết kế dành riêng cho người mới bắt đầu từ con số 0. Bạn sẽ được hướng dẫn tạo tiếng, bấm nốt và cảm âm bài bản mà không cần kiến thức âm nhạc trước đó.",
+      },
+      {
+        q: "Người mới bắt đầu nên chọn sáo tone gì để tập?",
+        a: "Tone phổ biến và dễ tập nhất cho người mới là sáo Đô (C5) hoặc sáo La trầm (A4), khoảng cách các lỗ bấm vừa vặn với ngón tay và luồng hơi dễ kiểm soát.",
+      },
+      {
+        q: "Học viên chưa có sáo thì trung tâm có hỗ trợ không?",
+        a: "Khi đến học trực tiếp, bạn được sử dụng sáo mẫu tại lớp và được giáo viên kiểm tra, tư vấn chọn cây sáo chuẩn âm tốt nhất phù hợp với kích thước tay của bạn.",
+      },
+      {
+        q: "Nếu bận việc đột xuất có được bảo lưu hoặc học bù không?",
+        a: "Học viên được linh động dời lịch và bảo lưu số buổi học còn lại nếu có việc phát sinh, đảm bảo không bị mất buổi học.",
+      },
+    ],
   },
   "sao-truc": {
+    h1Title: "Lớp Học Sáo Trúc Việt Nam tại TP.HCM & Online",
     seoTitle: "Học Sáo Trúc tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    instrumentName: "Sáo Trúc Việt Nam",
+    instrumentShortName: "sáo trúc",
+    whatIsTitle: "Sáo trúc Việt Nam là gì?",
+    whoIsForTitle: "Ai phù hợp học sáo trúc?",
+    courseContentTitle: "Nội dung khóa học sáo trúc",
+    roadmapTitle: "Lộ trình học từ cơ bản đến nâng cao",
+    onsiteTitle: "Học sáo trúc tại TP.HCM",
+    onlineTitle: "Học sáo trúc online",
+    tuitionTitle: "Học phí và lịch học",
+    faqTitle: "Câu hỏi thường gặp",
     primaryKeyword: "học sáo trúc TP.HCM",
     keywords: [
       "học sáo trúc TP.HCM",
@@ -34,9 +99,34 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
     ],
     description: "Lớp học sáo trúc tại TP.HCM và Online 1 kèm 1 cho người mới bắt đầu đến nâng cao. Lộ trình bài bản, chỉnh khẩu hình, cột hơi và cảm âm cùng Sáo Trúc Âu Cơ.",
     image: "/carousel-saotruc.webp",
+    whatIsContent: "Sáo trúc Việt Nam là nhạc cụ thổi ngang truyền thống được chế tác từ thân tre, trúc hoặc nứa tự nhiên. Với âm sắc mộc mạc, trong trẻo và ngân vang, tiếng sáo trúc gắn liền với tâm hồn dân gian Việt Nam.",
+    whoIsForContent: [
+      "Người mới bắt đầu chưa từng học nhạc cụ, chưa biết đọc nốt nhạc.",
+      "Người từng tự học thổi sáo nhưng hay bị hụt hơi, tiếng sáo bị xì rè.",
+      "Học viên muốn rèn luyện cột hơi, tự tin biểu diễn những ca khúc yêu thích.",
+    ],
+    onsiteContent: "Lớp học trực tiếp tại TP.HCM diễn ra tại không gian âm nhạc Sáo Trúc Âu Cơ hoặc Gia sư 1 kèm 1 tại nhà học viên ở các quận.",
+    onlineContent: "Khóa học Online 1 kèm 1 tương tác trực tiếp qua video HD. Giáo viên trực tiếp thị phạm, soi từng ngón bấm và chỉnh cột hơi ngay trong buổi học.",
+    faqs: [
+      {
+        q: "Chưa biết gì về nhạc lý có học thổi sáo trúc được không?",
+        a: "Hoàn toàn được. Khóa học được thiết kế dành riêng cho người mới bắt đầu từ con số 0.",
+      },
+    ],
   },
   "sao-dizi": {
+    h1Title: "Lớp Học Sáo Dizi tại TP.HCM & Online",
     seoTitle: "Học Sáo Dizi tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    instrumentName: "Sáo Dizi",
+    instrumentShortName: "sáo Dizi",
+    whatIsTitle: "Sáo Dizi là gì?",
+    whoIsForTitle: "Ai phù hợp học sáo Dizi?",
+    courseContentTitle: "Nội dung khóa học sáo Dizi",
+    roadmapTitle: "Lộ trình học từ cơ bản đến nâng cao",
+    onsiteTitle: "Học sáo Dizi tại TP.HCM",
+    onlineTitle: "Học sáo Dizi online",
+    tuitionTitle: "Học phí và lịch học",
+    faqTitle: "Câu hỏi thường gặp",
     primaryKeyword: "học sáo Dizi",
     keywords: [
       "học sáo Dizi",
@@ -48,9 +138,39 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
     ],
     description: "Khóa học sáo Dizi tại TP.HCM & Online 1 kèm 1. Làm chủ kỹ thuật màng rung, luyến láy và các tác phẩm cổ phong cùng Sáo Trúc Âu Cơ.",
     image: "/carousel-dizi.webp",
+    whatIsContent: "Sáo Dizi (địch tử) là nhạc cụ thổi ngang đặc trưng của âm nhạc Trung Hoa, nổi bật nhờ lỗ dán màng rung (màng sậy hoặc màng tỏi) nằm giữa lỗ thổi và lỗ bấm. Màng rung tạo nên chất âm sáng, thanh thoát, vang giòn và giàu màu sắc cổ phong kiếm hiệp.",
+    whoIsForContent: [
+      "Người yêu thích âm nhạc cổ phong Trung Hoa, nhạc phim cổ trang kiếm hiệp.",
+      "Người muốn làm chủ kỹ thuật dán màng rung và xử lý độ rung màng sáo hoàn hảo.",
+      "Người thổi sáo trúc muốn học thêm Dizi để làm phong phú màu sắc diễn tấu.",
+      "Học viên mọi lứa tuổi đam mê giai điệu Trung Hoa từ nhập môn đến biểu diễn.",
+    ],
+    onsiteContent: "Học trực tiếp tại TP.HCM: Hướng dẫn kỹ thuật chọn và dán màng rung Dizi, luyện tập các tác phẩm cổ phong nổi tiếng trong không gian phòng học chuyên nghiệp.",
+    onlineContent: "Học Online 1 kèm 1: Camera độ nét cao soi rõ từng thao tác căng màng rung, khẩu hình và ngón bấm luyến láy đặc trưng của sáo Dizi.",
+    faqs: [
+      {
+        q: "Dán màng rung sáo Dizi có khó không?",
+        a: "Ban đầu có thể hơi lạ tay, nhưng giáo viên sẽ hướng dẫn chi tiết cách vuốt nếp nhăn, dán keo và căn chỉnh độ căng để tiếng sáo đạt độ giòn đẹp nhất chỉ sau 1–2 buổi.",
+      },
+      {
+        q: "Khóa học có dạy các bài nhạc phim cổ trang không?",
+        a: "Có, lộ trình bao gồm các tác phẩm cổ phong, nhạc phim nổi tiếng (Thần Thoại, Lương Chúc, Hồng Nhan, v.v.) từ cơ bản đến nâng cao.",
+      },
+    ],
   },
   "dizi": {
+    h1Title: "Lớp Học Sáo Dizi tại TP.HCM & Online",
     seoTitle: "Học Sáo Dizi tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    instrumentName: "Sáo Dizi",
+    instrumentShortName: "sáo Dizi",
+    whatIsTitle: "Sáo Dizi là gì?",
+    whoIsForTitle: "Ai phù hợp học sáo Dizi?",
+    courseContentTitle: "Nội dung khóa học sáo Dizi",
+    roadmapTitle: "Lộ trình học từ cơ bản đến nâng cao",
+    onsiteTitle: "Học sáo Dizi tại TP.HCM",
+    onlineTitle: "Học sáo Dizi online",
+    tuitionTitle: "Học phí và lịch học",
+    faqTitle: "Câu hỏi thường gặp",
     primaryKeyword: "học sáo Dizi",
     keywords: [
       "học sáo Dizi",
@@ -61,9 +181,33 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
     ],
     description: "Khóa học sáo Dizi tại TP.HCM & Online 1 kèm 1. Làm chủ kỹ thuật màng rung, luyến láy và các tác phẩm cổ phong cùng Sáo Trúc Âu Cơ.",
     image: "/carousel-dizi.webp",
+    whatIsContent: "Sáo Dizi là nhạc cụ thổi ngang đặc trưng của âm nhạc Trung Hoa với màng rung vang giòn và âm sắc cổ phong.",
+    whoIsForContent: [
+      "Người yêu âm nhạc cổ phong Trung Hoa, nhạc phim cổ trang kiếm hiệp.",
+      "Người muốn làm chủ kỹ thuật dán màng rung và diễn tấu Dizi bài bản.",
+    ],
+    onsiteContent: "Học trực tiếp tại trung tâm Tân Phú, TP.HCM hoặc Gia sư tại nhà.",
+    onlineContent: "Học Online 1 kèm 1 tương tác trực tiếp qua video HD sắc nét.",
+    faqs: [
+      {
+        q: "Dán màng rung sáo Dizi có khó không?",
+        a: "Giáo viên sẽ hướng dẫn chi tiết cách dán keo và căn chỉnh độ căng để tiếng sáo đạt độ giòn đẹp nhất.",
+      },
+    ],
   },
   "sao-meo": {
+    h1Title: "Lớp Học Sáo Mèo tại TP.HCM & Online",
     seoTitle: "Học Sáo Mèo tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    instrumentName: "Sáo Mèo",
+    instrumentShortName: "sáo mèo",
+    whatIsTitle: "Sáo Mèo (Sáo H’Mông) là gì?",
+    whoIsForTitle: "Ai phù hợp học sáo mèo?",
+    courseContentTitle: "Nội dung khóa học sáo mèo",
+    roadmapTitle: "Lộ trình học từ cơ bản đến nâng cao",
+    onsiteTitle: "Học sáo mèo tại TP.HCM",
+    onlineTitle: "Học sáo mèo online",
+    tuitionTitle: "Học phí và lịch học",
+    faqTitle: "Câu hỏi thường gặp",
     primaryKeyword: "học sáo mèo",
     keywords: [
       "học sáo mèo",
@@ -75,9 +219,34 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
     ],
     description: "Khóa học sáo Mèo (sáo H'Mông) tại TP.HCM & Online 1 kèm 1. Làm chủ lam đồng, cột hơi và các làn điệu Tây Bắc tại Sáo Trúc Âu Cơ.",
     image: "/carousel-saotruc.webp",
+    whatIsContent: "Sáo Mèo (và sáo H’Mông) là nhạc cụ truyền thống của đồng bào vùng cao Tây Bắc. Điểm độc đáo nhất của sáo Mèo là sử dụng lam đồng (lưỡi gà kim loại) ở đầu ống sáo, tạo nên âm sắc khàn đục, da diết, trầm ấm và mang đậm hơi thở núi rừng đại ngàn.",
+    whoIsForContent: [
+      "Người yêu thích âm hưởng mộc mạc, da diết của các làn điệu vùng cao Tây Bắc.",
+      "Người muốn học nhạc cụ dễ ngậm thổi phát ra tiếng ngay nhờ cơ chế lam đồng.",
+      "Người muốn làm chủ kỹ thuật ép hơi, vuốt ngón và rung âm đặc trưng của sáo Mèo.",
+    ],
+    onsiteContent: "Học trực tiếp tại TP.HCM: Hướng dẫn kỹ thuật ngậm thổi lam đồng, kiểm soát hơi nhẹ - mạnh và xử lý các bài sáo Mèo nổi tiếng.",
+    onlineContent: "Học Online 1 kèm 1: Giáo viên kèm sát cách giữ độ bền lam đồng và luyện tập các tác phẩm Inh Lả Ơi, Xuân Về Bản Mông, Gọi Em Bên Suối.",
+    faqs: [
+      {
+        q: "Sáo Mèo có dễ tạo tiếng hơn sáo trúc thông thường không?",
+        a: "Có, sáo Mèo ngậm cả đầu thổi chứa lam đồng nên rất dễ tạo ra âm thanh ngay từ buổi học đầu tiên.",
+      },
+    ],
   },
   "sao-hmong": {
+    h1Title: "Lớp Học Sáo Mèo tại TP.HCM & Online",
     seoTitle: "Học Sáo Mèo tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    instrumentName: "Sáo Mèo (Sáo H’Mông)",
+    instrumentShortName: "sáo mèo",
+    whatIsTitle: "Sáo Mèo (Sáo H’Mông) là gì?",
+    whoIsForTitle: "Ai phù hợp học sáo mèo?",
+    courseContentTitle: "Nội dung khóa học sáo mèo",
+    roadmapTitle: "Lộ trình học từ cơ bản đến nâng cao",
+    onsiteTitle: "Học sáo mèo tại TP.HCM",
+    onlineTitle: "Học sáo mèo online",
+    tuitionTitle: "Học phí và lịch học",
+    faqTitle: "Câu hỏi thường gặp",
     primaryKeyword: "học sáo mèo",
     keywords: [
       "học sáo mèo",
@@ -85,13 +254,36 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
       "khóa học sáo mèo",
       "thổi sáo mèo",
       "học sáo H'Mông",
-      "học sáo H Mông online",
     ],
     description: "Khóa học sáo Mèo (sáo H'Mông) tại TP.HCM & Online 1 kèm 1. Làm chủ lam đồng, cột hơi và các làn điệu Tây Bắc tại Sáo Trúc Âu Cơ.",
     image: "/carousel-saotruc.webp",
+    whatIsContent: "Sáo Mèo (và sáo H’Mông) sử dụng lam đồng đặc trưng tạo nên âm sắc khàn đục, da diết và mang đậm hơi thở núi rừng Tây Bắc.",
+    whoIsForContent: [
+      "Người yêu thích âm nhạc dân tộc vùng cao Tây Bắc.",
+      "Người muốn làm chủ cơ chế lam đồng và kỹ thuật sáo Mèo bài bản.",
+    ],
+    onsiteContent: "Học trực tiếp tại trung tâm Tân Phú, TP.HCM hoặc Gia sư tại nhà.",
+    onlineContent: "Học Online 1 kèm 1 tương tác trực tiếp qua video HD sắc nét.",
+    faqs: [
+      {
+        q: "Sáo Mèo có dễ tạo tiếng hơn sáo trúc không?",
+        a: "Sáo Mèo ngậm thổi trực tiếp vào lam đồng nên phát ra âm thanh rất nhanh ngay buổi đầu tiên.",
+      },
+    ],
   },
   "dong-tieu-xiao": {
+    h1Title: "Lớp Học Tiêu & Xiao tại TP.HCM & Online",
     seoTitle: "Học Tiêu, Động Tiêu tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    instrumentName: "Động Tiêu & Xiao",
+    instrumentShortName: "tiêu và Xiao",
+    whatIsTitle: "Động tiêu và Xiao là gì?",
+    whoIsForTitle: "Ai phù hợp học tiêu và Xiao?",
+    courseContentTitle: "Nội dung khóa học tiêu & Xiao",
+    roadmapTitle: "Lộ trình học từ cơ bản đến nâng cao",
+    onsiteTitle: "Học tiêu & Xiao tại TP.HCM",
+    onlineTitle: "Học tiêu & Xiao online",
+    tuitionTitle: "Học phí và lịch học",
+    faqTitle: "Câu hỏi thường gặp",
     primaryKeyword: "học tiêu, động tiêu",
     keywords: [
       "học tiêu, động tiêu",
@@ -104,9 +296,34 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
     ],
     description: "Khóa học tiêu và động tiêu, Xiao tại TP.HCM & Online 1 kèm 1. Luyện hơi trầm ấm, sâu lắng và kỹ thuật diễn tấu cổ phong tại Sáo Trúc Âu Cơ.",
     image: "/carousel-tieu.webp",
+    whatIsContent: "Động tiêu (tiêu trúc Việt Nam) và Xiao (tiêu Trung Quốc) là nhạc cụ thổi dọc có âm sắc trầm nhất trong họ nhạc cụ hơi dân gian. Với âm thanh sâu lắng, ấm áp và tĩnh lặng, tiếng tiêu mang lại cảm giác bình yên, thiền định và cực kỳ phù hợp với các bản nhạc cổ phong, nhạc thiền.",
+    whoIsForContent: [
+      "Người yêu thích âm thanh trầm ấm, sâu lắng và tĩnh tại.",
+      "Người muốn luyện hơi dài, hít thở sâu để thư giãn tâm trí và nuôi dưỡng cảm xúc.",
+      "Người yêu nhạc thiền, nhạc cổ phong, nhạc trữ tình trầm buồn.",
+    ],
+    onsiteContent: "Học trực tiếp tại TP.HCM: Hướng dẫn kỹ thuật đặt môi vào huyệt thổi dọc (miệng tiêu), kiểm soát cột hơi trầm và kỹ thuật ngón tiêu 6 lỗ / 8 lỗ.",
+    onlineContent: "Học Online 1 kèm 1: Giáo viên chỉnh sửa góc môi, luồng hơi chậm và hỗ trợ học viên cảm nhận trọn vẹn độ vang trầm của cây tiêu.",
+    faqs: [
+      {
+        q: "Thổi tiêu dọc có khó hơn thổi sáo ngang không?",
+        a: "Huyệt thổi của tiêu có góc mở khác sáo ngang, đòi hỏi luồng hơi gom và êm dịu hơn. Giáo viên sẽ hướng dẫn điểm đặt cằm chuẩn để bạn tạo tiếng trầm chuẩn xác ngay từ buổi đầu.",
+      },
+    ],
   },
   "tieu-xiao": {
+    h1Title: "Lớp Học Tiêu & Xiao tại TP.HCM & Online",
     seoTitle: "Học Tiêu, Động Tiêu tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    instrumentName: "Động Tiêu & Xiao",
+    instrumentShortName: "tiêu và Xiao",
+    whatIsTitle: "Động tiêu và Xiao là gì?",
+    whoIsForTitle: "Ai phù hợp học tiêu và Xiao?",
+    courseContentTitle: "Nội dung khóa học tiêu & Xiao",
+    roadmapTitle: "Lộ trình học từ cơ bản đến nâng cao",
+    onsiteTitle: "Học tiêu & Xiao tại TP.HCM",
+    onlineTitle: "Học tiêu & Xiao online",
+    tuitionTitle: "Học phí và lịch học",
+    faqTitle: "Câu hỏi thường gặp",
     primaryKeyword: "học tiêu, động tiêu",
     keywords: [
       "học tiêu, động tiêu",
@@ -114,13 +331,36 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
       "học động tiêu",
       "học tiêu TP.HCM",
       "học xiao",
-      "học động tiêu online",
     ],
     description: "Khóa học tiêu và động tiêu, Xiao tại TP.HCM & Online 1 kèm 1. Luyện hơi trầm ấm, sâu lắng và kỹ thuật diễn tấu cổ phong tại Sáo Trúc Âu Cơ.",
     image: "/carousel-tieu.webp",
+    whatIsContent: "Động tiêu và Xiao là nhạc cụ thổi dọc mang âm sắc trầm ấm, sâu lắng và tĩnh lặng.",
+    whoIsForContent: [
+      "Người yêu thích âm thanh trầm ấm, nhạc thiền và cổ phong.",
+      "Người muốn luyện cột hơi dài và làm chủ cây tiêu.",
+    ],
+    onsiteContent: "Học trực tiếp tại trung tâm Tân Phú, TP.HCM hoặc Gia sư tại nhà.",
+    onlineContent: "Học Online 1 kèm 1 tương tác trực tiếp qua video HD.",
+    faqs: [
+      {
+        q: "Thổi tiêu dọc có khó không?",
+        a: "Giáo viên sẽ hướng dẫn điểm đặt môi chuẩn để bạn tạo tiếng trầm chuẩn xác ngay từ buổi đầu.",
+      },
+    ],
   },
   "sao-recorder": {
+    h1Title: "Lớp Học Sáo Recorder tại TP.HCM & Online",
     seoTitle: "Học Sáo Recorder tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    instrumentName: "Sáo Recorder",
+    instrumentShortName: "sáo Recorder",
+    whatIsTitle: "Sáo Recorder là gì?",
+    whoIsForTitle: "Ai phù hợp học sáo Recorder?",
+    courseContentTitle: "Nội dung khóa học sáo Recorder",
+    roadmapTitle: "Lộ trình học từ cơ bản đến nâng cao",
+    onsiteTitle: "Học sáo Recorder tại TP.HCM",
+    onlineTitle: "Học sáo Recorder online",
+    tuitionTitle: "Học phí và lịch học",
+    faqTitle: "Câu hỏi thường gặp",
     primaryKeyword: "học recorder",
     keywords: [
       "học recorder",
@@ -131,9 +371,34 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
     ],
     description: "Khóa học sáo Recorder tại TP.HCM & Online cho trẻ em và người lớn. Học đọc nhạc, tư thế chuẩn và kỹ thuật hòa tấu tại Sáo Trúc Âu Cơ.",
     image: "/carousel-recorder.webp",
+    whatIsContent: "Sáo Recorder (sáo dọc phương Tây) là nhạc cụ hơi có đầu ngậm mỏ vịt, thiết kế chuẩn xác về cao độ và rất dễ tạo tiếng. Đây là cây cầu kết nối âm nhạc tuyệt vời cho trẻ em, giáo viên âm nhạc và người mới bắt đầu tiếp cận âm nhạc cổ điển cũng như hiện đại.",
+    whoIsForContent: [
+      "Trẻ em từ 6 tuổi trở lên muốn tiếp cận âm nhạc sớm và học đọc bản nhạc 5 dòng kẻ chuẩn quốc tế.",
+      "Giáo viên mầm non, tiểu học hoặc giáo viên trường Steiner / Waldorf cần ứng dụng trong giảng dạy.",
+      "Người lớn yêu thích giai điệu trong trẻo, nhẹ nhàng của nhạc thiếu nhi, nhạc phim hoạt hình (Ghibli, Disney).",
+    ],
+    onsiteContent: "Học trực tiếp tại TP.HCM: Rèn luyện tư thế ngón Soprano / Alto recorder, đọc bản nhạc chuẩn xác và thực hành hòa tấu nhiều bè.",
+    onlineContent: "Học Online 1 kèm 1: Hướng dẫn nhịp phách, tiết tấu và kỹ thuật điều tiết luồng hơi nhẹ nhàng không bị chói tiếng.",
+    faqs: [
+      {
+        q: "Trẻ em bao nhiêu tuổi có thể bắt đầu học sáo Recorder?",
+        a: "Bé từ 6 tuổi trở lên là có thể học sáo Recorder Soprano rất tốt vì kích thước vừa vặn và cách thổi đơn giản.",
+      },
+    ],
   },
   "recorder": {
+    h1Title: "Lớp Học Sáo Recorder tại TP.HCM & Online",
     seoTitle: "Học Sáo Recorder tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    instrumentName: "Sáo Recorder",
+    instrumentShortName: "sáo Recorder",
+    whatIsTitle: "Sáo Recorder là gì?",
+    whoIsForTitle: "Ai phù hợp học sáo Recorder?",
+    courseContentTitle: "Nội dung khóa học sáo Recorder",
+    roadmapTitle: "Lộ trình học từ cơ bản đến nâng cao",
+    onsiteTitle: "Học sáo Recorder tại TP.HCM",
+    onlineTitle: "Học sáo Recorder online",
+    tuitionTitle: "Học phí và lịch học",
+    faqTitle: "Câu hỏi thường gặp",
     primaryKeyword: "học recorder",
     keywords: [
       "học recorder",
@@ -143,9 +408,33 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
     ],
     description: "Khóa học sáo Recorder tại TP.HCM & Online cho trẻ em và người lớn. Học đọc nhạc, tư thế chuẩn và kỹ thuật hòa tấu tại Sáo Trúc Âu Cơ.",
     image: "/carousel-recorder.webp",
+    whatIsContent: "Sáo Recorder là nhạc cụ thổi dọc phương Tây trong trẻo, dễ tiếp cận và chuẩn xác về cao độ.",
+    whoIsForContent: [
+      "Trẻ em muốn học nhạc cụ nền tảng.",
+      "Giáo viên âm nhạc và người yêu thích giai điệu nhẹ nhàng.",
+    ],
+    onsiteContent: "Học trực tiếp tại trung tâm Tân Phú, TP.HCM hoặc Gia sư tại nhà.",
+    onlineContent: "Học Online 1 kèm 1 tương tác trực tiếp qua video HD.",
+    faqs: [
+      {
+        q: "Trẻ em bao nhiêu tuổi học được?",
+        a: "Bé từ 6 tuổi trở lên có thể học sáo Recorder rất hiệu quả.",
+      },
+    ],
   },
   "flute": {
+    h1Title: "Lớp Học Sáo Flute tại TP.HCM & Online",
     seoTitle: "Học Sáo Flute tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    instrumentName: "Sáo Flute",
+    instrumentShortName: "sáo Flute",
+    whatIsTitle: "Sáo Flute là gì?",
+    whoIsForTitle: "Ai phù hợp học sáo Flute?",
+    courseContentTitle: "Nội dung khóa học sáo Flute",
+    roadmapTitle: "Lộ trình học từ cơ bản đến nâng cao",
+    onsiteTitle: "Học sáo Flute tại TP.HCM",
+    onlineTitle: "Học sáo Flute online",
+    tuitionTitle: "Học phí và lịch học",
+    faqTitle: "Câu hỏi thường gặp",
     primaryKeyword: "học flute",
     keywords: [
       "học flute",
@@ -157,9 +446,34 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
     ],
     description: "Khóa học sáo Flute tại TP.HCM & Online 1 kèm 1 từ cơ bản đến nâng cao. Kỹ thuật phương Tây bài bản, chỉnh khẩu hình và cột hơi tại Sáo Trúc Âu Cơ.",
     image: "/carousel-flute.webp",
+    whatIsContent: "Flute (sáo ngang phương Tây) là nhạc cụ thính phòng cao cấp với âm sắc trong sáng, thanh thoát và âm vực rộng đến 3 quãng tám. Sở hữu hệ thống phím bấm kim loại tinh xảo (Boehm system), Flute cho phép người chơi diễn tấu tốc độ cao và xử lý những tác phẩm cổ điển lẫn tân nhạc đỉnh cao.",
+    whoIsForContent: [
+      "Người mới bắt đầu muốn theo học một nhạc cụ giao hưởng phương Tây chuẩn mực và sang trọng.",
+      "Học sinh, sinh viên nghệ thuật hoặc người đang tự học Flute cần giáo viên chỉnh sửa khẩu hình và kỹ thuật ngón.",
+      "Người muốn biểu diễn các tác phẩm thính phòng, bán cổ điển, nhạc phim và nhạc pop hiện đại.",
+    ],
+    onsiteContent: "Học trực tiếp tại TP.HCM: Hướng dẫn tư thế đứng/ngồi chuẩn, lắp ráp bảo quản sáo Flute, luyện tập Gam, Etude và Repertoire theo lộ trình cá nhân hóa.",
+    onlineContent: "Học Online 1 kèm 1: Giáo viên kiểm tra âm thanh, cao độ từng nốt qua micro chuyên dụng và hỗ trợ học viên đọc bản nhạc phương Tây bài bản.",
+    faqs: [
+      {
+        q: "Học sáo Flute có khó hơn sáo trúc không?",
+        a: "Flute có hệ thống phím bấm trợ lực giúp ngón tay không bị với, nhưng đòi hỏi khẩu hình mở và kiểm soát luồng hơi chuẩn xác. Với phương pháp 1 kèm 1, bạn sẽ tạo âm thanh trong trẻo ngay tuần đầu tiên.",
+      },
+    ],
   },
   "sao-flute": {
+    h1Title: "Lớp Học Sáo Flute tại TP.HCM & Online",
     seoTitle: "Học Sáo Flute tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    instrumentName: "Sáo Flute",
+    instrumentShortName: "sáo Flute",
+    whatIsTitle: "Sáo Flute là gì?",
+    whoIsForTitle: "Ai phù hợp học sáo Flute?",
+    courseContentTitle: "Nội dung khóa học sáo Flute",
+    roadmapTitle: "Lộ trình học từ cơ bản đến nâng cao",
+    onsiteTitle: "Học sáo Flute tại TP.HCM",
+    onlineTitle: "Học sáo Flute online",
+    tuitionTitle: "Học phí và lịch học",
+    faqTitle: "Câu hỏi thường gặp",
     primaryKeyword: "học flute",
     keywords: [
       "học flute",
@@ -169,6 +483,19 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
     ],
     description: "Khóa học sáo Flute tại TP.HCM & Online 1 kèm 1 từ cơ bản đến nâng cao. Kỹ thuật phương Tây bài bản, chỉnh khẩu hình và cột hơi tại Sáo Trúc Âu Cơ.",
     image: "/carousel-flute.webp",
+    whatIsContent: "Flute là nhạc cụ sáo ngang phương Tây thính phòng với âm sắc trong sáng và hệ thống phím bấm tinh xảo.",
+    whoIsForContent: [
+      "Người muốn học nhạc cụ phương Tây bài bản.",
+      "Người cần chỉnh khẩu hình và nâng cao kỹ thuật biểu diễn.",
+    ],
+    onsiteContent: "Học trực tiếp tại trung tâm Tân Phú, TP.HCM hoặc Gia sư tại nhà.",
+    onlineContent: "Học Online 1 kèm 1 tương tác trực tiếp qua video HD.",
+    faqs: [
+      {
+        q: "Học sáo Flute có khó không?",
+        a: "Phương pháp 1 kèm 1 tại Sáo Trúc Âu Cơ giúp bạn tạo tiếng và thổi bài bản ngay từ những buổi đầu.",
+      },
+    ],
   },
 };
 
