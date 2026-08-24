@@ -935,8 +935,8 @@ export function SubjectDetail() {
   return (
     <main className="subject-page">
       <ContentHeader />
-      <section className="subject-hero" style={{ padding: "40px clamp(16px, 4vw, 50px) 30px", minHeight: "auto", background: "radial-gradient(circle at 85% 20%, rgba(214, 173, 102, 0.22), transparent 40%), linear-gradient(120deg, #f7ecde, #fffaf1)" }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+      <section className="subject-hero" style={{ padding: "0", minHeight: "auto", background: "radial-gradient(circle at 85% 20%, rgba(214, 173, 102, 0.22), transparent 40%), linear-gradient(120deg, #f7ecde, #fffaf1)" }}>
+        <div style={{ maxWidth: 1250, margin: "0 auto", padding: "36px clamp(14px, 3vw, 24px) 24px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
             <span style={{ display: "grid", placeItems: "center", width: 40, height: 40, border: "1px solid var(--gold)", borderRadius: "50%", fontSize: 20, color: "var(--wine)", background: "#fff", flexShrink: 0 }}>
               {icon}
@@ -959,8 +959,8 @@ export function SubjectDetail() {
             </a>
           </div>
 
-          {/* Hướng dẫn và Lưới tab 2 dọc 3 ngang */}
-          <div style={{ margin: "14px 0 0", paddingTop: 12, borderTop: "1px dashed rgba(124, 28, 56, 0.18)" }}>
+          {/* Hướng dẫn và Lưới tab 2 dọc 3 ngang căn lề trái chuẩn */}
+          <div style={{ margin: "14px 0 0", paddingTop: 12, borderTop: "1px dashed rgba(124, 28, 56, 0.18)", maxWidth: 900 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
               <span style={{ fontSize: 13 }}>💡</span>
               <b style={{ fontSize: 12.5, color: "#7c1c38", letterSpacing: "0.02em" }}>
@@ -1036,7 +1036,7 @@ export function SubjectDetail() {
                   lineHeight: 1.25,
                 }}
               >
-                ✦ 3. TP.HCM & Online
+                ✦ 3. Địa chỉ học và học online
               </button>
               <button
                 type="button"

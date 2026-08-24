@@ -2633,26 +2633,29 @@ export default function ContentAdmin() {
                 </label>
               </div>
 
-              {/* 5. Trực tiếp & Online */}
-              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "14px 16px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <label>
-                  <span style={{ fontWeight: 700, color: "#7c1c38" }}>5. Ghi chú Lớp học tại TP.HCM</span>
-                  <textarea 
-                    rows={3} 
-                    value={classForm.onsite} 
-                    onChange={(e) => setClassForm({ ...classForm, onsite: e.target.value })} 
-                    placeholder="Tổ chức tại 106/72 Hòa Bình, Tân Phú và Gia sư tại nhà các quận..." 
-                  />
-                </label>
-                <label>
-                  <span style={{ fontWeight: 700, color: "#7c1c38" }}>Ghi chú Lớp học Online 1 kèm 1</span>
-                  <textarea 
-                    rows={3} 
-                    value={classForm.online} 
-                    onChange={(e) => setClassForm({ ...classForm, online: e.target.value })} 
-                    placeholder="Học qua Zoom/Meet/Zalo HD, chỉnh khẩu hình từng phút..." 
-                  />
-                </label>
+              {/* 5. Địa chỉ học & Học Online */}
+              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "14px 16px", display: "grid", gap: 12 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#7c1c38" }}>5. ĐỊA CHỈ HỌC VÀ HỌC ONLINE</span>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <label>
+                    <span style={{ fontWeight: 700 }}>Địa chỉ học tại TP.HCM (Trực tiếp & Gia sư)</span>
+                    <textarea 
+                      rows={3} 
+                      value={classForm.onsite} 
+                      onChange={(e) => setClassForm({ ...classForm, onsite: e.target.value })} 
+                      placeholder="Tổ chức tại 106/72 Hòa Bình, Tân Phú và Gia sư tại nhà các quận..." 
+                    />
+                  </label>
+                  <label>
+                    <span style={{ fontWeight: 700 }}>Lớp học Online (1 kèm 1 từ xa)</span>
+                    <textarea 
+                      rows={3} 
+                      value={classForm.online} 
+                      onChange={(e) => setClassForm({ ...classForm, online: e.target.value })} 
+                      placeholder="Học qua Zoom/Meet/Zalo HD, chỉnh khẩu hình từng phút..." 
+                    />
+                  </label>
+                </div>
               </div>
 
               {/* 6. Thời gian & FAQs */}
