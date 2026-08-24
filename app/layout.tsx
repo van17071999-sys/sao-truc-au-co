@@ -227,11 +227,6 @@ const jsonLdData = {
       name: "Sáo Trúc Âu Cơ",
       publisher: { "@id": "https://saotrucauco.com/#school" },
       inLanguage: ["vi-VN", "en-US"],
-      potentialAction: {
-        "@type": "SearchAction",
-        target: "https://saotrucauco.com/?q={search_term_string}",
-        "query-input": "required name=search_term_string",
-      },
     },
     {
       "@type": "FAQPage",

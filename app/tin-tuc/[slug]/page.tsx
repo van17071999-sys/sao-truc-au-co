@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
-import { NewsDetail } from "../../cms-content-pages";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Bài viết | Sáo Trúc Âu Cơ",
+type PageProps = {
+  params: Promise<{ slug: string }>;
 };
 
-export default function Page() {
-  return <NewsDetail />;
+export default async function Page({ params }: PageProps) {
+  const { slug } = await params;
+  redirect(`/bai-viet/${slug}`);
 }
