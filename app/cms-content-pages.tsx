@@ -651,12 +651,18 @@ export function NewsDetail({ initialEntry }: { initialEntry?: CmsEntry }) {
   const params = useParams<{ slug: string }>();
   const entries = useCmsEntries("articles", initialEntry ? [initialEntry] : undefined);
   const cmsEntry = entries?.find((item) => item.slug === params.slug);
-  const entry = cmsEntry || initialEntry;
+  useEffect(() => {
+    if (!entry) return;
+    const titleText = entry.title.includes("Sáo Trúc Âu Cơ") ? entry.title : `${entry.title} | Sáo Trúc Âu Cơ`;
+    document.title = titleText;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc && entry.excerpt) {
+      metaDesc.setAttribute("content", entry.excerpt);
+    }
+  }, [entry]);
 
-  // Ưu tiên nội dung mới chuẩn hóa và loại bỏ sạch sẽ mọi dòng "Nhấp vào liên kết" / "Tham khảo chi tiết"
-  let rawContent = (initialEntry && initialEntry.slug === params.slug)
-    ? initialEntry.content
-    : (entry?.content || entry?.excerpt || "");
+  // Ưu tiên nội dung đầy đủ từ CMS quản trị (cmsEntry), nếu chưa có dữ liệu CMS thì dùng initialEntry/fallback
+  let rawContent = cmsEntry?.content || initialEntry?.content || entry?.content || entry?.excerpt || "";
 
   // Lọc sạch toàn bộ dòng "Nhấp vào liên kết" / "Tham khảo chi tiết"
   rawContent = rawContent
