@@ -570,18 +570,13 @@ const worker = {
       return Response.json({ ok: true });
     }
 
-    if (url.pathname === "/api/payment-notification") {
+    if (url.pathname === "/api/payment-notification" || url.pathname === "/api/payment-notify") {
       if (request.method !== "POST") {
         return Response.json({ error: "Method not allowed" }, { status: 405, headers: { Allow: "POST" } });
       }
 
-      const origin = request.headers.get("Origin");
-      if (!origin || origin !== url.origin) {
+      if (!requestHasSameOrigin(request, url)) {
         return Response.json({ error: "Invalid origin" }, { status: 403 });
-      }
-
-      if (!env?.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) {
-        return Response.json({ error: "Telegram notification is not configured" }, { status: 503 });
       }
 
       let data: Record<string, unknown>;
@@ -592,39 +587,48 @@ const worker = {
       }
 
       const clean = (value: unknown, maxLength = 180) => String(value ?? "").trim().slice(0, maxLength);
-      const product = clean(data.product);
+      const product = clean(data.product || data.purchase) || "Sản phẩm / Dịch vụ";
       const buyerPhone = clean(data.buyerPhone, 40);
-      if (!product || !buyerPhone) {
-        return Response.json({ error: "Missing required fields" }, { status: 400 });
+      if (!buyerPhone) {
+        return Response.json({ error: "Vui lòng nhập số điện thoại / Zalo để nhận xác nhận." }, { status: 400 });
       }
 
-      const notification = [
-        "🔔 KHÁCH HÀNG BÁO ĐÃ CHUYỂN KHOẢN",
-        "",
-        `Sản phẩm: ${product}`,
-        `Số tiền: ${clean(data.amount, 40) || "Khách chưa nhập"}`,
-        `Nội dung CK: ${clean(data.transferContent, 80) || "Khách chưa nhập"}`,
-        `Họ tên: ${clean(data.buyerName, 80) || "Khách chưa nhập"}`,
-        `SĐT / Zalo: ${buyerPhone}`,
-        `Email: ${clean(data.buyerEmail, 120) || "Khách chưa nhập"}`,
-        `Thời gian: ${new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", dateStyle: "short", timeStyle: "medium" }).format(new Date())}`,
-        "",
-        "Lưu ý: Đây là xác nhận do khách bấm trên website. Vui lòng kiểm tra giao dịch ngân hàng trước khi cấp sản phẩm.",
-      ].join("\n");
+      const transferContent = clean(data.transferContent || data.memo, 80);
+      const amount = clean(data.amount, 40);
+      const buyerName = clean(data.buyerName, 80);
+      const buyerEmail = clean(data.buyerEmail, 120);
 
-      const telegramResponse = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: env.TELEGRAM_CHAT_ID,
-          text: notification,
-          disable_web_page_preview: true,
-        }),
-      });
+      if (env?.TELEGRAM_BOT_TOKEN && env?.TELEGRAM_CHAT_ID) {
+        const notification = [
+          "🔔 KHÁCH HÀNG BÁO ĐÃ CHUYỂN KHOẢN VIETQR",
+          "",
+          `Sản phẩm: ${product}`,
+          `Số tiền: ${amount || "Khách chưa nhập"}`,
+          `Nội dung CK: ${transferContent || "Khách chưa nhập"}`,
+          `Họ tên: ${buyerName || "Khách chưa nhập"}`,
+          `SĐT / Zalo: ${buyerPhone}`,
+          `Email: ${buyerEmail || "Khách chưa nhập"}`,
+          `Thời gian: ${new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", dateStyle: "short", timeStyle: "medium" }).format(new Date())}`,
+          "",
+          "Lưu ý: Đây là xác nhận do khách bấm trên website. Vui lòng kiểm tra giao dịch ngân hàng trước khi cấp sản phẩm.",
+        ].join("\n");
 
-      if (!telegramResponse.ok) {
-        console.error("Telegram payment notification failed", telegramResponse.status);
-        return Response.json({ error: "Unable to send notification" }, { status: 502 });
+        try {
+          const telegramResponse = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chat_id: env.TELEGRAM_CHAT_ID,
+              text: notification,
+              disable_web_page_preview: true,
+            }),
+          });
+          if (!telegramResponse.ok) {
+            console.error("Telegram payment notification failed", telegramResponse.status);
+          }
+        } catch (err) {
+          console.error("Telegram payment notification error", err);
+        }
       }
 
       return Response.json({ ok: true });

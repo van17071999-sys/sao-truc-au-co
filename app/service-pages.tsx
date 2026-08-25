@@ -574,11 +574,17 @@ export function PaymentModal({
     setPaymentError("");
     const data = new FormData(e.currentTarget);
     try {
-      const response = await fetch("/api/payment-notify", {
+      const response = await fetch("/api/payment-notification", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          purchase: purchaseTitle, amount: paymentAmount, memo: transferContent,
-          buyerName: data.get("buyerName"), buyerPhone: data.get("buyerPhone"), buyerEmail: data.get("buyerEmail"),
+          product: purchaseTitle,
+          purchase: purchaseTitle,
+          amount: paymentAmount,
+          transferContent: transferContent,
+          memo: transferContent,
+          buyerName: data.get("buyerName"),
+          buyerPhone: data.get("buyerPhone"),
+          buyerEmail: data.get("buyerEmail"),
         }),
       });
       if (!response.ok) throw new Error("notify_failed");
