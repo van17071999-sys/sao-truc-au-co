@@ -419,6 +419,7 @@ export function ContactSection({ initialSubject, id }: { initialSubject?: string
           name: data.get("name"),
           phone: data.get("phone"),
           discipline: interestsString,
+          interest: interestsString,
           message: data.get("message") || "",
           type: "Đăng ký học / Tư vấn chung",
         }),

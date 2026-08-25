@@ -273,7 +273,19 @@ async function ensureCmsSchema(db: D1Database) {
 }
 
 function requestHasSameOrigin(request: Request, url: URL) {
-  return request.headers.get("Origin") === url.origin;
+  const origin = request.headers.get("Origin");
+  if (!origin) {
+    const referer = request.headers.get("Referer");
+    if (referer) {
+      try {
+        return new URL(referer).origin === url.origin;
+      } catch {
+        return true;
+      }
+    }
+    return true;
+  }
+  return origin === url.origin;
 }
 
 function getCookie(request: Request, name: string) {
@@ -518,38 +530,43 @@ const worker = {
       if (!requestHasSameOrigin(request, url)) {
         return Response.json({ error: "Invalid origin" }, { status: 403 });
       }
-      if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) {
-        return Response.json({ error: "Telegram notification is not configured" }, { status: 503 });
-      }
 
       const data = await request.json().catch(() => null) as Record<string, unknown> | null;
       if (!data) return Response.json({ error: "Invalid request" }, { status: 400 });
       const clean = (value: unknown, maximum: number) => String(value ?? "").trim().slice(0, maximum);
       const name = clean(data.name, 100);
       const phone = clean(data.phone, 40);
-      const interest = clean(data.interest, 500);
+      const interest = clean(data.interest || data.discipline, 500) || "Tư vấn & Đăng ký học";
       const message = clean(data.message, 1000);
-      if (!name || !phone || !interest) return Response.json({ error: "Missing required fields" }, { status: 400 });
-
-      const notification = [
-        "📩 YÊU CẦU TƯ VẤN MỚI TỪ WEBSITE",
-        "",
-        `Họ tên: ${name}`,
-        `SĐT / Zalo: ${phone}`,
-        `Nhu cầu: ${interest}`,
-        `Lời nhắn: ${message || "Khách không để lại lời nhắn"}`,
-        `Thời gian: ${new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", dateStyle: "short", timeStyle: "medium" }).format(new Date())}`,
-      ].join("\n");
-
-      const telegramResponse = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, text: notification, disable_web_page_preview: true }),
-      });
-      if (!telegramResponse.ok) {
-        console.error("Telegram contact request failed", telegramResponse.status);
-        return Response.json({ error: "Unable to send request" }, { status: 502 });
+      if (!name || !phone) {
+        return Response.json({ error: "Vui lòng nhập đầy đủ họ tên và số điện thoại." }, { status: 400 });
       }
+
+      if (env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID) {
+        const notification = [
+          "📩 YÊU CẦU ĐĂNG KÝ / TƯ VẤN MỚI TỪ WEBSITE",
+          "",
+          `Họ tên: ${name}`,
+          `SĐT / Zalo: ${phone}`,
+          `Nhu cầu: ${interest}`,
+          `Lời nhắn: ${message || "Khách không để lại lời nhắn"}`,
+          `Thời gian: ${new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", dateStyle: "short", timeStyle: "medium" }).format(new Date())}`,
+        ].join("\n");
+
+        try {
+          const telegramResponse = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, text: notification, disable_web_page_preview: true }),
+          });
+          if (!telegramResponse.ok) {
+            console.error("Telegram contact request failed", telegramResponse.status);
+          }
+        } catch (err) {
+          console.error("Telegram send error", err);
+        }
+      }
+
       return Response.json({ ok: true });
     }
 
