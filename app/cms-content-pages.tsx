@@ -651,6 +651,8 @@ export function NewsDetail({ initialEntry }: { initialEntry?: CmsEntry }) {
   const params = useParams<{ slug: string }>();
   const entries = useCmsEntries("articles", initialEntry ? [initialEntry] : undefined);
   const cmsEntry = entries?.find((item) => item.slug === params.slug);
+  const entry = cmsEntry || initialEntry;
+
   useEffect(() => {
     if (!entry) return;
     const titleText = entry.title.includes("Sáo Trúc Âu Cơ") ? entry.title : `${entry.title} | Sáo Trúc Âu Cơ`;
