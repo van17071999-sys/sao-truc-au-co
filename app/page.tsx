@@ -842,7 +842,7 @@ export default function Home() {
           <p className="brand-slogan"><span className="slogan-text">{t("Hơi Thở Thành Âm", "Breath Into Sound")}</span><span className="slogan-divider">—</span><span className="slogan-text">{t("Tâm Hồn Thành Nhạc", "Soul Into Melody")}</span></p>
           <p className="eyebrow">{displayedSlides[currentSlide].eyebrow}</p>
           <p className="slide-count">{String(currentSlide + 1).padStart(2, "0")} <span>/ {String(displayedSlides.length).padStart(2, "0")}</span></p>
-          <h1>{displayedSlides[currentSlide].title}</h1>
+          <h1>{t("Dạy Thổi Sáo Tại TP.HCM & Online – Sáo Trúc Âu Cơ", displayedSlides[currentSlide].title)}</h1>
           <p className="hero-copy">{displayedSlides[currentSlide].copy}</p>
           <div className="hero-actions">
             <a className="button button-gold hero-link" href={displayedSlides[currentSlide].href}>{displayedSlides[currentSlide].cta}</a>

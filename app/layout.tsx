@@ -8,10 +8,10 @@ const geistMono = { variable: "--font-geist-mono" };
 export const metadata: Metadata = {
   metadataBase: new URL("https://saotrucauco.com"),
   title: {
-    default: "Sáo Trúc Âu Cơ | Lớp Học Sáo Trúc TP.HCM & Online - Bán Sáo Chuẩn Âm",
+    default: "Dạy Thổi Sáo TP.HCM & Online | Bán Sáo Chuẩn Âm – Sáo Trúc Âu Cơ",
     template: "%s | Sáo Trúc Âu Cơ",
   },
-  description: "Trung tâm đào tạo Sáo Trúc Âu Cơ uy tín tại TP.HCM & Online toàn cầu: Dạy thổi Sáo Trúc Việt Nam, Sáo Dizi, Động Tiêu, Sáo Recorder, Flute, Sáo Mèo. Cung cấp sáo trúc cao cấp chuẩn âm, kho cảm âm bài bản, giáo trình học thổi sáo từ cơ bản đến nâng cao và dịch vụ thu âm biểu diễn chuyên nghiệp.",
+  description: "Sáo Trúc Âu Cơ chuyên dạy thổi sáo tại TP.HCM và online: Sáo Trúc, Dizi, Recorder, Tiêu, Sáo Mèo, Flute. Bán sáo chuẩn âm, phụ kiện và giáo trình học sáo.",
   keywords: [
     "sáo trúc âu cơ",
     "sao truc au co",
