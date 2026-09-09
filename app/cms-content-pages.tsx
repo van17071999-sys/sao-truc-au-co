@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { PaymentModal, ContactSection } from "./service-pages";
 import { PriceTag, parsePrice } from "./price-helper";
-import { getDisciplineSeo } from "./discipline-seo-data";
+import { getDisciplineSeo, getDisciplineTitle } from "./discipline-seo-data";
 
 export type CmsEntry = {
   id: string;
@@ -915,9 +915,7 @@ export function SubjectDetail() {
     if (params.slug) {
       const disciplineSeo = getDisciplineSeo(params.slug);
       if (disciplineSeo) {
-        document.title = disciplineSeo.seoTitle.includes("Sáo Trúc Âu Cơ")
-          ? disciplineSeo.seoTitle
-          : `${disciplineSeo.seoTitle} | Sáo Trúc Âu Cơ`;
+        document.title = getDisciplineTitle(disciplineSeo);
         const description = document.querySelector('meta[name="description"]');
         description?.setAttribute("content", disciplineSeo.description);
         return;

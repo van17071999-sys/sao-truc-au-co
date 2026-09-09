@@ -502,3 +502,9 @@ export const DISCIPLINE_SEO_MAP: Record<string, DisciplineSeoConfig> = {
 export function getDisciplineSeo(slug: string): DisciplineSeoConfig | undefined {
   return DISCIPLINE_SEO_MAP[slug];
 }
+
+export function getDisciplineTitle(seo: DisciplineSeoConfig): string {
+  const instrument = seo.seoTitle.replace(/^Học /, "").replace(/ tại TP\.HCM & Online.*$/, "");
+  const displayName = instrument.replace(/^Sáo /, "sáo ");
+  return `Dạy thổi ${displayName} tại TP.HCM & Online | Học thổi ${instrument.toLocaleLowerCase("vi-VN")} | Sáo Trúc Âu Cơ`;
+}

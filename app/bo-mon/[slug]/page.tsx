@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { SubjectDetail } from "../../cms-content-pages";
 import { catalogMetadata } from "../../catalog-metadata";
-import { getDisciplineSeo } from "../../discipline-seo-data";
+import { getDisciplineSeo, getDisciplineTitle } from "../../discipline-seo-data";
 
 const siteUrl = "https://saotrucauco.com";
 
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const canonicalUrl = `${siteUrl}/bo-mon/${slug}`;
 
   return {
-    title: seo.seoTitle,
+    title: { absolute: getDisciplineTitle(seo) },
     description: seo.description,
     keywords: seo.keywords,
     alternates: { canonical: canonicalUrl },
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       type: "website",
       locale: "vi_VN",
       siteName: "Sáo Trúc Âu Cơ",
-      title: `${seo.seoTitle} | Sáo Trúc Âu Cơ`,
+      title: getDisciplineTitle(seo),
       description: seo.description,
       url: canonicalUrl,
       images: [
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: "summary_large_image",
-      title: `${seo.seoTitle} | Sáo Trúc Âu Cơ`,
+      title: getDisciplineTitle(seo),
       description: seo.description,
       images: [`${siteUrl}${seo.image}`],
     },
@@ -114,4 +114,3 @@ export default async function Page({ params }: PageProps) {
     </>
   );
 }
-
