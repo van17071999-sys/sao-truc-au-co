@@ -231,7 +231,7 @@ export function ClassesPage() {
       <ServicePageHeader />
       <section className="content-list-hero">
         <p className="eyebrow">{t("CÁC BỘ MÔN GIẢNG DẠY", "TRAINING DISCIPLINES")}</p>
-        <h1>{t("Lớp học các bộ môn", "Instrument Classes & Disciplines")}</h1>
+        <h1>{t("Các Bộ Môn Sáo Giảng Dạy Tại TP.HCM & Online", "Instrument Classes & Disciplines")}</h1>
         <p>{t("Mỗi bộ môn có một màu sắc riêng. Khám phá nội dung học, đối tượng phù hợp và đăng ký tư vấn trực tiếp hoặc online 1 kèm 1.", "Explore syllabus, prerequisites, and enroll in direct offline or 1-on-1 online classes.")}</p>
       </section>
 
