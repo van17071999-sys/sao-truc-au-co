@@ -873,98 +873,235 @@ export default function HomePage() {
       </section>
 
       {/* ================= 10. MAIN FOOTER ================= */}
-      <footer className="bg-[#70141D] text-white/90 pt-10 pb-7 border-t border-[#5a0e16]">
-        <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 space-y-7">
+      <footer className="site-main-footer w-full bg-[#FAF7F2] text-[#4A3834] border-t border-[#EADBCA]">
+        <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-6 pb-6 border-b border-white/15">
+          {/* Main Content Grid: 3 columns */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 pb-10 border-b border-[#EADBCA]">
             
-            {/* Logo and Brand */}
-            <div className="flex items-center gap-3.5">
-              <BrandLogo size={44} radius={999} className="border border-white/30 shadow" />
-              <div>
-                <span className="block font-serif text-lg sm:text-xl font-bold tracking-wide text-white uppercase leading-none">
-                  SÁO TRÚC ÂU CƠ
-                </span>
-                <span className="block text-[10px] text-amber-200 font-medium tracking-wider uppercase mt-1">
-                  SÁO TRÚC & ÂM NHẠC DÂN TỘC
-                </span>
+            {/* Column 1: Brand & Introduction (lg:col-span-4) */}
+            <div className="lg:col-span-4 space-y-5">
+              <div className="flex items-center gap-3.5">
+                <BrandLogo size={50} radius={999} className="border-2 border-[#C29B38]/50 shadow-xs" />
+                <div>
+                  <span className="block font-serif text-xl sm:text-2xl font-bold tracking-wide text-[#70141D] uppercase leading-tight">
+                    SÁO TRÚC ÂU CƠ
+                  </span>
+                  <span className="block text-xs text-[#A87932] font-semibold tracking-wider uppercase mt-1">
+                    Sáo Trúc & Âm Nhạc Dân Tộc
+                  </span>
+                </div>
               </div>
-            </div>
 
-            {/* Slogan in Calligraphy Style */}
-            <div className="text-center">
-              <p className="font-serif italic text-base sm:text-lg text-amber-200 tracking-wide">
-                Đam mê làm nên giá trị · Chất lượng tạo nên uy tín
+              <p className="font-serif italic text-base text-[#70141D] font-medium leading-relaxed">
+                “ Đam mê làm nên giá trị · Chất lượng tạo nên uy tín ”
               </p>
+
+              <p className="text-sm text-[#6B5751] leading-relaxed">
+                Không gian học tập và thực hành nhạc cụ dân tộc truyền thống uy tín tại TP.HCM. Đào tạo từ căn bản đến nâng cao cho mọi lứa tuổi, dạy trực tiếp và online.
+              </p>
+
+              {/* Social Channels */}
+              <div className="pt-1">
+                <span className="block text-xs font-semibold text-[#8C6E66] uppercase tracking-wider mb-2.5">
+                  Kết nối cùng Âu Cơ:
+                </span>
+                <div className="flex items-center gap-2.5">
+                  <a
+                    href="https://www.youtube.com/@saotrucauco"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-9 h-9 rounded-full bg-[#70141D] text-white hover:bg-[#8e1d28] hover:scale-108 flex items-center justify-center transition-all shadow-xs"
+                    aria-label="YouTube"
+                    title="Kênh YouTube Sáo Trúc Âu Cơ"
+                  >
+                    <i className="fa-brands fa-youtube text-sm"></i>
+                  </a>
+                  <a
+                    href="https://www.facebook.com/saotrucauco"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-9 h-9 rounded-full bg-[#70141D] text-white hover:bg-[#8e1d28] hover:scale-108 flex items-center justify-center transition-all shadow-xs"
+                    aria-label="Facebook"
+                    title="Trang Facebook Sáo Trúc Âu Cơ"
+                  >
+                    <i className="fa-brands fa-facebook text-sm"></i>
+                  </a>
+                  <a
+                    href="https://www.tiktok.com/@saotrucauco"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-9 h-9 rounded-full bg-[#70141D] text-white hover:bg-[#8e1d28] hover:scale-108 flex items-center justify-center transition-all shadow-xs"
+                    aria-label="TikTok"
+                    title="Kênh TikTok Sáo Trúc Âu Cơ"
+                  >
+                    <i className="fa-brands fa-tiktok text-sm"></i>
+                  </a>
+                  <a
+                    href="https://www.instagram.com/saotrucauco"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-9 h-9 rounded-full bg-[#70141D] text-white hover:bg-[#8e1d28] hover:scale-108 flex items-center justify-center transition-all shadow-xs"
+                    aria-label="Instagram"
+                    title="Instagram Sáo Trúc Âu Cơ"
+                  >
+                    <i className="fa-brands fa-instagram text-sm"></i>
+                  </a>
+                </div>
+              </div>
             </div>
 
-            {/* Footer Nav Links & Socials */}
-            <div className="flex flex-col sm:flex-row items-center gap-4 text-xs font-medium text-white/90">
-              <div className="flex items-center gap-3">
-                <Link href="/" className="hover:text-amber-200 transition-colors">
-                  Trang chủ
-                </Link>
-                <span>|</span>
-                <Link href="/bai-viet" className="hover:text-amber-200 transition-colors">
-                  Bài viết
-                </Link>
-                <span>|</span>
-                <Link href="/lop-hoc" className="hover:text-amber-200 transition-colors">
-                  Lớp học
-                </Link>
-                <span>|</span>
-                <Link href="/dang-ky-hoc" className="hover:text-amber-200 transition-colors">
-                  Liên hệ
+            {/* Column 2: KHUNG TIN CHÂN TRANG - THÔNG TIN LIÊN HỆ (lg:col-span-5) */}
+            <div className="lg:col-span-5">
+              <div className="bg-white/85 rounded-2xl p-6 sm:p-7 border border-[#E0D5C3] shadow-xs space-y-4">
+                <div className="border-b border-[#EADBCA] pb-3.5 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#70141D]"></span>
+                    <h3 className="font-serif text-lg font-bold text-[#70141D] uppercase tracking-wide">
+                      Khung Tin Liên Hệ
+                    </h3>
+                  </div>
+                  <span className="text-[11px] font-semibold text-[#A87932] bg-[#FAF0E4] px-2.5 py-1 rounded-full border border-[#E8DACB]">
+                    Âu Cơ Studio
+                  </span>
+                </div>
+
+                <div className="space-y-4">
+                  {/* SĐT */}
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-9 h-9 rounded-xl bg-[#FAF0E4] border border-[#E2D2BE] flex items-center justify-center text-[#70141D] shrink-0 mt-0.5">
+                      <i className="fa-solid fa-phone text-sm"></i>
+                    </div>
+                    <div>
+                      <span className="block text-[11px] font-bold text-[#8C6E66] uppercase tracking-wider">
+                        Số điện thoại / Zalo:
+                      </span>
+                      <a
+                        href="tel:0374261368"
+                        className="text-lg font-bold text-[#70141D] hover:text-[#961c29] transition-colors tracking-wide inline-block"
+                      >
+                        0374 261 368
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Địa chỉ */}
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-9 h-9 rounded-xl bg-[#FAF0E4] border border-[#E2D2BE] flex items-center justify-center text-[#70141D] shrink-0 mt-0.5">
+                      <i className="fa-solid fa-location-dot text-sm"></i>
+                    </div>
+                    <div>
+                      <span className="block text-[11px] font-bold text-[#8C6E66] uppercase tracking-wider">
+                        Địa chỉ lớp học:
+                      </span>
+                      <a
+                        href="https://maps.google.com/?q=106/72+Hoà+Bình,+Phường+Hiệp+Tân,+Quận+Tân+Phú,+TP.HCM"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-semibold text-[#3D2925] hover:text-[#70141D] transition-colors leading-relaxed block"
+                      >
+                        106/72 Hoà Bình, P. Tân Phú, HCM
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Email */}
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-9 h-9 rounded-xl bg-[#FAF0E4] border border-[#E2D2BE] flex items-center justify-center text-[#70141D] shrink-0 mt-0.5">
+                      <i className="fa-solid fa-envelope text-sm"></i>
+                    </div>
+                    <div>
+                      <span className="block text-[11px] font-bold text-[#8C6E66] uppercase tracking-wider">
+                        Email liên hệ:
+                      </span>
+                      <a
+                        href="mailto:saotrucauco@gmail.com"
+                        className="text-sm font-semibold text-[#3D2925] hover:text-[#70141D] transition-colors break-all inline-block"
+                      >
+                        saotrucauco@gmail.com
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Thời gian làm việc */}
+                  <div className="flex items-start gap-3.5 pt-2 border-t border-[#F2E8DC]">
+                    <div className="w-9 h-9 rounded-xl bg-[#FAF0E4] border border-[#E2D2BE] flex items-center justify-center text-[#70141D] shrink-0 mt-0.5">
+                      <i className="fa-solid fa-clock text-sm"></i>
+                    </div>
+                    <div>
+                      <span className="block text-[11px] font-bold text-[#8C6E66] uppercase tracking-wider">
+                        Thời gian hoạt động:
+                      </span>
+                      <span className="text-sm text-[#3D2925] font-medium">
+                        08:00 – 21:00 (Tất cả các ngày trong tuần)
+                      </span>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            {/* Column 3: Liên kết nhanh & Đăng ký (lg:col-span-3) */}
+            <div className="lg:col-span-3 space-y-4">
+              <h3 className="font-serif text-base font-bold text-[#70141D] uppercase tracking-wider border-b border-[#EADBCA] pb-2.5">
+                Liên Kết Nhanh
+              </h3>
+              <ul className="space-y-2.5 text-sm">
+                <li>
+                  <Link href="/" className="text-[#5C4540] hover:text-[#70141D] transition-colors flex items-center gap-2">
+                    <i className="fa-solid fa-angle-right text-xs text-[#C29B38]"></i>
+                    Trang chủ
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/lop-hoc" className="text-[#5C4540] hover:text-[#70141D] transition-colors flex items-center gap-2">
+                    <i className="fa-solid fa-angle-right text-xs text-[#C29B38]"></i>
+                    Khóa học sáo trúc
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/bai-viet" className="text-[#5C4540] hover:text-[#70141D] transition-colors flex items-center gap-2">
+                    <i className="fa-solid fa-angle-right text-xs text-[#C29B38]"></i>
+                    Kho cảm âm & Kiến thức
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/dang-ky-hoc" className="text-[#5C4540] hover:text-[#70141D] transition-colors flex items-center gap-2">
+                    <i className="fa-solid fa-angle-right text-xs text-[#C29B38]"></i>
+                    Đăng ký tư vấn khóa học
+                  </Link>
+                </li>
+                <li>
+                  <a href="#bo-mon" className="text-[#5C4540] hover:text-[#70141D] transition-colors flex items-center gap-2">
+                    <i className="fa-solid fa-angle-right text-xs text-[#C29B38]"></i>
+                    Khám phá các bộ môn
+                  </a>
+                </li>
+              </ul>
+
+              {/* Quick CTA button */}
+              <div className="pt-2">
+                <Link
+                  href="/dang-ky-hoc"
+                  className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-[#70141D] hover:bg-[#8e1d28] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-xs text-center"
+                >
+                  <i className="fa-solid fa-calendar-check text-sm"></i>
+                  Đăng ký học ngay
                 </Link>
               </div>
-
-              {/* Social Icons */}
-              <div className="flex items-center gap-2.5 text-sm ml-2">
-                <a
-                  href="https://www.youtube.com/@saotrucauco"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition-colors"
-                  aria-label="YouTube"
-                >
-                  <i className="fa-brands fa-youtube"></i>
-                </a>
-                <a
-                  href="https://www.facebook.com/saotrucauco"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition-colors"
-                  aria-label="Facebook"
-                >
-                  <i className="fa-brands fa-facebook"></i>
-                </a>
-                <a
-                  href="https://www.tiktok.com/@saotrucauco"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition-colors"
-                  aria-label="TikTok"
-                >
-                  <i className="fa-brands fa-tiktok"></i>
-                </a>
-                <a
-                  href="https://www.instagram.com/saotrucauco"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition-colors"
-                  aria-label="Instagram"
-                >
-                  <i className="fa-brands fa-instagram"></i>
-                </a>
-              </div>
-
             </div>
 
           </div>
 
           {/* Copyright Bottom Bar */}
-          <div className="text-center text-xs text-white/60">
-            <p>© 2024 Sáo Trúc Âu Cơ. All rights reserved.</p>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#8C766F]">
+            <p className="normal-case tracking-normal">
+              © 2026 <strong className="text-[#70141D] font-bold">Sáo Trúc Âu Cơ</strong>. Tất cả các quyền được bảo lưu.
+            </p>
+            <p className="normal-case tracking-normal text-[#9E8982]">
+              106/72 Hoà Bình, P. Tân Phú, HCM · Hotline: 0374 261 368
+            </p>
           </div>
 
         </div>
