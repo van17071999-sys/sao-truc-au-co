@@ -418,23 +418,23 @@ export default function HomePage() {
       <section className="relative overflow-hidden bg-[#FAF7F2] border-b border-[#EADBCA]">
         <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           
-          {/* Master Responsive Container with Exact Aspect Ratio (2048 / 518) */}
+          {/* Master Responsive Container with Exact Aspect Ratio (2048 / 536) */}
           <div className="relative w-full rounded-2xl overflow-hidden shadow-sm border border-[#E0D5C3] bg-[#FAF7F2]">
             <svg
-              viewBox="0 0 2048 518"
+              viewBox="0 0 2048 536"
               className="w-full h-auto block select-none"
-              style={{ aspectRatio: "2048 / 518" }}
+              style={{ aspectRatio: "2048 / 536" }}
             >
               {/* Authentic High-Res Banner Artwork from user upload */}
-              <image href="/hero-banner.jpg" width="2048" height="518" preserveAspectRatio="none" />
+              <image href="/hero-banner.jpg" width="2048" height="536" preserveAspectRatio="none" />
 
               {/* Exact Locked Hotspot: Button 1 'Khám phá bộ môn' */}
               <a href="#bo-mon" aria-label="Khám phá bộ môn">
                 <rect
-                  x="230"
-                  y="280"
-                  width="245"
-                  height="54"
+                  x="236"
+                  y="316"
+                  width="298"
+                  height="66"
                   rx="10"
                   fill="transparent"
                   cursor="pointer"
@@ -447,10 +447,10 @@ export default function HomePage() {
               {/* Exact Locked Hotspot: Button 2 'Đăng ký học' */}
               <a href="/dang-ky-hoc" aria-label="Đăng ký học">
                 <rect
-                  x="493"
-                  y="280"
-                  width="210"
-                  height="54"
+                  x="561"
+                  y="316"
+                  width="270"
+                  height="66"
                   rx="10"
                   fill="transparent"
                   cursor="pointer"
