@@ -261,8 +261,8 @@ export default function HomePage() {
     <div className="min-h-screen bg-[#FAF7F2] text-[#2D2825] font-sans antialiased selection:bg-[#70141D] selection:text-white">
       
       {/* ================= 1. TOP UTILITY BAR ================= */}
-      <div className="bg-[#70141D] text-white text-[12px] py-2 px-4 sm:px-8 border-b border-[#5a0e16]">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div className="bg-[#70141D] text-white text-[12px] py-2 px-4 sm:px-6 lg:px-8 border-b border-[#5a0e16]">
+        <div className="w-full max-w-[1560px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <i className="fa-solid fa-location-dot text-white text-xs"></i>
             <span>106/72 Hòa Bình, P. Tân Phú, TP.HCM</span>
@@ -281,7 +281,7 @@ export default function HomePage() {
 
       {/* ================= 2. MAIN HEADER NAVBAR ================= */}
       <header className="sticky top-0 z-40 bg-[#FAF7F2]/95 backdrop-blur-md border-b border-[#EADBCA] shadow-2xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           
           {/* Brand Logo & Title */}
           <Link href="/" className="flex items-center gap-3.5 group shrink-0">
@@ -416,7 +416,7 @@ export default function HomePage() {
 
       {/* ================= 3. HERO SECTION (LOCKED SVG PIXEL ACCURACY) ================= */}
       <section className="relative overflow-hidden bg-[#FAF7F2] border-b border-[#EADBCA]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           
           {/* Master Responsive Container with Exact Aspect Ratio (1590 / 402) */}
           <div className="relative w-full rounded-2xl overflow-hidden shadow-sm border border-[#E0D5C3] bg-[#FAF7F2]">
@@ -531,7 +531,7 @@ export default function HomePage() {
 
       {/* ================= 4. ABOUT STUDIO / CLASSROOM SECTION ================= */}
       <section className="py-10 sm:py-14 bg-transparent border-b border-[#EADBCA]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             
@@ -578,7 +578,7 @@ export default function HomePage() {
 
       {/* ================= 5. CÁC BỘ MÔN GIẢNG DẠY ================= */}
       <section id="bo-mon" className="py-12 sm:py-16 bg-transparent border-b border-[#EADBCA]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           
           {/* Section Header */}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 pb-3 border-b border-[#E0D5C3]">
@@ -628,7 +628,7 @@ export default function HomePage() {
 
       {/* ================= 6. VÌ SAO HỌC VIÊN CHỌN SÁO TRÚC ÂU CƠ ================= */}
       <section className="py-12 sm:py-16 bg-transparent border-b border-[#EADBCA]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           
           {/* Section Header */}
           <div className="flex items-center gap-2 text-[#70141D] pb-3 border-b border-[#E0D5C3]">
@@ -665,7 +665,7 @@ export default function HomePage() {
 
       {/* ================= 7. DỊCH VỤ CỦA CHÚNG TÔI ================= */}
       <section className="py-12 sm:py-16 bg-transparent border-b border-[#EADBCA]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           
           {/* Section Header */}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 pb-3 border-b border-[#E0D5C3]">
@@ -706,16 +706,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ================= 8. LOCATION & PHOTOS OF CLASSROOM ================= */}
+      {/* ================= 8. LOCATION & PHOTOS OF CLASSROOM (3-COLUMN DESKTOP ROW) ================= */}
       <section className="py-12 sm:py-16 bg-transparent border-b border-[#EADBCA]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-stretch">
             
-            {/* Left 6 Columns: Address, Methods & Mini Map Card */}
-            <div className="lg:col-span-6 space-y-5">
-              
-              <div className="space-y-1.5">
+            {/* Column 1 (Left 4 cols): Address Info & 3 Modality Badges */}
+            <div className="lg:col-span-4 flex flex-col justify-between space-y-4">
+              <div className="space-y-2">
                 <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#70141D]">
                   Học Thổi Sáo Tại Tân Phú, TP.HCM
                 </h2>
@@ -723,74 +722,81 @@ export default function HomePage() {
                   <i className="fa-solid fa-location-dot text-[#70141D]"></i>
                   <span>106/72 Hòa Bình, P. Tân Phú, TP.HCM</span>
                 </p>
-                <p className="text-xs text-[#6B605A]">
+                <p className="text-xs text-[#6B605A] leading-relaxed">
                   Không gian học thân thiện, yên tĩnh, dễ di chuyển, phù hợp cho mọi lứa tuổi.
                 </p>
               </div>
 
               {/* 3 Modality Badges */}
-              <div className="grid grid-cols-3 gap-2.5 text-center">
-                <div className="p-2.5 bg-white rounded-xl border border-[#ECE5DC]">
-                  <i className="fa-solid fa-chalkboard-user text-[#70141D] text-base mb-1 block"></i>
+              <div className="grid grid-cols-3 gap-2 text-center pt-2">
+                <div className="p-3 bg-white rounded-xl border border-[#ECE5DC] flex flex-col items-center justify-center">
+                  <i className="fa-solid fa-chalkboard-user text-[#70141D] text-lg mb-1.5 block"></i>
                   <strong className="text-xs font-bold text-[#2B2624] block">Học tại lớp</strong>
-                  <span className="text-[10px] text-[#776C66]">Tại trung tâm</span>
+                  <span className="text-[10px] text-[#776C66] mt-0.5">Tại trung tâm</span>
                 </div>
-                <div className="p-2.5 bg-white rounded-xl border border-[#ECE5DC]">
-                  <i className="fa-solid fa-bullseye text-[#70141D] text-base mb-1 block"></i>
+                <div className="p-3 bg-white rounded-xl border border-[#ECE5DC] flex flex-col items-center justify-center">
+                  <i className="fa-solid fa-bullseye text-[#70141D] text-lg mb-1.5 block"></i>
                   <strong className="text-xs font-bold text-[#2B2624] block">Online 1 kèm 1</strong>
-                  <span className="text-[10px] text-[#776C66]">Linh hoạt thời gian</span>
+                  <span className="text-[10px] text-[#776C66] mt-0.5">Linh hoạt thời gian</span>
                 </div>
-                <div className="p-2.5 bg-white rounded-xl border border-[#ECE5DC]">
-                  <i className="fa-solid fa-house-chimney text-[#70141D] text-base mb-1 block"></i>
+                <div className="p-3 bg-white rounded-xl border border-[#ECE5DC] flex flex-col items-center justify-center">
+                  <i className="fa-solid fa-house-chimney text-[#70141D] text-lg mb-1.5 block"></i>
                   <strong className="text-xs font-bold text-[#2B2624] block">Gia sư tại nhà</strong>
-                  <span className="text-[10px] text-[#776C66]">Tiện lợi, cá nhân hóa</span>
+                  <span className="text-[10px] text-[#776C66] mt-0.5">Tiện lợi, cá nhân hóa</span>
                 </div>
               </div>
+            </div>
 
-              {/* Embedded Interactive Map Card */}
-              <div className="rounded-xl overflow-hidden border border-[#ECE5DC] shadow-2xs relative group bg-white">
-                <img
-                  src="/map-tanphu.jpg"
-                  alt="Bản đồ chỉ đường đến Sáo Trúc Âu Cơ Tân Phú"
-                  className="w-full h-44 sm:h-48 object-cover object-center group-hover:scale-102 transition-transform duration-300"
-                />
-                <div className="p-3 bg-white border-t border-[#EADBCA] flex items-center justify-between gap-3">
-                  <div className="text-xs">
-                    <span className="font-bold text-[#70141D] block">Sáo Trúc Âu Cơ</span>
-                    <span className="text-[11px] text-[#6B605A]">106/72 Hòa Bình, Tân Phú, TP.HCM</span>
+            {/* Column 2 (Center 4 cols): Embedded Map Card */}
+            <div className="lg:col-span-4 flex flex-col">
+              <div className="rounded-xl overflow-hidden border border-[#ECE5DC] shadow-2xs relative group bg-white h-full flex flex-col justify-between">
+                <div className="relative h-44 sm:h-48 overflow-hidden bg-stone-100 grow">
+                  <img
+                    src="/map-tanphu.jpg"
+                    alt="Bản đồ chỉ đường đến Sáo Trúc Âu Cơ Tân Phú"
+                    className="w-full h-full object-cover object-center group-hover:scale-102 transition-transform duration-300"
+                  />
+                  {/* Visual Map Marker Pin */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-xs px-2.5 py-1 rounded-md shadow border border-[#EADBCA] text-[11px] font-bold text-[#70141D] flex items-center gap-1.5 pointer-events-none">
+                    <i className="fa-solid fa-location-dot text-red-600"></i>
+                    <span>Sáo Trúc Âu Cơ</span>
+                  </div>
+                </div>
+                <div className="p-3 bg-white border-t border-[#EADBCA] flex items-center justify-between gap-2 shrink-0">
+                  <div className="text-xs min-w-0">
+                    <span className="font-bold text-[#70141D] block truncate">Sáo Trúc Âu Cơ</span>
+                    <span className="text-[10.5px] text-[#6B605A] block truncate">106/72 Hòa Bình, Tân Phú, TP.HCM</span>
                   </div>
                   <a
                     href="https://www.google.com/maps/dir/?api=1&destination=106%2F72+Ho%C3%A0+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3.5 py-1.5 bg-[#223326] hover:bg-[#162219] text-white text-xs font-semibold rounded-md transition-colors flex items-center gap-1.5 shrink-0"
+                    className="px-3 py-1.5 bg-[#223326] hover:bg-[#162219] text-white text-[11px] font-semibold rounded-md transition-colors flex items-center gap-1 shrink-0"
                   >
                     <span>Chỉ đường trên Google Maps</span>
-                    <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                    <i className="fa-solid fa-arrow-right text-[9px]"></i>
                   </a>
                 </div>
               </div>
-
             </div>
 
-            {/* Right 6 Columns: Student & Classroom Photos Carousel */}
-            <div className="lg:col-span-6 space-y-4">
-              
-              <div className="flex items-center justify-between pb-2 border-b border-[#E0D5C3]">
-                <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#70141D]">
+            {/* Column 3 (Right 4 cols): Student & Classroom Photos (3 Thumbnails in a row) */}
+            <div className="lg:col-span-4 flex flex-col justify-between space-y-3">
+              <div className="flex items-center justify-between pb-1.5 border-b border-[#E0D5C3]">
+                <h2 className="font-serif text-lg sm:text-xl font-bold text-[#70141D]">
                   Hình ảnh lớp học / Học viên
                 </h2>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <button
                     onClick={prevPhoto}
-                    className="w-7 h-7 rounded-full border border-[#D9CDBB] hover:border-[#70141D] text-[#2D2825] hover:text-[#70141D] flex items-center justify-center transition-colors text-xs cursor-pointer"
+                    className="w-6 h-6 rounded-full border border-[#D9CDBB] hover:border-[#70141D] text-[#2D2825] hover:text-[#70141D] flex items-center justify-center transition-colors text-[10px] cursor-pointer"
                     aria-label="Previous photo"
                   >
                     <i className="fa-solid fa-chevron-left"></i>
                   </button>
                   <button
                     onClick={nextPhoto}
-                    className="w-7 h-7 rounded-full border border-[#D9CDBB] hover:border-[#70141D] text-[#2D2825] hover:text-[#70141D] flex items-center justify-center transition-colors text-xs cursor-pointer"
+                    className="w-6 h-6 rounded-full border border-[#D9CDBB] hover:border-[#70141D] text-[#2D2825] hover:text-[#70141D] flex items-center justify-center transition-colors text-[10px] cursor-pointer"
                     aria-label="Next photo"
                   >
                     <i className="fa-solid fa-chevron-right"></i>
@@ -798,8 +804,8 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* 3 Photos Grid */}
-              <div className="grid grid-cols-3 gap-3">
+              {/* 3 Photos Grid Row */}
+              <div className="grid grid-cols-3 gap-2.5">
                 {studentPhotos.map((item, idx) => (
                   <div
                     key={idx}
@@ -815,15 +821,14 @@ export default function HomePage() {
                         className="w-full h-full object-cover object-center hover:scale-105 transition-transform duration-300"
                       />
                     </div>
-                    <div className="p-2 text-center bg-white">
-                      <p className="text-[10.5px] sm:text-[11px] font-semibold text-[#5C524E] line-clamp-2">
+                    <div className="p-1.5 text-center bg-white min-h-[42px] flex items-center justify-center">
+                      <p className="text-[10px] font-semibold text-[#5C524E] line-clamp-2 leading-tight">
                         {item.caption}
                       </p>
                     </div>
                   </div>
                 ))}
               </div>
-
             </div>
 
           </div>
@@ -833,12 +838,12 @@ export default function HomePage() {
 
       {/* ================= 9. FAQ & SOCIAL CONNECTION SECTION ================= */}
       <section className="py-12 sm:py-16 bg-transparent border-b border-[#EADBCA]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
             
-            {/* Left 6 Columns: FAQs Accordion */}
-            <div className="lg:col-span-6 space-y-4">
+            {/* Left 5 Columns: FAQs Accordion */}
+            <div className="lg:col-span-5 space-y-4">
               
               <div className="space-y-1">
                 <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#70141D]">
@@ -847,7 +852,7 @@ export default function HomePage() {
                 <p className="text-xs text-[#8C7B72] italic">Giải đáp nhanh các thắc mắc của học viên mới</p>
               </div>
 
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {faqs.map((faq, idx) => {
                   const isOpen = openFaq === idx;
                   return (
@@ -857,7 +862,7 @@ export default function HomePage() {
                     >
                       <button
                         onClick={() => toggleFaq(idx)}
-                        className="w-full p-3.5 text-left flex items-center justify-between gap-3 text-xs sm:text-sm font-semibold text-[#2B2624] hover:text-[#70141D] transition-colors cursor-pointer"
+                        className="w-full p-3.5 text-left flex items-center justify-between gap-3 text-xs sm:text-[13px] font-semibold text-[#2B2624] hover:text-[#70141D] transition-colors cursor-pointer"
                       >
                         <span>{faq.question}</span>
                         <i
@@ -867,7 +872,7 @@ export default function HomePage() {
                         ></i>
                       </button>
                       {isOpen && (
-                        <div className="px-3.5 pb-3.5 pt-1 text-xs sm:text-sm text-[#5C524E] leading-relaxed border-t border-[#F0E6D2]">
+                        <div className="px-3.5 pb-3.5 pt-1 text-xs sm:text-[12.5px] text-[#5C524E] leading-relaxed border-t border-[#F0E6D2]">
                           {faq.answer}
                         </div>
                       )}
@@ -878,8 +883,8 @@ export default function HomePage() {
 
             </div>
 
-            {/* Right 6 Columns: Social Channels Connection */}
-            <div className="lg:col-span-6 space-y-4">
+            {/* Right 7 Columns: Social Channels Connection (Single Horizontal 4-Card Row) */}
+            <div className="lg:col-span-7 space-y-4">
               
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 pb-1 border-b border-[#E0D5C3]">
                 <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#70141D]">
@@ -890,23 +895,23 @@ export default function HomePage() {
                 </p>
               </div>
 
-              {/* 4 Social Cards (2x2) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {/* 4 Social Cards in a single row */}
+              <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
                 {socialLinks.map((item, idx) => (
                   <div
                     key={idx}
-                    className={`p-4 bg-white rounded-xl border ${item.borderColor} shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between space-y-2.5`}
+                    className={`p-3.5 bg-white rounded-xl border ${item.borderColor} shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between space-y-3`}
                   >
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-2.5">
-                        <div className={`w-9 h-9 rounded-lg ${item.bgColor} ${item.textColor} flex items-center justify-center text-lg`}>
+                    <div className="space-y-2">
+                      <div className="flex flex-col items-center text-center gap-1.5">
+                        <div className={`w-10 h-10 rounded-lg ${item.bgColor} ${item.textColor} flex items-center justify-center text-xl`}>
                           <i className={item.icon}></i>
                         </div>
-                        <h3 className="font-serif font-bold text-sm sm:text-base text-[#1A1A1A]">
+                        <h3 className="font-serif font-bold text-sm text-[#1A1A1A]">
                           {item.name}
                         </h3>
                       </div>
-                      <p className="text-xs text-[#5C524E] leading-relaxed">
+                      <p className="text-[11px] text-[#5C524E] text-center leading-relaxed">
                         {item.desc}
                       </p>
                     </div>
@@ -915,10 +920,10 @@ export default function HomePage() {
                       href={item.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full py-2 bg-white hover:bg-[#70141D] text-[#70141D] hover:text-white border border-[#70141D] rounded-md text-xs font-semibold transition-all text-center flex items-center justify-center gap-1.5"
+                      className="w-full py-1.5 bg-white hover:bg-[#70141D] text-[#70141D] hover:text-white border border-[#70141D] rounded-md text-[11px] font-semibold transition-all text-center flex items-center justify-center gap-1"
                     >
                       <span>Theo dõi</span>
-                      <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                      <i className="fa-solid fa-arrow-right text-[9px]"></i>
                     </a>
                   </div>
                 ))}
@@ -933,7 +938,7 @@ export default function HomePage() {
 
       {/* ================= 10. MAIN FOOTER ================= */}
       <footer className="bg-[#70141D] text-white/90 pt-10 pb-7 border-t border-[#5a0e16]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-7">
+        <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 space-y-7">
           
           <div className="flex flex-col lg:flex-row items-center justify-between gap-6 pb-6 border-b border-white/15">
             
