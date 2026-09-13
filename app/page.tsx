@@ -415,140 +415,77 @@ export default function HomePage() {
       </header>
 
       {/* ================= 3. HERO SECTION ================= */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#F5EADB]/70 via-[#FAF6EE] to-[#FAF6EE] py-12 sm:py-16 lg:py-20 border-b border-[#E8DFC8]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden bg-[#FAF6EE] border-b border-[#E8DFC8]">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
           
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
-            
-            {/* Left Column (Hero Content) */}
-            <div className="lg:col-span-7 space-y-6">
+          {/* Main Panoramic Hero Banner with Interactive Hotspots */}
+          <div className="relative w-full rounded-2xl overflow-hidden shadow-md border border-[#E0D5C3] bg-[#FAF6EE]">
+            <img
+              src="/hero-banner.jpg"
+              alt="Dạy Thổi Sáo Tại TP.HCM & Online – Sáo Trúc Âu Cơ"
+              className="w-full h-auto block select-none"
+            />
+
+            {/* Clickable Overlay Hotspots for Hero Action Buttons */}
+            <div className="absolute inset-0 pointer-events-none">
               
-              {/* Eyebrow Badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-[#D9A779] bg-[#FAF6EE] shadow-xs">
-                <span className="text-[11px] font-bold text-[#7A1618] tracking-widest uppercase">
-                  BỘ MÔN TRUYỀN THỐNG
-                </span>
-              </div>
+              {/* Button: Khám phá bộ môn */}
+              <a
+                href="#bo-mon"
+                title="Khám phá bộ môn"
+                className="pointer-events-auto absolute left-[12%] top-[60%] w-[17%] h-[15%] rounded-lg cursor-pointer transition-all hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-[#7A1618]"
+                aria-label="Khám phá bộ môn"
+              >
+                <span className="sr-only">Khám phá bộ môn</span>
+              </a>
 
-              {/* Main Heading */}
-              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#7A1618] leading-[1.18] tracking-tight">
-                Dạy Thổi Sáo Tại TP.HCM & Online – <br className="hidden sm:inline" />
-                <span className="text-[#292421]">Sáo Trúc Âu Cơ</span>
-              </h1>
+              {/* Button: Đăng ký học */}
+              <Link
+                href="/dang-ky-hoc"
+                title="Đăng ký học"
+                className="pointer-events-auto absolute left-[30.5%] top-[60%] w-[16.5%] h-[15%] rounded-lg cursor-pointer transition-all hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-[#7A1618]"
+                aria-label="Đăng ký học"
+              >
+                <span className="sr-only">Đăng ký học</span>
+              </Link>
 
-              {/* Subtitle */}
-              <p className="text-base sm:text-lg text-[#5C524A] font-normal leading-relaxed max-w-xl">
-                Từ hơi thở đầu tiên đến tiếng sáo giàu cảm xúc.
-              </p>
+              {/* Bottom 4 Badges as Clickable Areas */}
+              <Link
+                href="/huong-dan"
+                title="Phương pháp khoa học"
+                className="pointer-events-auto absolute left-[8%] bottom-[3%] w-[20%] h-[18%] rounded-xl cursor-pointer hover:bg-black/5"
+                aria-label="Phương pháp khoa học"
+              >
+                <span className="sr-only">Phương pháp khoa học</span>
+              </Link>
 
-              {/* Action CTA Buttons */}
-              <div className="flex flex-wrap items-center gap-4 pt-2">
-                <a
-                  href="#bo-mon"
-                  className="px-6 py-3 bg-[#7A1618] hover:bg-[#600f11] text-white text-sm font-semibold rounded-lg shadow-sm hover:shadow-md transition-all inline-flex items-center gap-2"
-                >
-                  <span>Khám phá bộ môn</span>
-                  <i className="fa-solid fa-arrow-right text-xs"></i>
-                </a>
-                <Link
-                  href="/dang-ky-hoc"
-                  className="px-6 py-3 bg-white hover:bg-[#FAF6EE] border border-[#D9CDBB] hover:border-[#7A1618] text-[#292421] hover:text-[#7A1618] text-sm font-semibold rounded-lg shadow-xs transition-all inline-flex items-center gap-2"
-                >
-                  <i className="fa-regular fa-calendar-check text-[#7A1618]"></i>
-                  <span>Đăng ký học</span>
-                </Link>
-              </div>
+              <Link
+                href="/lop-hoc"
+                title="Giáo viên chuyên nghiệp"
+                className="pointer-events-auto absolute left-[29.5%] bottom-[3%] w-[20%] h-[18%] rounded-xl cursor-pointer hover:bg-black/5"
+                aria-label="Giáo viên chuyên nghiệp"
+              >
+                <span className="sr-only">Giáo viên chuyên nghiệp</span>
+              </Link>
 
-            </div>
+              <Link
+                href="/lop-hoc"
+                title="Dạy Offline tại TP.HCM"
+                className="pointer-events-auto absolute left-[51%] bottom-[3%] w-[20%] h-[18%] rounded-xl cursor-pointer hover:bg-black/5"
+                aria-label="Dạy Offline tại TP.HCM"
+              >
+                <span className="sr-only">Dạy Offline tại TP.HCM</span>
+              </Link>
 
-            {/* Right Column (Hero Visual Artwork & Calligraphy) */}
-            <div className="lg:col-span-5 flex flex-col items-center lg:items-end justify-center relative">
-              
-              <div className="relative w-full max-w-md">
-                
-                {/* Artist Photo in Artistic Round Frame */}
-                <div className="relative aspect-square rounded-full overflow-hidden border-4 border-[#E8DFC8] shadow-xl bg-[#F0E6D2]">
-                  <img
-                    src="/hero-artist.jpg"
-                    alt="Nghệ sĩ sáo trúc - Sáo Trúc Âu Cơ"
-                    className="w-full h-full object-cover object-center"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none"></div>
-                </div>
+              <Link
+                href="/dang-ky-hoc"
+                title="Đồng hành – Tận tâm"
+                className="pointer-events-auto absolute left-[72.5%] bottom-[3%] w-[20%] h-[18%] rounded-xl cursor-pointer hover:bg-black/5"
+                aria-label="Đồng hành – Tận tâm"
+              >
+                <span className="sr-only">Đồng hành – Tận tâm</span>
+              </Link>
 
-                {/* Poetic Calligraphy Quote Box */}
-                <div className="absolute -top-4 -left-6 sm:-left-10 bg-white/90 backdrop-blur-md p-4 rounded-2xl border border-[#E0D5C3] shadow-lg max-w-[210px] space-y-1">
-                  <p className="font-serif italic text-sm text-[#7A1618] font-bold leading-snug">
-                    “ Hơi Thở Thành Âm <br />
-                    Tâm Hồn Thành Nhạc ”
-                  </p>
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="text-[10px] text-[#6B625B] font-medium">Sáo Trúc Âu Cơ</span>
-                    <span className="w-5 h-5 rounded bg-[#881B1B] text-white text-[10px] font-serif flex items-center justify-center shadow-xs">
-                      歐
-                    </span>
-                  </div>
-                </div>
-
-                {/* Vertical Cultural Callout Banner */}
-                <div className="absolute -bottom-3 -right-4 sm:-right-6 bg-white/95 backdrop-blur-md py-3 px-3.5 rounded-xl border border-[#E0D5C3] shadow-md text-center">
-                  <p className="text-xs font-serif text-[#193822] font-bold leading-tight">
-                    Âm nhạc dân tộc <br />
-                    <span className="text-[#7A1618]">kết nối tâm hồn Việt</span>
-                  </p>
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* Bottom 4 Feature Pills in a Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12 pt-8 border-t border-[#E8DFC8]/80">
-            
-            {/* Feature 1 */}
-            <div className="flex items-center gap-3.5 p-3.5 bg-white/80 rounded-2xl border border-[#EADBCA] shadow-xs">
-              <div className="w-11 h-11 rounded-full bg-red-50 text-[#7A1618] flex items-center justify-center text-lg shrink-0 border border-red-100">
-                <i className="fa-solid fa-compass"></i>
-              </div>
-              <div>
-                <h4 className="text-xs sm:text-sm font-bold text-[#292421] leading-snug">Phương pháp khoa học</h4>
-                <p className="text-[11px] text-[#6B625B]">Dễ hiểu – Dễ áp dụng</p>
-              </div>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="flex items-center gap-3.5 p-3.5 bg-white/80 rounded-2xl border border-[#EADBCA] shadow-xs">
-              <div className="w-11 h-11 rounded-full bg-amber-50 text-amber-800 flex items-center justify-center text-lg shrink-0 border border-amber-100">
-                <i className="fa-solid fa-user-tie"></i>
-              </div>
-              <div>
-                <h4 className="text-xs sm:text-sm font-bold text-[#292421] leading-snug">Giáo viên chuyên nghiệp</h4>
-                <p className="text-[11px] text-[#6B625B]">Giàu kinh nghiệm – Tận tâm</p>
-              </div>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="flex items-center gap-3.5 p-3.5 bg-white/80 rounded-2xl border border-[#EADBCA] shadow-xs">
-              <div className="w-11 h-11 rounded-full bg-emerald-50 text-[#193822] flex items-center justify-center text-lg shrink-0 border border-emerald-100">
-                <i className="fa-solid fa-laptop-code"></i>
-              </div>
-              <div>
-                <h4 className="text-xs sm:text-sm font-bold text-[#292421] leading-snug">Dạy Offline tại TP.HCM</h4>
-                <p className="text-[11px] text-[#6B625B]">Online cho học viên ở xa</p>
-              </div>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="flex items-center gap-3.5 p-3.5 bg-white/80 rounded-2xl border border-[#EADBCA] shadow-xs">
-              <div className="w-11 h-11 rounded-full bg-red-50 text-[#7A1618] flex items-center justify-center text-lg shrink-0 border border-red-100">
-                <i className="fa-solid fa-hand-holding-heart"></i>
-              </div>
-              <div>
-                <h4 className="text-xs sm:text-sm font-bold text-[#292421] leading-snug">Đồng hành – Tận tâm</h4>
-                <p className="text-[11px] text-[#6B625B]">Cùng bạn trên hành trình âm nhạc</p>
-              </div>
             </div>
 
           </div>
@@ -557,48 +494,45 @@ export default function HomePage() {
       </section>
 
       {/* ================= 4. ABOUT STUDIO / CLASSROOM SECTION ================= */}
-      <section className="py-14 sm:py-18 bg-white border-b border-[#E8DFC8]">
+      <section className="py-10 sm:py-14 bg-white border-b border-[#E8DFC8]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             
             {/* Left: Studio Image */}
-            <div className="lg:col-span-4 rounded-2xl overflow-hidden shadow-md border border-[#E0D5C3]">
+            <div className="lg:col-span-4 rounded-2xl overflow-hidden shadow-sm border border-[#E0D5C3]">
               <img
                 src="/studio-classroom.jpg"
                 alt="Không gian phòng học Sáo Trúc Âu Cơ Tân Phú"
-                className="w-full h-64 sm:h-72 object-cover object-center hover:scale-105 transition-transform duration-500"
+                className="w-full h-56 sm:h-64 object-cover object-center hover:scale-105 transition-transform duration-500"
               />
             </div>
 
-            {/* Right: Studio Description and Quote */}
-            <div className="lg:col-span-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-              
-              <div className="space-y-4 max-w-xl">
-                <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#7A1618] leading-tight">
-                  Lớp Dạy Thổi Sáo Tại TP.HCM – Sáo Trúc Âu Cơ
-                </h2>
-                <p className="text-xs sm:text-sm text-[#59524B] leading-relaxed">
-                  Trung tâm Sáo Trúc Âu Cơ dạy thổi sáo trực tiếp tại Tân Phú, TP.HCM, hỗ trợ từ người mới bắt đầu đến trình độ nâng cao. Chúng tôi giảng dạy sáo trúc Việt Nam, Dizi, Recorder, Flute, Tiêu và các loại sáo dân tộc khác, với hình thức học linh hoạt: học tại lớp, học online 1 kèm 1 và gia sư tại nhà.
-                </p>
-                <div>
-                  <Link
-                    href="/lop-hoc"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#7A1618] hover:bg-[#600f11] text-white text-xs sm:text-sm font-semibold rounded-lg shadow-sm transition-all"
-                  >
-                    <span>Xem lớp học tại TP.HCM</span>
-                    <i className="fa-solid fa-arrow-right text-xs"></i>
-                  </Link>
-                </div>
+            {/* Middle: Studio Description & CTA Button */}
+            <div className="lg:col-span-5 space-y-4">
+              <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#7A1618] leading-tight">
+                Lớp Dạy Thổi Sáo Tại TP.HCM – Sáo Trúc Âu Cơ
+              </h2>
+              <p className="text-xs sm:text-sm text-[#4A423F] leading-relaxed">
+                Trung tâm Sáo Trúc Âu Cơ dạy thổi sáo trực tiếp tại Tân Phú, TP.HCM, hỗ trợ từ người mới bắt đầu đến trình độ nâng cao. Chúng tôi giảng dạy sáo trúc Việt Nam, Dizi, Recorder, Flute, Tiêu và các loại sáo dân tộc khác, với hình thức học linh hoạt: học tại lớp, học online 1 kèm 1 và gia sư tại nhà.
+              </p>
+              <div>
+                <Link
+                  href="/lop-hoc"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#7A1618] hover:bg-[#600f11] text-white text-xs sm:text-sm font-semibold rounded-lg shadow-xs hover:shadow transition-all"
+                >
+                  <span>Xem lớp học tại TP.HCM</span>
+                  <i className="fa-solid fa-arrow-right text-xs"></i>
+                </Link>
               </div>
+            </div>
 
-              {/* Callout Quote Box */}
-              <div className="p-5 bg-[#FAF6EE] rounded-2xl border-l-4 border-[#7A1618] border-y border-r border-[#E0D5C3] max-w-xs shrink-0 shadow-xs">
-                <p className="font-serif italic text-xs sm:text-sm text-[#423C36] leading-relaxed">
-                  “ Mỗi người đều có thể thổi được những giai điệu đẹp chỉ cần bắt đầu đúng cách. ”
-                </p>
-              </div>
-
+            {/* Right: Callout Quote Box */}
+            <div className="lg:col-span-3 p-5 bg-[#FAF6EE] rounded-2xl border border-[#E0D5C3] shadow-xs text-center space-y-2">
+              <p className="font-serif italic text-xs sm:text-sm text-[#5A4D46] leading-relaxed">
+                “ Mỗi người đều có thể thổi được những giai điệu đẹp chỉ cần bắt đầu đúng cách. ”
+              </p>
+              <div className="text-amber-700/60 text-xs">―― ❖ ――</div>
             </div>
 
           </div>
@@ -607,52 +541,47 @@ export default function HomePage() {
       </section>
 
       {/* ================= 5. CÁC BỘ MÔN GIẢNG DẠY ================= */}
-      <section id="bo-mon" className="py-16 sm:py-20 bg-[#FAF6EE] border-b border-[#E8DFC8]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+      <section id="bo-mon" className="py-12 sm:py-16 bg-[#FAF6EE] border-b border-[#E8DFC8]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           
           {/* Section Header */}
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-4 border-b border-[#E0D5C3]">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-[#7A1618]">
-                <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#7A1618]">
-                  Các Bộ Môn Giảng Dạy
-                </h2>
-                <span className="text-amber-700 text-sm hidden sm:inline">―― ❖ ――</span>
-              </div>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 pb-3 border-b border-[#E0D5C3]">
+            <div className="flex items-center gap-2 text-[#7A1618]">
+              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#7A1618]">
+                Các Bộ Môn Giảng Dạy
+              </h2>
+              <span className="text-amber-700 text-sm hidden sm:inline">―― ❖ ――</span>
             </div>
-            <p className="text-xs sm:text-sm text-[#6B625B] font-medium italic">
+            <p className="text-xs sm:text-sm text-[#8C7B72] italic">
               Khám phá thế giới âm thanh dân tộc và hiện đại
             </p>
           </div>
 
-          {/* 6 Instrument Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 sm:gap-5">
+          {/* 6 Instrument Cards Grid with Diagonal Flute Placement */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4">
             {disciplinesList.map((inst) => (
               <Link
                 key={inst.id}
                 href={inst.href}
-                className="group p-4 bg-white rounded-2xl border border-[#E0D5C3] hover:border-[#7A1618] hover:shadow-lg transition-all flex flex-col justify-between"
+                className="group p-3 sm:p-3.5 bg-white rounded-2xl border border-[#E0D5C3] hover:border-[#7A1618] hover:shadow-md transition-all flex flex-col justify-start text-center"
               >
-                <div className="space-y-3 text-center">
-                  <div className="h-28 rounded-xl bg-[#FAF6EE] overflow-hidden flex items-center justify-center p-2 border border-[#EADBCA] group-hover:bg-red-50/40 transition-colors">
-                    <img
-                      src={inst.image}
-                      alt={inst.title}
-                      className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform"
-                    />
-                  </div>
-                  <div>
-                    <h3 className="font-serif font-bold text-sm sm:text-base text-[#7A1618] group-hover:text-[#600f11] transition-colors">
-                      {inst.title}
-                    </h3>
-                    <p className="text-[11px] text-[#6B625B] mt-1.5 leading-relaxed line-clamp-3">
-                      {inst.subtitle}
-                    </p>
-                  </div>
+                {/* Diagonal Slanted Flute Image Container */}
+                <div className="h-24 sm:h-28 rounded-xl bg-[#FAF6EE] overflow-hidden flex items-center justify-center p-1 border border-[#EADBCA] group-hover:bg-red-50/30 transition-colors">
+                  <img
+                    src={inst.image}
+                    alt={inst.title}
+                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                  />
                 </div>
-                <div className="mt-4 pt-2 border-t border-[#F0E6D2] text-[10px] font-bold text-[#7A1618] flex items-center justify-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                  <span>Chi tiết</span>
-                  <i className="fa-solid fa-chevron-right text-[8px]"></i>
+                
+                {/* Title and Subtitle */}
+                <div className="mt-3 space-y-1">
+                  <h3 className="font-serif font-bold text-xs sm:text-[14px] text-[#7A1618] group-hover:text-[#600f11] transition-colors leading-snug">
+                    {inst.title}
+                  </h3>
+                  <p className="text-[11px] sm:text-[11.5px] text-[#5C524E] leading-relaxed">
+                    {inst.subtitle}
+                  </p>
                 </div>
               </Link>
             ))}
@@ -662,33 +591,35 @@ export default function HomePage() {
       </section>
 
       {/* ================= 6. VÌ SAO HỌC VIÊN CHỌN SÁO TRÚC ÂU CƠ ================= */}
-      <section className="py-16 sm:py-20 bg-white border-b border-[#E8DFC8]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+      <section className="py-12 sm:py-16 bg-white border-b border-[#E8DFC8]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           
           {/* Section Header */}
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#7A1618] flex items-center justify-center gap-3">
-              <span>Vì Sao Học Viên Chọn Sáo Trúc Âu Cơ?</span>
-              <span className="text-amber-700 text-sm hidden sm:inline">―― ❖ ――</span>
+          <div className="flex items-center gap-2 text-[#7A1618] pb-3 border-b border-[#E0D5C3]">
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#7A1618]">
+              Vì Sao Học Viên Chọn Sáo Trúc Âu Cơ?
             </h2>
+            <span className="text-amber-700 text-sm hidden sm:inline">―― ❖ ――</span>
           </div>
 
           {/* 4 Feature Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             {whyChooseUsList.map((item, idx) => (
               <div
                 key={idx}
-                className="p-6 bg-[#FAF6EE] rounded-2xl border border-[#E0D5C3] hover:border-[#7A1618] hover:shadow-md transition-all space-y-3"
+                className="p-5 sm:p-6 bg-[#FAF6EE] rounded-2xl border border-[#E0D5C3] hover:border-[#7A1618] hover:shadow-xs transition-all flex items-start gap-4"
               >
-                <div className="w-12 h-12 rounded-xl bg-white text-[#7A1618] flex items-center justify-center text-xl shadow-xs border border-[#EADBCA]">
+                <div className="w-10 h-10 rounded-xl bg-white text-[#7A1618] flex items-center justify-center text-lg shadow-xs border border-[#EADBCA] shrink-0">
                   <i className={item.icon}></i>
                 </div>
-                <h3 className="font-serif font-bold text-base text-[#292421]">
-                  {item.title}
-                </h3>
-                <p className="text-xs text-[#6B625B] leading-relaxed">
-                  {item.desc}
-                </p>
+                <div className="space-y-1">
+                  <h3 className="font-serif font-bold text-sm sm:text-base text-[#7A1618]">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs text-[#5C524E] leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
@@ -697,38 +628,38 @@ export default function HomePage() {
       </section>
 
       {/* ================= 7. DỊCH VỤ CỦA CHÚNG TÔI ================= */}
-      <section className="py-16 sm:py-20 bg-[#FAF6EE] border-b border-[#E8DFC8]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+      <section className="py-12 sm:py-16 bg-[#FAF6EE] border-b border-[#E8DFC8]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           
           {/* Section Header */}
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-4 border-b border-[#E0D5C3]">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 pb-3 border-b border-[#E0D5C3]">
             <div className="flex items-center gap-2 text-[#7A1618]">
               <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#7A1618]">
                 Dịch vụ của chúng tôi
               </h2>
               <span className="text-amber-700 text-sm hidden sm:inline">―― ❖ ――</span>
             </div>
-            <p className="text-xs sm:text-sm text-[#6B625B] font-medium italic">
+            <p className="text-xs sm:text-sm text-[#8C7B72] italic">
               Đa dạng dịch vụ – Đồng hành cùng đam mê âm nhạc của bạn
             </p>
           </div>
 
           {/* 8 Services Grid (4x2) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
             {servicesList.map((srv, idx) => (
               <Link
                 key={idx}
                 href={srv.href}
-                className="group p-5 bg-white rounded-2xl border border-[#E0D5C3] hover:border-[#7A1618] hover:shadow-md transition-all flex items-start gap-4"
+                className="group p-4 bg-white rounded-2xl border border-[#E0D5C3] hover:border-[#7A1618] hover:shadow-sm transition-all flex items-center gap-3.5"
               >
-                <div className="w-11 h-11 rounded-xl bg-red-50 text-[#7A1618] flex items-center justify-center text-lg shrink-0 border border-red-100 group-hover:bg-[#7A1618] group-hover:text-white transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-red-50 text-[#7A1618] flex items-center justify-center text-base shrink-0 border border-red-100 group-hover:bg-[#7A1618] group-hover:text-white transition-colors">
                   <i className={srv.icon}></i>
                 </div>
-                <div className="space-y-1 min-w-0">
-                  <h3 className="font-serif font-bold text-sm text-[#292421] group-hover:text-[#7A1618] transition-colors truncate">
+                <div className="space-y-0.5 min-w-0">
+                  <h3 className="font-serif font-bold text-xs sm:text-[13.5px] text-[#7A1618] group-hover:text-[#600f11] transition-colors truncate">
                     {srv.title}
                   </h3>
-                  <p className="text-[11px] text-[#6B625B] leading-snug">
+                  <p className="text-[11px] text-[#6B605A] leading-tight">
                     {srv.desc}
                   </p>
                 </div>
@@ -740,63 +671,63 @@ export default function HomePage() {
       </section>
 
       {/* ================= 8. LOCATION & PHOTOS OF CLASSROOM ================= */}
-      <section className="py-16 sm:py-20 bg-white border-b border-[#E8DFC8]">
+      <section className="py-12 sm:py-16 bg-white border-b border-[#E8DFC8]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             {/* Left 6 Columns: Address, Methods & Mini Map Card */}
-            <div className="lg:col-span-6 space-y-6">
+            <div className="lg:col-span-6 space-y-5">
               
-              <div className="space-y-2">
-                <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#7A1618]">
+              <div className="space-y-1.5">
+                <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#7A1618]">
                   Học Thổi Sáo Tại Tân Phú, TP.HCM
                 </h2>
-                <p className="text-xs sm:text-sm text-[#292421] font-semibold flex items-center gap-2">
+                <p className="text-xs sm:text-sm text-[#2B2624] font-semibold flex items-center gap-2">
                   <i className="fa-solid fa-location-dot text-[#7A1618]"></i>
                   <span>106/72 Hòa Bình, P. Tân Phú, TP.HCM</span>
                 </p>
-                <p className="text-xs text-[#6B625B]">
+                <p className="text-xs text-[#6B605A]">
                   Không gian học thân thiện, yên tĩnh, dễ di chuyển, phù hợp cho mọi lứa tuổi.
                 </p>
               </div>
 
               {/* 3 Modality Badges */}
-              <div className="grid grid-cols-3 gap-3 text-center">
-                <div className="p-3 bg-[#FAF6EE] rounded-xl border border-[#E0D5C3]">
+              <div className="grid grid-cols-3 gap-2.5 text-center">
+                <div className="p-2.5 bg-[#FAF6EE] rounded-xl border border-[#E0D5C3]">
                   <i className="fa-solid fa-chalkboard-user text-[#7A1618] text-base mb-1 block"></i>
-                  <strong className="text-xs font-bold text-[#292421] block">Học tại lớp</strong>
-                  <span className="text-[10px] text-[#6B625B]">Tại trung tâm</span>
+                  <strong className="text-xs font-bold text-[#2B2624] block">Học tại lớp</strong>
+                  <span className="text-[10px] text-[#776C66]">Tại trung tâm</span>
                 </div>
-                <div className="p-3 bg-[#FAF6EE] rounded-xl border border-[#E0D5C3]">
-                  <i className="fa-solid fa-video text-[#193822] text-base mb-1 block"></i>
-                  <strong className="text-xs font-bold text-[#292421] block">Online 1 kèm 1</strong>
-                  <span className="text-[10px] text-[#6B625B]">Linh hoạt thời gian</span>
+                <div className="p-2.5 bg-[#FAF6EE] rounded-xl border border-[#E0D5C3]">
+                  <i className="fa-solid fa-bullseye text-[#7A1618] text-base mb-1 block"></i>
+                  <strong className="text-xs font-bold text-[#2B2624] block">Online 1 kèm 1</strong>
+                  <span className="text-[10px] text-[#776C66]">Linh hoạt thời gian</span>
                 </div>
-                <div className="p-3 bg-[#FAF6EE] rounded-xl border border-[#E0D5C3]">
-                  <i className="fa-solid fa-house-user text-amber-800 text-base mb-1 block"></i>
-                  <strong className="text-xs font-bold text-[#292421] block">Gia sư tại nhà</strong>
-                  <span className="text-[10px] text-[#6B625B]">Tiện lợi, cá nhân hóa</span>
+                <div className="p-2.5 bg-[#FAF6EE] rounded-xl border border-[#E0D5C3]">
+                  <i className="fa-solid fa-house-chimney text-[#7A1618] text-base mb-1 block"></i>
+                  <strong className="text-xs font-bold text-[#2B2624] block">Gia sư tại nhà</strong>
+                  <span className="text-[10px] text-[#776C66]">Tiện lợi, cá nhân hóa</span>
                 </div>
               </div>
 
               {/* Embedded Interactive Map Card */}
-              <div className="rounded-2xl overflow-hidden border border-[#E0D5C3] shadow-sm relative group bg-[#FAF6EE]">
+              <div className="rounded-2xl overflow-hidden border border-[#E0D5C3] shadow-xs relative group bg-[#FAF6EE]">
                 <img
                   src="/map-tanphu.jpg"
                   alt="Bản đồ chỉ đường đến Sáo Trúc Âu Cơ Tân Phú"
-                  className="w-full h-52 object-cover object-center group-hover:scale-102 transition-transform duration-300"
+                  className="w-full h-44 sm:h-48 object-cover object-center group-hover:scale-102 transition-transform duration-300"
                 />
-                <div className="p-3.5 bg-white border-t border-[#EADBCA] flex items-center justify-between gap-3">
+                <div className="p-3 bg-white border-t border-[#EADBCA] flex items-center justify-between gap-3">
                   <div className="text-xs">
                     <span className="font-bold text-[#7A1618] block">Sáo Trúc Âu Cơ</span>
-                    <span className="text-[11px] text-[#6B625B]">106/72 Hòa Bình, Tân Phú, TP.HCM</span>
+                    <span className="text-[11px] text-[#6B605A]">106/72 Hòa Bình, Tân Phú, TP.HCM</span>
                   </div>
                   <a
                     href="https://www.google.com/maps/dir/?api=1&destination=106%2F72+Ho%C3%A0+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3.5 py-2 bg-[#193822] hover:bg-[#112517] text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 shrink-0"
+                    className="px-3.5 py-1.5 bg-[#223326] hover:bg-[#162219] text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 shrink-0"
                   >
                     <span>Chỉ đường trên Google Maps</span>
                     <i className="fa-solid fa-arrow-right text-[10px]"></i>
@@ -816,14 +747,14 @@ export default function HomePage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={prevPhoto}
-                    className="w-8 h-8 rounded-full border border-[#D9CDBB] hover:border-[#7A1618] text-[#292421] hover:text-[#7A1618] flex items-center justify-center transition-colors text-xs"
+                    className="w-7 h-7 rounded-full border border-[#D9CDBB] hover:border-[#7A1618] text-[#292421] hover:text-[#7A1618] flex items-center justify-center transition-colors text-xs"
                     aria-label="Previous photo"
                   >
                     <i className="fa-solid fa-chevron-left"></i>
                   </button>
                   <button
                     onClick={nextPhoto}
-                    className="w-8 h-8 rounded-full border border-[#D9CDBB] hover:border-[#7A1618] text-[#292421] hover:text-[#7A1618] flex items-center justify-center transition-colors text-xs"
+                    className="w-7 h-7 rounded-full border border-[#D9CDBB] hover:border-[#7A1618] text-[#292421] hover:text-[#7A1618] flex items-center justify-center transition-colors text-xs"
                     aria-label="Next photo"
                   >
                     <i className="fa-solid fa-chevron-right"></i>
@@ -832,7 +763,7 @@ export default function HomePage() {
               </div>
 
               {/* 3 Photos Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              <div className="grid grid-cols-3 gap-3">
                 {studentPhotos.map((item, idx) => (
                   <div
                     key={idx}
@@ -841,15 +772,15 @@ export default function HomePage() {
                       photoCarouselIndex === idx ? "border-[#7A1618] ring-2 ring-[#7A1618]/20" : "border-[#E0D5C3] hover:border-[#7A1618]"
                     }`}
                   >
-                    <div className="h-44 sm:h-36 overflow-hidden">
+                    <div className="h-32 sm:h-36 overflow-hidden bg-stone-100">
                       <img
                         src={item.image}
                         alt={item.caption}
                         className="w-full h-full object-cover object-center hover:scale-105 transition-transform duration-300"
                       />
                     </div>
-                    <div className="p-2.5 text-center bg-white">
-                      <p className="text-[11px] font-semibold text-[#292421] line-clamp-2">
+                    <div className="p-2 text-center bg-white">
+                      <p className="text-[10.5px] sm:text-[11px] font-semibold text-[#5C524E] line-clamp-2">
                         {item.caption}
                       </p>
                     </div>
@@ -865,32 +796,32 @@ export default function HomePage() {
       </section>
 
       {/* ================= 9. FAQ & SOCIAL CONNECTION SECTION ================= */}
-      <section className="py-16 sm:py-20 bg-[#FAF6EE] border-b border-[#E8DFC8]">
+      <section className="py-12 sm:py-16 bg-[#FAF6EE] border-b border-[#E8DFC8]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             {/* Left 6 Columns: FAQs Accordion */}
-            <div className="lg:col-span-6 space-y-5">
+            <div className="lg:col-span-6 space-y-4">
               
               <div className="space-y-1">
                 <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#7A1618]">
                   Câu hỏi thường gặp
                 </h2>
-                <p className="text-xs text-[#6B625B]">Giải đáp nhanh các thắc mắc của học viên mới</p>
+                <p className="text-xs text-[#8C7B72] italic">Giải đáp nhanh các thắc mắc của học viên mới</p>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {faqs.map((faq, idx) => {
                   const isOpen = openFaq === idx;
                   return (
                     <div
                       key={idx}
-                      className="bg-white rounded-2xl border border-[#E0D5C3] overflow-hidden shadow-xs transition-all"
+                      className="bg-white rounded-xl border border-[#E0D5C3] overflow-hidden shadow-xs transition-all"
                     >
                       <button
                         onClick={() => toggleFaq(idx)}
-                        className="w-full p-4 text-left flex items-center justify-between gap-3 text-xs sm:text-sm font-bold text-[#292421] hover:text-[#7A1618] transition-colors cursor-pointer"
+                        className="w-full p-3.5 text-left flex items-center justify-between gap-3 text-xs sm:text-sm font-semibold text-[#2B2624] hover:text-[#7A1618] transition-colors cursor-pointer"
                       >
                         <span>{faq.question}</span>
                         <i
@@ -900,7 +831,7 @@ export default function HomePage() {
                         ></i>
                       </button>
                       {isOpen && (
-                        <div className="px-4 pb-4 pt-1 text-xs sm:text-sm text-[#59524B] leading-relaxed border-t border-[#F0E6D2]">
+                        <div className="px-3.5 pb-3.5 pt-1 text-xs sm:text-sm text-[#5C524E] leading-relaxed border-t border-[#F0E6D2]">
                           {faq.answer}
                         </div>
                       )}
@@ -912,34 +843,34 @@ export default function HomePage() {
             </div>
 
             {/* Right 6 Columns: Social Channels Connection */}
-            <div className="lg:col-span-6 space-y-5">
+            <div className="lg:col-span-6 space-y-4">
               
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 pb-1 border-b border-[#E0D5C3]">
                 <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#7A1618]">
                   Kết nối với chúng tôi
                 </h2>
-                <p className="text-xs text-[#6B625B] italic">
+                <p className="text-xs text-[#8C7B72] italic">
                   Cùng lan tỏa tình yêu âm nhạc dân tộc
                 </p>
               </div>
 
               {/* 4 Social Cards (2x2) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {socialLinks.map((item, idx) => (
                   <div
                     key={idx}
-                    className={`p-5 bg-white rounded-2xl border ${item.borderColor} shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-3`}
+                    className={`p-4 bg-white rounded-2xl border ${item.borderColor} shadow-xs hover:shadow-sm transition-all flex flex-col justify-between space-y-2.5`}
                   >
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl ${item.bgColor} ${item.textColor} flex items-center justify-center text-xl`}>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2.5">
+                        <div className={`w-9 h-9 rounded-xl ${item.bgColor} ${item.textColor} flex items-center justify-center text-lg`}>
                           <i className={item.icon}></i>
                         </div>
-                        <h3 className="font-serif font-bold text-base text-[#292421]">
+                        <h3 className="font-serif font-bold text-sm sm:text-base text-[#1A1A1A]">
                           {item.name}
                         </h3>
                       </div>
-                      <p className="text-xs text-[#6B625B] leading-relaxed">
+                      <p className="text-xs text-[#5C524E] leading-relaxed">
                         {item.desc}
                       </p>
                     </div>
@@ -948,7 +879,7 @@ export default function HomePage() {
                       href={item.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full py-2 bg-[#FAF6EE] hover:bg-[#7A1618] text-[#292421] hover:text-white border border-[#E0D5C3] hover:border-[#7A1618] rounded-xl text-xs font-semibold transition-all text-center flex items-center justify-center gap-1.5"
+                      className="w-full py-2 bg-white hover:bg-[#7A1618] text-[#7A1618] hover:text-white border border-[#7A1618] rounded-xl text-xs font-semibold transition-all text-center flex items-center justify-center gap-1.5"
                     >
                       <span>Theo dõi</span>
                       <i className="fa-solid fa-arrow-right text-[10px]"></i>
