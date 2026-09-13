@@ -416,74 +416,108 @@ export default function HomePage() {
 
       {/* ================= 3. HERO SECTION ================= */}
       <section className="relative overflow-hidden bg-[#FAF6EE] border-b border-[#E8DFC8]">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7">
           
-          {/* Main Panoramic Hero Banner with Interactive Hotspots */}
-          <div className="relative w-full rounded-2xl overflow-hidden shadow-md border border-[#E0D5C3] bg-[#FAF6EE]">
-            <img
-              src="/hero-banner.jpg"
-              alt="Dạy Thổi Sáo Tại TP.HCM & Online – Sáo Trúc Âu Cơ"
-              className="w-full h-auto block select-none"
-            />
-
-            {/* Clickable Overlay Hotspots for Hero Action Buttons */}
-            <div className="absolute inset-0 pointer-events-none">
+          {/* Panoramic Hero Card Container with Authentic Artwork Background */}
+          <div
+            className="relative w-full rounded-2xl overflow-hidden shadow-sm border border-[#E0D5C3] bg-[#FAF6EE] bg-no-repeat bg-cover bg-[position:center_right] min-h-[360px] sm:min-h-[400px] lg:min-h-[440px] flex flex-col justify-between p-6 sm:p-8 lg:p-10"
+            style={{ backgroundImage: "url('/hero-bg-clean.jpg')" }}
+          >
+            
+            {/* Left Column: Semantic Crisp Typography & Action CTA Buttons */}
+            <div className="max-w-xl space-y-4 sm:space-y-5 z-10 pt-2 sm:pt-4">
               
-              {/* Button: Khám phá bộ môn */}
-              <a
-                href="#bo-mon"
-                title="Khám phá bộ môn"
-                className="pointer-events-auto absolute left-[12%] top-[60%] w-[17%] h-[15%] rounded-lg cursor-pointer transition-all hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-[#7A1618]"
-                aria-label="Khám phá bộ môn"
-              >
-                <span className="sr-only">Khám phá bộ môn</span>
-              </a>
+              {/* Eyebrow Badge */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-[#D9A779] bg-[#FAF6EE]/95 shadow-2xs">
+                <span className="text-[11px] font-bold text-[#7A1618] tracking-widest uppercase">
+                  BỘ MÔN TRUYỀN THỐNG
+                </span>
+              </div>
 
-              {/* Button: Đăng ký học */}
-              <Link
-                href="/dang-ky-hoc"
-                title="Đăng ký học"
-                className="pointer-events-auto absolute left-[30.5%] top-[60%] w-[16.5%] h-[15%] rounded-lg cursor-pointer transition-all hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-[#7A1618]"
-                aria-label="Đăng ký học"
-              >
-                <span className="sr-only">Đăng ký học</span>
+              {/* Main Heading */}
+              <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-[40px] font-bold text-[#7A1618] leading-[1.2] tracking-tight drop-shadow-2xs">
+                Dạy Thổi Sáo Tại TP.HCM & Online – <br className="hidden sm:inline" />
+                <span className="text-[#292421]">Sáo Trúc Âu Cơ</span>
+              </h1>
+
+              {/* Subtitle */}
+              <p className="text-sm sm:text-base text-[#5C524E] font-normal leading-relaxed max-w-lg">
+                Từ hơi thở đầu tiên đến tiếng sáo giàu cảm xúc.
+              </p>
+
+              {/* Action CTA Buttons */}
+              <div className="flex flex-wrap items-center gap-3.5 pt-1">
+                <a
+                  href="#bo-mon"
+                  className="px-5 py-2.5 sm:px-6 sm:py-3 bg-[#7A1618] hover:bg-[#600f11] text-white text-xs sm:text-sm font-semibold rounded-lg shadow-xs hover:shadow-md transition-all inline-flex items-center gap-2 cursor-pointer"
+                >
+                  <span>Khám phá bộ môn</span>
+                  <i className="fa-solid fa-arrow-right text-xs"></i>
+                </a>
+                <Link
+                  href="/dang-ky-hoc"
+                  className="px-5 py-2.5 sm:px-6 sm:py-3 bg-white/95 hover:bg-white border border-[#D9CDBB] hover:border-[#7A1618] text-[#292421] hover:text-[#7A1618] text-xs sm:text-sm font-semibold rounded-lg shadow-2xs transition-all inline-flex items-center gap-2 cursor-pointer"
+                >
+                  <i className="fa-regular fa-calendar-check text-[#7A1618]"></i>
+                  <span>Đăng ký học</span>
+                </Link>
+              </div>
+
+            </div>
+
+            {/* Bottom 4 Feature Badges Row (Translucent Bar) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-8 pt-4 border-t border-[#D9CDBB]/70 bg-white/80 backdrop-blur-xs p-3.5 rounded-2xl border border-[#EADBCA] z-10">
+              
+              {/* Badge 1 */}
+              <Link href="/huong-dan" className="flex items-center gap-3 group">
+                <div className="w-9 h-9 rounded-full bg-red-50 text-[#7A1618] border border-red-200 flex items-center justify-center text-sm shrink-0 group-hover:bg-[#7A1618] group-hover:text-white transition-colors">
+                  <i className="fa-solid fa-compass"></i>
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-[#292421] group-hover:text-[#7A1618] transition-colors truncate">
+                    Phương pháp khoa học
+                  </h4>
+                  <p className="text-[11px] text-[#6B625B]">Dễ hiểu – Dễ áp dụng</p>
+                </div>
               </Link>
 
-              {/* Bottom 4 Badges as Clickable Areas */}
-              <Link
-                href="/huong-dan"
-                title="Phương pháp khoa học"
-                className="pointer-events-auto absolute left-[8%] bottom-[3%] w-[20%] h-[18%] rounded-xl cursor-pointer hover:bg-black/5"
-                aria-label="Phương pháp khoa học"
-              >
-                <span className="sr-only">Phương pháp khoa học</span>
+              {/* Badge 2 */}
+              <Link href="/lop-hoc" className="flex items-center gap-3 group">
+                <div className="w-9 h-9 rounded-full bg-amber-50 text-amber-800 border border-amber-200 flex items-center justify-center text-sm shrink-0 group-hover:bg-amber-800 group-hover:text-white transition-colors">
+                  <i className="fa-solid fa-user-graduate"></i>
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-[#292421] group-hover:text-[#7A1618] transition-colors truncate">
+                    Giáo viên chuyên nghiệp
+                  </h4>
+                  <p className="text-[11px] text-[#6B625B]">Giàu kinh nghiệm – Tận tâm</p>
+                </div>
               </Link>
 
-              <Link
-                href="/lop-hoc"
-                title="Giáo viên chuyên nghiệp"
-                className="pointer-events-auto absolute left-[29.5%] bottom-[3%] w-[20%] h-[18%] rounded-xl cursor-pointer hover:bg-black/5"
-                aria-label="Giáo viên chuyên nghiệp"
-              >
-                <span className="sr-only">Giáo viên chuyên nghiệp</span>
+              {/* Badge 3 */}
+              <Link href="/lop-hoc" className="flex items-center gap-3 group">
+                <div className="w-9 h-9 rounded-full bg-emerald-50 text-[#193822] border border-emerald-200 flex items-center justify-center text-sm shrink-0 group-hover:bg-[#193822] group-hover:text-white transition-colors">
+                  <i className="fa-solid fa-display"></i>
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-[#292421] group-hover:text-[#7A1618] transition-colors truncate">
+                    Dạy Offline tại TP.HCM
+                  </h4>
+                  <p className="text-[11px] text-[#6B625B]">Online cho học viên ở xa</p>
+                </div>
               </Link>
 
-              <Link
-                href="/lop-hoc"
-                title="Dạy Offline tại TP.HCM"
-                className="pointer-events-auto absolute left-[51%] bottom-[3%] w-[20%] h-[18%] rounded-xl cursor-pointer hover:bg-black/5"
-                aria-label="Dạy Offline tại TP.HCM"
-              >
-                <span className="sr-only">Dạy Offline tại TP.HCM</span>
-              </Link>
-
-              <Link
-                href="/dang-ky-hoc"
-                title="Đồng hành – Tận tâm"
-                className="pointer-events-auto absolute left-[72.5%] bottom-[3%] w-[20%] h-[18%] rounded-xl cursor-pointer hover:bg-black/5"
-                aria-label="Đồng hành – Tận tâm"
-              >
-                <span className="sr-only">Đồng hành – Tận tâm</span>
+              {/* Badge 4 */}
+              <Link href="/dang-ky-hoc" className="flex items-center gap-3 group">
+                <div className="w-9 h-9 rounded-full bg-red-50 text-[#7A1618] border border-red-200 flex items-center justify-center text-sm shrink-0 group-hover:bg-[#7A1618] group-hover:text-white transition-colors">
+                  <i className="fa-solid fa-hand-holding-heart"></i>
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-[#292421] group-hover:text-[#7A1618] transition-colors truncate">
+                    Đồng hành – Tận tâm
+                  </h4>
+                  <p className="text-[11px] text-[#6B625B]">Cùng bạn trên hành trình âm nhạc</p>
+                </div>
               </Link>
 
             </div>
