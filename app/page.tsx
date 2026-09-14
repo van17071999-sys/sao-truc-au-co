@@ -137,18 +137,27 @@ const servicesList = [
   },
 ];
 
-const studentPhotos = [
+const defaultClassroomPhotos = [
   {
+    id: "photo-class-01",
     image: "/class-lesson.jpg",
     caption: "Giờ học trực tiếp tại trung tâm",
+    title: "Giờ học trực tiếp tại trung tâm",
+    href: "/lop-hoc",
   },
   {
+    id: "photo-class-02",
     image: "/class-group.jpg",
     caption: "Học viên của Sáo Trúc Âu Cơ",
+    title: "Học viên của Sáo Trúc Âu Cơ",
+    href: "/lop-hoc",
   },
   {
+    id: "photo-class-03",
     image: "/class-student.jpg",
     caption: "Học viên tiến bộ sau 3 tháng",
+    title: "Học viên tiến bộ sau 3 tháng",
+    href: "/lop-hoc",
   },
 ];
 
@@ -246,7 +255,9 @@ export default function HomePage() {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [photoCarouselIndex, setPhotoCarouselIndex] = useState(0);
+  const [classroomPhotos, setClassroomPhotos] = useState(defaultClassroomPhotos);
+  const [photoSlideIndex, setPhotoSlideIndex] = useState(0);
+  const [selectedPhoto, setSelectedPhoto] = useState<null | { image: string; caption: string; title: string; href?: string }>(null);
   const [disciplines, setDisciplines] = useState(disciplinesList);
   const [homeIntro, setHomeIntro] = useState(defaultHomeIntro);
 
@@ -284,6 +295,20 @@ export default function HomePage() {
             visible: intro.visible !== false,
           });
         }
+        const cmsPhotos = (data.entries || [])
+          .filter((e) => e.collection === "classroom-photos" && e.visible !== false)
+          .sort((a, b) => a.sortOrder - b.sortOrder);
+        if (cmsPhotos.length > 0) {
+          setClassroomPhotos(
+            cmsPhotos.map((p) => ({
+              id: p.id || p.slug,
+              image: p.imageUrl || "/class-lesson.jpg",
+              caption: p.excerpt || p.title,
+              title: p.title,
+              href: p.content || "",
+            }))
+          );
+        }
       })
       .catch(() => {});
     return () => {
@@ -305,12 +330,23 @@ export default function HomePage() {
   };
 
   const nextPhoto = () => {
-    setPhotoCarouselIndex((prev) => (prev + 1) % studentPhotos.length);
+    if (classroomPhotos.length <= 1) return;
+    setPhotoSlideIndex((prev) => (prev + 1) % classroomPhotos.length);
   };
 
   const prevPhoto = () => {
-    setPhotoCarouselIndex((prev) => (prev - 1 + studentPhotos.length) % studentPhotos.length);
+    if (classroomPhotos.length <= 1) return;
+    setPhotoSlideIndex((prev) => (prev - 1 + classroomPhotos.length) % classroomPhotos.length);
   };
+
+  const displayedPhotos = useMemo(() => {
+    if (classroomPhotos.length <= 3) return classroomPhotos;
+    const list = [];
+    for (let i = 0; i < 3; i++) {
+      list.push(classroomPhotos[(photoSlideIndex + i) % classroomPhotos.length]);
+    }
+    return list;
+  }, [classroomPhotos, photoSlideIndex]);
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] text-[#2D2825] font-sans antialiased selection:bg-[#70141D] selection:text-white">
@@ -773,49 +809,64 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Column 3 (Right 4 cols): Student & Classroom Photos (3 Thumbnails in a row) */}
-            <div className="lg:col-span-4 flex flex-col justify-between space-y-3">
+            {/* Column 3 (Right 4 cols): Student & Classroom Photos (Dynamic list with counter & preview) */}
+            <div id="hinh-anh-lop-hoc" className="lg:col-span-4 flex flex-col justify-between space-y-3">
               <div className="flex items-center justify-between pb-1.5 border-b border-[#E0D5C3]">
-                <h2 className="font-serif text-lg sm:text-xl font-bold text-[#70141D]">
-                  Hình ảnh lớp học / Học viên
-                </h2>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={prevPhoto}
-                    className="w-6 h-6 rounded-full border border-[#D9CDBB] hover:border-[#70141D] text-[#2D2825] hover:text-[#70141D] flex items-center justify-center transition-colors text-[10px] cursor-pointer"
-                    aria-label="Previous photo"
-                  >
-                    <i className="fa-solid fa-chevron-left"></i>
-                  </button>
-                  <button
-                    onClick={nextPhoto}
-                    className="w-6 h-6 rounded-full border border-[#D9CDBB] hover:border-[#70141D] text-[#2D2825] hover:text-[#70141D] flex items-center justify-center transition-colors text-[10px] cursor-pointer"
-                    aria-label="Next photo"
-                  >
-                    <i className="fa-solid fa-chevron-right"></i>
-                  </button>
+                <div className="flex items-center gap-2">
+                  <h2 className="font-serif text-lg sm:text-xl font-bold text-[#70141D]">
+                    Hình ảnh lớp học / Học viên
+                  </h2>
+                  {classroomPhotos.length > 3 && (
+                    <span className="text-[10.5px] font-medium text-[#70141D] bg-[#70141D]/10 px-1.5 py-0.5 rounded border border-[#70141D]/20">
+                      {photoSlideIndex + 1}/{classroomPhotos.length}
+                    </span>
+                  )}
                 </div>
+                {classroomPhotos.length > 1 && (
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={prevPhoto}
+                      className="w-6 h-6 rounded-full border border-[#D9CDBB] hover:border-[#70141D] text-[#2D2825] hover:text-[#70141D] flex items-center justify-center transition-colors text-[10px] cursor-pointer"
+                      aria-label="Previous photo"
+                      title="Ảnh trước"
+                    >
+                      <i className="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <button
+                      onClick={nextPhoto}
+                      className="w-6 h-6 rounded-full border border-[#D9CDBB] hover:border-[#70141D] text-[#2D2825] hover:text-[#70141D] flex items-center justify-center transition-colors text-[10px] cursor-pointer"
+                      aria-label="Next photo"
+                      title="Ảnh tiếp theo"
+                    >
+                      <i className="fa-solid fa-chevron-right"></i>
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* 3 Photos Grid Row */}
+              {/* Photos Grid Row */}
               <div className="grid grid-cols-3 gap-2.5">
-                {studentPhotos.map((item, idx) => (
+                {displayedPhotos.map((item, idx) => (
                   <div
-                    key={idx}
-                    onClick={() => setPhotoCarouselIndex(idx)}
-                    className={`rounded-xl overflow-hidden border transition-all cursor-pointer bg-white shadow-2xs ${
-                      photoCarouselIndex === idx ? "border-[#70141D] ring-2 ring-[#70141D]/20" : "border-[#ECE5DC] hover:border-[#70141D]"
-                    }`}
+                    key={item.id || idx}
+                    onClick={() => setSelectedPhoto(item)}
+                    className="group rounded-xl overflow-hidden border border-[#ECE5DC] hover:border-[#70141D] transition-all cursor-pointer bg-white shadow-2xs hover:shadow-md flex flex-col"
                   >
-                    <div className="h-32 sm:h-36 overflow-hidden bg-stone-100">
+                    <div className="h-32 sm:h-36 overflow-hidden bg-stone-100 relative">
                       <img
                         src={item.image}
                         alt={item.caption}
-                        className="w-full h-full object-cover object-center hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                       />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors flex items-center justify-center">
+                        <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1">
+                          <i className="fa-solid fa-magnifying-glass-plus text-[9px]"></i>
+                          <span>Xem</span>
+                        </span>
+                      </div>
                     </div>
-                    <div className="p-1.5 text-center bg-white min-h-[42px] flex items-center justify-center">
-                      <p className="text-[10px] font-semibold text-[#5C524E] line-clamp-2 leading-tight">
+                    <div className="p-1.5 text-center bg-white min-h-[42px] flex items-center justify-center grow">
+                      <p className="text-[10px] font-semibold text-[#5C524E] group-hover:text-[#70141D] line-clamp-2 leading-tight transition-colors">
                         {item.caption}
                       </p>
                     </div>
@@ -1213,6 +1264,49 @@ export default function HomePage() {
               Nhấn ESC hoặc bấm X để đóng
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* Photo Lightbox Modal */}
+      {selectedPhoto && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={() => setSelectedPhoto(null)}
+        >
+          <div
+            className="relative max-w-2xl w-full bg-white rounded-2xl overflow-hidden shadow-2xl border border-[#EADBCA]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSelectedPhoto(null)}
+              className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center transition-colors text-xs cursor-pointer"
+              aria-label="Đóng"
+            >
+              <i className="fa-solid fa-xmark"></i>
+            </button>
+            <div className="max-h-[70vh] bg-stone-900 flex items-center justify-center overflow-hidden">
+              <img
+                src={selectedPhoto.image}
+                alt={selectedPhoto.caption}
+                className="max-h-[70vh] w-auto object-contain"
+              />
+            </div>
+            <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FAF7F2]">
+              <div>
+                <h3 className="font-serif font-bold text-base text-[#70141D]">{selectedPhoto.title || selectedPhoto.caption}</h3>
+                <p className="text-xs text-[#5C524E] mt-0.5">{selectedPhoto.caption}</p>
+              </div>
+              {selectedPhoto.href && (
+                <Link
+                  href={selectedPhoto.href}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#70141D] hover:bg-[#5a0e16] text-white text-xs font-semibold rounded-md shadow-xs transition-colors shrink-0"
+                >
+                  <span>Xem chi tiết</span>
+                  <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       )}
