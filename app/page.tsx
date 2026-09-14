@@ -954,20 +954,7 @@ export default function HomePage() {
             {/* Column 2: KHUNG TIN CHÂN TRANG - THÔNG TIN LIÊN HỆ (lg:col-span-5) */}
             <div className="lg:col-span-5">
               <div className="bg-white/85 rounded-2xl p-6 sm:p-7 border border-[#E0D5C3] shadow-xs space-y-4">
-                <div className="border-b border-[#EADBCA] pb-3.5 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#70141D]"></span>
-                    <h3 className="font-serif text-lg font-bold text-[#70141D] uppercase tracking-wide">
-                      Khung Tin Liên Hệ
-                    </h3>
-                  </div>
-                  <span className="text-[11px] font-semibold text-[#A87932] bg-[#FAF0E4] px-2.5 py-1 rounded-full border border-[#E8DACB]">
-                    Âu Cơ Studio
-                  </span>
-                </div>
-
-                <div className="space-y-4">
-                  {/* SĐT */}
+                {/* SĐT */}
                   <div className="flex items-start gap-3.5">
                     <div className="w-9 h-9 rounded-xl bg-[#FAF0E4] border border-[#E2D2BE] flex items-center justify-center text-[#70141D] shrink-0 mt-0.5">
                       <i className="fa-solid fa-phone text-sm"></i>
@@ -1040,7 +1027,6 @@ export default function HomePage() {
 
                 </div>
               </div>
-            </div>
 
             {/* Column 3: Liên kết nhanh & Đăng ký (lg:col-span-3) */}
             <div className="lg:col-span-3 space-y-4">
