@@ -51,6 +51,18 @@ const disciplinesList = [
   },
 ];
 
+const defaultHomeIntro = {
+  id: "home-intro-01",
+  collection: "home-intro",
+  title: "Lớp Dạy Thổi Sáo Tại TP.HCM – Sáo Trúc Âu Cơ",
+  excerpt: "Trung tâm Sáo Trúc Âu Cơ dạy thổi sáo trực tiếp tại Tân Phú, TP.HCM, hỗ trợ từ người mới bắt đầu đến trình độ nâng cao. Chúng tôi giảng dạy sáo trúc Việt Nam, Dizi, Recorder, Flute, Tiêu và các loại sáo dân tộc khác, với hình thức học linh hoạt: học tại lớp, học online 1 kèm 1 và gia sư tại nhà.",
+  imageUrl: "/intro-portrait.jpg",
+  price: "Xem lớp học tại TP.HCM",
+  content: "/lop-hoc",
+  tag: "Mỗi người đều có thể thổi được những giai điệu đẹp chỉ cần bắt đầu đúng cách.",
+  visible: true,
+};
+
 const whyChooseUsList = [
   {
     icon: "fa-solid fa-chart-line",
@@ -236,12 +248,13 @@ export default function HomePage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [photoCarouselIndex, setPhotoCarouselIndex] = useState(0);
   const [disciplines, setDisciplines] = useState(disciplinesList);
+  const [homeIntro, setHomeIntro] = useState(defaultHomeIntro);
 
   useEffect(() => {
     let active = true;
     fetch("/api/cms/content")
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error("cms_unavailable"))))
-      .then((data: { entries?: Array<{ collection: string; id: string; slug: string; title: string; excerpt: string; imageUrl: string; content: string; visible: boolean; sortOrder: number }> }) => {
+      .then((data: { entries?: Array<{ collection: string; id: string; slug: string; title: string; excerpt: string; imageUrl: string; price?: string; tag?: string; content: string; visible: boolean; sortOrder: number }> }) => {
         if (!active) return;
         const cmsItems = (data.entries || [])
           .filter((e) => e.collection === "home-disciplines" && e.visible !== false)
@@ -256,6 +269,20 @@ export default function HomePage() {
               href: e.content || `/bo-mon/${e.slug}`,
             }))
           );
+        }
+        const intro = (data.entries || []).find((e) => e.collection === "home-intro");
+        if (intro) {
+          setHomeIntro({
+            id: intro.id,
+            collection: "home-intro",
+            title: intro.title || defaultHomeIntro.title,
+            excerpt: intro.excerpt || defaultHomeIntro.excerpt,
+            imageUrl: intro.imageUrl || defaultHomeIntro.imageUrl,
+            price: intro.price || defaultHomeIntro.price,
+            content: intro.content || defaultHomeIntro.content,
+            tag: intro.tag || defaultHomeIntro.tag,
+            visible: intro.visible !== false,
+          });
         }
       })
       .catch(() => {});
@@ -494,51 +521,53 @@ export default function HomePage() {
       </section>
 
       {/* ================= 4. ABOUT STUDIO / CLASSROOM SECTION ================= */}
-      <section className="py-10 sm:py-14 bg-transparent border-b border-[#EADBCA]">
-        <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      {homeIntro.visible && (
+        <section id="gioi-thieu" className="py-10 sm:py-14 bg-transparent border-b border-[#EADBCA]">
+          <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8">
             
-            {/* Left: Studio Image */}
-            <div className="lg:col-span-4 rounded-xl overflow-hidden shadow-2xs border border-[#E0D5C3]">
-              <img
-                src="/studio-classroom.jpg"
-                alt="Không gian phòng học Sáo Trúc Âu Cơ Tân Phú"
-                className="w-full h-56 sm:h-64 object-cover object-center hover:scale-103 transition-transform duration-500"
-              />
-            </div>
-
-            {/* Middle: Studio Description & CTA Button */}
-            <div className="lg:col-span-5 space-y-4">
-              <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#70141D] leading-tight">
-                Lớp Dạy Thổi Sáo Tại TP.HCM – Sáo Trúc Âu Cơ
-              </h2>
-              <p className="text-xs sm:text-[13.5px] text-[#4A423F] leading-relaxed">
-                Trung tâm Sáo Trúc Âu Cơ dạy thổi sáo trực tiếp tại Tân Phú, TP.HCM, hỗ trợ từ người mới bắt đầu đến trình độ nâng cao. Chúng tôi giảng dạy sáo trúc Việt Nam, Dizi, Recorder, Flute, Tiêu và các loại sáo dân tộc khác, với hình thức học linh hoạt: học tại lớp, học online 1 kèm 1 và gia sư tại nhà.
-              </p>
-              <div>
-                <Link
-                  href="/lop-hoc"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#70141D] hover:bg-[#5a0e16] text-white text-xs sm:text-sm font-semibold rounded-md shadow-2xs hover:shadow transition-all"
-                >
-                  <span>Xem lớp học tại TP.HCM</span>
-                  <i className="fa-solid fa-arrow-right text-xs"></i>
-                </Link>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              
+              {/* Left: Teacher Portrait / Studio Image */}
+              <div className="lg:col-span-4 rounded-xl overflow-hidden shadow-2xs border border-[#E0D5C3] bg-[#FAF7F2]">
+                <img
+                  src={homeIntro.imageUrl || "/intro-portrait.jpg"}
+                  alt={homeIntro.title}
+                  className="w-full h-56 sm:h-64 object-cover object-center hover:scale-103 transition-transform duration-500"
+                />
               </div>
-            </div>
 
-            {/* Right: Callout Quote Box */}
-            <div className="lg:col-span-3 p-5 bg-transparent text-center space-y-3">
-              <p className="font-serif italic text-xs sm:text-[13.5px] text-[#5A4D46] leading-relaxed">
-                “ Mỗi người đều có thể thổi được những giai điệu đẹp chỉ cần bắt đầu đúng cách. ”
-              </p>
-              <div className="text-amber-700/60 text-xs">―― ❖ ――</div>
+              {/* Middle: Studio Description & CTA Button */}
+              <div className="lg:col-span-5 space-y-4">
+                <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#70141D] leading-tight">
+                  {homeIntro.title}
+                </h2>
+                <p className="text-xs sm:text-[13.5px] text-[#4A423F] leading-relaxed whitespace-pre-line">
+                  {homeIntro.excerpt}
+                </p>
+                <div>
+                  <Link
+                    href={homeIntro.content || "/lop-hoc"}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#70141D] hover:bg-[#5a0e16] text-white text-xs sm:text-sm font-semibold rounded-md shadow-2xs hover:shadow transition-all"
+                  >
+                    <span>{homeIntro.price || "Xem lớp học tại TP.HCM"}</span>
+                    <i className="fa-solid fa-arrow-right text-xs"></i>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Right: Callout Quote Box */}
+              <div className="lg:col-span-3 p-5 bg-transparent text-center space-y-3">
+                <p className="font-serif italic text-xs sm:text-[13.5px] text-[#5A4D46] leading-relaxed">
+                  “ {homeIntro.tag || "Mỗi người đều có thể thổi được những giai điệu đẹp chỉ cần bắt đầu đúng cách."} ”
+                </p>
+                <div className="text-amber-700/60 text-xs">―― ❖ ――</div>
+              </div>
+
             </div>
 
           </div>
-
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ================= 5. CÁC BỘ MÔN GIẢNG DẠY ================= */}
       <section id="bo-mon" className="py-12 sm:py-16 bg-transparent border-b border-[#EADBCA]">

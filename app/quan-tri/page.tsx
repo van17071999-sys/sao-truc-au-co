@@ -24,6 +24,7 @@ type CmsEntry = {
 
 const collections = [
   { key: "services", label: "8 mục chính", note: "Các thẻ lớn trên trang chủ", priceLabel: "Giá / Phí (VNĐ hoặc 'Liên hệ')" },
+  { key: "home-intro", label: "Giới thiệu lớp học TP.HCM", note: "Khung giới thiệu lớp học & ảnh chân dung trên trang chủ (thay đổi ảnh chân dung, tiêu đề, mô tả, nút bấm và câu trích dẫn)", tagLabel: "Câu trích dẫn bên phải", tagPlaceholder: "Ví dụ: Mỗi người đều có thể thổi được những giai điệu đẹp chỉ cần bắt đầu đúng cách.", priceLabel: "Chữ trên nút bấm", pricePlaceholder: "Ví dụ: Xem lớp học tại TP.HCM", excerptLabel: "Nội dung giới thiệu lớp học *", excerptPlaceholder: "Nhập nội dung giới thiệu...", contentLabel: "Đường dẫn khi bấm nút", contentPlaceholder: "Ví dụ: /lop-hoc" },
   { key: "home-disciplines", label: "Các bộ môn giảng dạy", note: "Các thẻ bộ môn ở mục 'Các Bộ Môn Giảng Dạy' trên trang chủ (thay đổi ảnh, tên bộ môn, mô tả ngắn và liên kết)", excerptLabel: "Mô tả ngắn của bộ môn *", contentLabel: "Đường dẫn khi bấm vào thẻ (ví dụ: /bo-mon/sao-truc-viet-nam)" },
   { key: "class-details", label: "Lớp học các bộ môn", note: "Từng bộ môn (/bo-mon/slug) - bấm thẻ trên web dẫn thẳng vào bài giới thiệu đầy đủ", tagLabel: "Biểu tượng bộ môn (ví dụ: ♫, ◉, ♩...)", priceLabel: "Đối tượng phù hợp", excerptLabel: "Mô tả ngắn trên thẻ danh sách", contentLabel: "Bạn sẽ học được gì? (mỗi dòng một ý)" },
   { key: "product-groups", label: "Nhóm sáo & phụ kiện", note: "Các nhóm như Sáo ngang, Dizi, Sáo mèo…", tagLabel: "Nhãn phụ", contentLabel: "Nội dung bổ sung" },
@@ -90,6 +91,7 @@ function entryHref(entry: CmsEntry) {
   if (entry.collection === "flute-tabs") return `/cam-am/${entry.slug}`;
   if (entry.collection === "free-guides") return entry.content?.startsWith("http") ? entry.content : `/huong-dan/${entry.slug}`;
   if (entry.collection === "home-disciplines") return entry.content || `/bo-mon/${entry.slug}`;
+  if (entry.collection === "home-intro") return "/#gioi-thieu";
   return "";
 }
 
@@ -1790,7 +1792,7 @@ export default function ContentAdmin() {
         <div className="admin-editor-head"><button type="button" onClick={() => setDraft(null)}>← Danh sách</button><div><small>{draft.id ? "CHỈNH SỬA" : "TẠO MỚI"}</small><h2>{draft.title || activeMeta.label}</h2>{entryHref(draft) && <a className="admin-page-url" href={entryHref(draft)} target="_blank" rel="noreferrer">saotrucauco.com{entryHref(draft)} ↗</a>}</div><button className="admin-primary" disabled={busy}>{busy ? "Đang lưu…" : "Lưu nội dung"}</button></div>
         <div className="admin-form-grid">
           <label className="wide">
-            {isTuitionSettings ? "Học phí Khóa 1 tháng *" : (draft.collection === "home-disciplines" ? "Tên bộ môn *" : "Tiêu đề *")}
+            {isTuitionSettings ? "Học phí Khóa 1 tháng *" : (draft.collection === "home-disciplines" ? "Tên bộ môn *" : (draft.collection === "home-intro" ? "Tiêu đề phần giới thiệu *" : "Tiêu đề *"))}
             <input
               required
               value={draft.title}
@@ -1802,7 +1804,7 @@ export default function ContentAdmin() {
                   slug: slugify(newTitle),
                 });
               }}
-              placeholder={isTuitionSettings ? "Ví dụ: 2.400.000đ – 3.200.000đ" : (draft.collection === "home-disciplines" ? "Ví dụ: Sáo trúc Việt Nam" : undefined)}
+              placeholder={isTuitionSettings ? "Ví dụ: 2.400.000đ – 3.200.000đ" : (draft.collection === "home-disciplines" ? "Ví dụ: Sáo trúc Việt Nam" : (draft.collection === "home-intro" ? "Ví dụ: Lớp Dạy Thổi Sáo Tại TP.HCM – Sáo Trúc Âu Cơ" : undefined))}
             />
           </label>
           <label className="wide slug-field">Slug (đường dẫn, không dấu) *<span><input required pattern="[a-z0-9-]+" value={draft.slug} onChange={(event) => setDraft({ ...draft, slug: slugify(event.target.value) })} /><button type="button" onClick={() => setDraft({ ...draft, slug: slugify(draft.title) })}>Tạo lại</button></span></label>
@@ -1890,11 +1892,21 @@ export default function ContentAdmin() {
           {!isPaymentSettings && !isTuitionSettings && !isRecommendLinks && draft.collection !== "page-contact" && draft.collection !== "class-details" && (
             <label className="wide">
               <span>{fieldMeta.excerptLabel || (section === "sheets" ? "Mô tả ngắn / Tone, nhịp *" : "Mô tả ngắn")}</span>
-              <input
-                value={draft.excerpt}
-                onChange={(event) => setDraft({ ...draft, excerpt: event.target.value })}
-                placeholder={section === "sheets" ? "Ví dụ: Tone C5 · Nhịp 4/4 · Kèm ngón bấm" : (fieldMeta.excerptPlaceholder || "Mô tả ngắn gọn...")}
-              />
+              {draft.collection === "home-intro" ? (
+                <textarea
+                  rows={4}
+                  value={draft.excerpt}
+                  onChange={(event) => setDraft({ ...draft, excerpt: event.target.value })}
+                  placeholder={fieldMeta.excerptPlaceholder || "Nhập nội dung giới thiệu..."}
+                  style={{ width: "100%", padding: "8px 12px", border: "1px solid #ccd2dc", borderRadius: 8, fontSize: 14, fontFamily: "inherit", resize: "vertical" }}
+                />
+              ) : (
+                <input
+                  value={draft.excerpt}
+                  onChange={(event) => setDraft({ ...draft, excerpt: event.target.value })}
+                  placeholder={section === "sheets" ? "Ví dụ: Tone C5 · Nhịp 4/4 · Kèm ngón bấm" : (fieldMeta.excerptPlaceholder || "Mô tả ngắn gọn...")}
+                />
+              )}
             </label>
           )}
 
@@ -2742,13 +2754,13 @@ export default function ContentAdmin() {
                 ? "Nhập nội dung bài viết...\n\n- In đậm: **chữ in đậm** hoặc bôi đen bấm nút [B]\n- In nghiêng: *chữ in nghiêng* hoặc bôi đen bấm nút [I]\n- Vừa đậm vừa nghiêng: ***chữ vừa đậm vừa nghiêng*** hoặc bấm [BI]\n- Khoảng cách xuống dòng (Enter) được giữ nguyên 100% khi hiển thị trên website."
                 : "Nhập nội dung chi tiết..."}
             />
-          ) : draft.collection === "home-disciplines" ? (
+          ) : (draft.collection === "home-disciplines" || draft.collection === "home-intro") ? (
             <label className="wide">
-              <span>{fieldMeta.contentLabel || "Đường dẫn khi bấm vào thẻ"}</span>
+              <span>{fieldMeta.contentLabel || "Đường dẫn khi bấm nút"}</span>
               <input
                 value={draft.content}
                 onChange={(event) => setDraft({ ...draft, content: event.target.value })}
-                placeholder="Ví dụ: /bo-mon/sao-truc-viet-nam"
+                placeholder={draft.collection === "home-intro" ? "Ví dụ: /lop-hoc" : "Ví dụ: /bo-mon/sao-truc-viet-nam"}
               />
             </label>
           ) : (

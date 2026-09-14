@@ -42,7 +42,7 @@ type CmsRow = {
 const CMS_COOKIE = "saotrucauco_cms_session";
 const CMS_COLLECTIONS = new Set([
   "services", "classes", "products", "materials", "articles", "courses", "curriculums", "sheets",
-  "home-disciplines", "class-details", "product-groups", "product-items", "course-groups", "course-items",
+  "home-disciplines", "home-intro", "class-details", "product-groups", "product-items", "course-groups", "course-items",
   "single-videos", "social-links", "studio-packages", "booking-packages", "recording-instruments", "flute-tabs", "free-guides",
   "settings", "tuition", "recommend-links", "page-contact", "page-classes", "page-products", "page-articles", "page-courses",
 ]);
@@ -80,6 +80,9 @@ const detailedCmsEntries = [
   ["home-disc-04", "home-disciplines", "Động tiêu & Xiao", "dong-tieu", "Trầm lắng, sâu sắc, đậm chất thiền.", "/inst-tieu.jpg", "", "", "/bo-mon/dong-tieu-xiao", 4],
   ["home-disc-05", "home-disciplines", "Flute", "flute", "Âm thanh trong trẻo, hiện đại và linh hoạt.", "/inst-flute.jpg", "", "", "/bo-mon/flute", 5],
   ["home-disc-06", "home-disciplines", "Sáo H'Mông / Sáo mèo", "sao-hmong", "Âm sắc mộc mạc, đậm đà bản sắc vùng cao.", "/inst-hmong.jpg", "", "", "/bo-mon/sao-hmong", 6],
+
+  // Khung giới thiệu lớp học & chân dung nghệ sĩ ở trang chủ
+  ["home-intro-01", "home-intro", "Lớp Dạy Thổi Sáo Tại TP.HCM – Sáo Trúc Âu Cơ", "gioi-thieu-lop-hoc", "Trung tâm Sáo Trúc Âu Cơ dạy thổi sáo trực tiếp tại Tân Phú, TP.HCM, hỗ trợ từ người mới bắt đầu đến trình độ nâng cao. Chúng tôi giảng dạy sáo trúc Việt Nam, Dizi, Recorder, Flute, Tiêu và các loại sáo dân tộc khác, với hình thức học linh hoạt: học tại lớp, học online 1 kèm 1 và gia sư tại nhà.", "/intro-portrait.jpg", "Mỗi người đều có thể thổi được những giai điệu đẹp chỉ cần bắt đầu đúng cách.", "Xem lớp học tại TP.HCM", "/lop-hoc", 1],
 
   // Chi tiết các bộ môn. Toàn bộ nội dung trang /bo-mon/slug có thể chỉnh sửa trong CMS.
   ["class-sao-truc", "class-details", "Sáo trúc Việt Nam", "sao-truc-viet-nam", "Mang hơi thở dân tộc vào từng giai điệu.", "/carousel-saotruc.webp", "♫", "Người mới bắt đầu, người từng tự học nhưng chưa vững nền tảng, hoặc học viên muốn nâng cao khả năng biểu diễn.", "[TIÊU ĐỀ BÀI]\nMột lộ trình rõ ràng để chơi nhạc bằng chính cảm xúc của bạn.\n\n[GIỚI THIỆU]\nSáo trúc Việt Nam có âm sắc mộc mạc, gần gũi nhưng giàu khả năng biểu cảm. Tại trung tâm, học viên không chỉ học cách thổi đúng nốt mà còn được xây dựng cột hơi, tiếng sáo và tư duy xử lý tác phẩm một cách bài bản.\n\n[BẠN SẼ HỌC ĐƯỢC GÌ]\nTư thế cầm sáo, khẩu hình và điểm đặt môi\nKiểm soát cột hơi, cao độ và chất lượng âm thanh\nNgón bấm, đánh lưỡi, rung hơi, láy và vuốt\nĐọc nhạc, cảm âm và luyện tập cùng beat\nXử lý dân ca, nhạc trữ tình và ca khúc hiện đại\n\n[LỘ TRÌNH HỌC]\nGiai đoạn 1 · Làm quen & tạo tiếng\nGiai đoạn 2 · Nốt nhạc & nhịp điệu\nGiai đoạn 3 · Kỹ thuật biểu cảm\nGiai đoạn 4 · Hoàn thiện tác phẩm\n\n[TRÍCH DẪN]\nHọc đúng kỹ thuật để tự do thể hiện cảm xúc — đó là nền tảng của mỗi chương trình.\n\n[HÌNH THỨC HỌC]\nTrực tiếp tại trung tâm\nGia sư tại nhà\nOnline 1 kèm 1\n\n[THỜI GIAN]\nLinh động theo lịch học viên", 1],
