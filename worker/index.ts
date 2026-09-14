@@ -42,7 +42,7 @@ type CmsRow = {
 const CMS_COOKIE = "saotrucauco_cms_session";
 const CMS_COLLECTIONS = new Set([
   "services", "classes", "products", "materials", "articles", "courses", "curriculums", "sheets",
-  "hero-slides", "class-details", "product-groups", "product-items", "course-groups", "course-items",
+  "home-disciplines", "class-details", "product-groups", "product-items", "course-groups", "course-items",
   "single-videos", "social-links", "studio-packages", "booking-packages", "recording-instruments", "flute-tabs", "free-guides",
   "settings", "tuition", "recommend-links", "page-contact", "page-classes", "page-products", "page-articles", "page-courses",
 ]);
@@ -73,12 +73,13 @@ const detailedCmsEntries = [
   // Thông tin tài khoản và QR dùng chung cho mọi bảng thanh toán trên website.
   ["settings-payment", "settings", "Thanh toán VietQR", "payment", "QUACH HA VAN", "/vietqr-payment.png", "STB · Sacombank", "030046023451", "Thông tin chuyển khoản dùng chung cho toàn bộ website.", 2],
 
-  // Năm ảnh demo bộ môn ở đầu trang chủ.
-  ["hero-slide-01", "hero-slides", "Sáo trúc Việt Nam", "sao-truc-viet-nam", "Từ hơi thở đầu tiên đến tiếng sáo giàu cảm xúc.", "/carousel-saotruc.webp", "BỘ MÔN TRUYỀN THỐNG", "Khám phá bộ môn", "/bo-mon/sao-truc-viet-nam", 1],
-  ["hero-slide-02", "hero-slides", "Sáo Dizi", "sao-dizi", "Khám phá màng rung và kỹ thuật diễn tấu Trung Hoa.", "/carousel-dizi.webp", "ÂM SẮC CỔ PHONG", "Khám phá bộ môn", "/bo-mon/sao-dizi", 2],
-  ["hero-slide-03", "hero-slides", "Sáo Recorder", "sao-recorder", "Khởi đầu dễ dàng, đọc nhạc bài bản và cùng nhau hòa tấu.", "/carousel-recorder.webp", "ÂM NHẠC CHO MỌI LỨA TUỔI", "Khám phá bộ môn", "/bo-mon/sao-recorder", 3],
-  ["hero-slide-04", "hero-slides", "Động tiêu & Xiao", "dong-tieu-xiao", "Một khoảng lặng đẹp cho người yêu âm nhạc cổ phong.", "/carousel-tieu.webp", "TRẦM ẤM & SÂU LẮNG", "Khám phá bộ môn", "/bo-mon/dong-tieu-xiao", 4],
-  ["hero-slide-05", "hero-slides", "Flute", "flute", "Âm sắc trong trẻo, linh hoạt cùng lộ trình cá nhân hóa.", "/carousel-flute.webp", "KỸ THUẬT PHƯƠNG TÂY", "Khám phá bộ môn", "/bo-mon/flute", 5],
+  // Các bộ môn giảng dạy ở trang chủ (thay đổi ảnh, tiêu đề, mô tả và liên kết)
+  ["home-disc-01", "home-disciplines", "Sáo trúc Việt Nam", "sao-truc", "Âm thanh thuần Việt, gần gũi và giàu cảm xúc.", "/inst-saotruc.jpg", "", "", "/bo-mon/sao-truc-viet-nam", 1],
+  ["home-disc-02", "home-disciplines", "Sáo Dizi", "sao-dizi", "Âm sắc sáng, mạnh mẽ, đậm chất Trung Hoa.", "/inst-dizi.jpg", "", "", "/bo-mon/sao-dizi", 2],
+  ["home-disc-03", "home-disciplines", "Recorder", "recorder", "Dễ học, phù hợp mọi lứa tuổi, thích hợp cho người mới bắt đầu.", "/inst-recorder.jpg", "", "", "/bo-mon/sao-recorder", 3],
+  ["home-disc-04", "home-disciplines", "Động tiêu & Xiao", "dong-tieu", "Trầm lắng, sâu sắc, đậm chất thiền.", "/inst-tieu.jpg", "", "", "/bo-mon/dong-tieu-xiao", 4],
+  ["home-disc-05", "home-disciplines", "Flute", "flute", "Âm thanh trong trẻo, hiện đại và linh hoạt.", "/inst-flute.jpg", "", "", "/bo-mon/flute", 5],
+  ["home-disc-06", "home-disciplines", "Sáo H'Mông / Sáo mèo", "sao-hmong", "Âm sắc mộc mạc, đậm đà bản sắc vùng cao.", "/inst-hmong.jpg", "", "", "/bo-mon/sao-hmong", 6],
 
   // Chi tiết các bộ môn. Toàn bộ nội dung trang /bo-mon/slug có thể chỉnh sửa trong CMS.
   ["class-sao-truc", "class-details", "Sáo trúc Việt Nam", "sao-truc-viet-nam", "Mang hơi thở dân tộc vào từng giai điệu.", "/carousel-saotruc.webp", "♫", "Người mới bắt đầu, người từng tự học nhưng chưa vững nền tảng, hoặc học viên muốn nâng cao khả năng biểu diễn.", "[TIÊU ĐỀ BÀI]\nMột lộ trình rõ ràng để chơi nhạc bằng chính cảm xúc của bạn.\n\n[GIỚI THIỆU]\nSáo trúc Việt Nam có âm sắc mộc mạc, gần gũi nhưng giàu khả năng biểu cảm. Tại trung tâm, học viên không chỉ học cách thổi đúng nốt mà còn được xây dựng cột hơi, tiếng sáo và tư duy xử lý tác phẩm một cách bài bản.\n\n[BẠN SẼ HỌC ĐƯỢC GÌ]\nTư thế cầm sáo, khẩu hình và điểm đặt môi\nKiểm soát cột hơi, cao độ và chất lượng âm thanh\nNgón bấm, đánh lưỡi, rung hơi, láy và vuốt\nĐọc nhạc, cảm âm và luyện tập cùng beat\nXử lý dân ca, nhạc trữ tình và ca khúc hiện đại\n\n[LỘ TRÌNH HỌC]\nGiai đoạn 1 · Làm quen & tạo tiếng\nGiai đoạn 2 · Nốt nhạc & nhịp điệu\nGiai đoạn 3 · Kỹ thuật biểu cảm\nGiai đoạn 4 · Hoàn thiện tác phẩm\n\n[TRÍCH DẪN]\nHọc đúng kỹ thuật để tự do thể hiện cảm xúc — đó là nền tảng của mỗi chương trình.\n\n[HÌNH THỨC HỌC]\nTrực tiếp tại trung tâm\nGia sư tại nhà\nOnline 1 kèm 1\n\n[THỜI GIAN]\nLinh động theo lịch học viên", 1],
@@ -270,6 +271,7 @@ async function ensureCmsSchema(db: D1Database) {
     await db.batch(seedStatements.slice(offset, offset + 12));
   }
   await db.prepare("DELETE FROM cms_entries WHERE id IN (SELECT id FROM cms_deleted)").run();
+  await db.prepare("DELETE FROM cms_entries WHERE collection = 'hero-slides'").run().catch(() => null);
 }
 
 function requestHasSameOrigin(request: Request, url: URL) {
@@ -437,6 +439,9 @@ async function handleCms(request: Request, env: Env, url: URL): Promise<Response
     const offset = Number.isFinite(parsedOffset)
       ? Math.max(0, Math.min(parsedOffset, detailedCmsEntries.length))
       : 0;
+    if (offset === 0) {
+      await env.DB.prepare("DELETE FROM cms_entries WHERE collection = 'hero-slides'").run().catch(() => null);
+    }
     const batch = detailedCmsEntries.slice(offset, offset + 12);
     const now = new Date().toISOString();
     for (const item of batch) {

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import BrandLogo from "./brand-logo";
 
 // ================= DATA DEFINITIONS =================
@@ -235,6 +235,34 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [photoCarouselIndex, setPhotoCarouselIndex] = useState(0);
+  const [disciplines, setDisciplines] = useState(disciplinesList);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/cms/content")
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error("cms_unavailable"))))
+      .then((data: { entries?: Array<{ collection: string; id: string; slug: string; title: string; excerpt: string; imageUrl: string; content: string; visible: boolean; sortOrder: number }> }) => {
+        if (!active) return;
+        const cmsItems = (data.entries || [])
+          .filter((e) => e.collection === "home-disciplines" && e.visible !== false)
+          .sort((a, b) => a.sortOrder - b.sortOrder);
+        if (cmsItems.length > 0) {
+          setDisciplines(
+            cmsItems.map((e) => ({
+              id: e.slug || e.id,
+              title: e.title,
+              subtitle: e.excerpt,
+              image: e.imageUrl || "/inst-saotruc.jpg",
+              href: e.content || `/bo-mon/${e.slug}`,
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Search Results
   const filteredSearch = useMemo(() => {
@@ -531,7 +559,7 @@ export default function HomePage() {
 
           {/* 6 Instrument Cards Grid with Diagonal Flute Placement */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4">
-            {disciplinesList.map((inst) => (
+            {disciplines.map((inst) => (
               <Link
                 key={inst.id}
                 href={inst.href}

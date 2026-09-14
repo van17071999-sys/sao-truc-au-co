@@ -24,7 +24,7 @@ type CmsEntry = {
 
 const collections = [
   { key: "services", label: "8 mục chính", note: "Các thẻ lớn trên trang chủ", priceLabel: "Giá / Phí (VNĐ hoặc 'Liên hệ')" },
-  { key: "hero-slides", label: "5 ảnh đầu trang", note: "Năm ảnh demo bộ môn ở đầu trang chủ", tagLabel: "Nhãn nhỏ phía trên", priceLabel: "Chữ trên nút", excerptLabel: "Mô tả dưới tiêu đề", contentLabel: "Đường dẫn khi bấm nút" },
+  { key: "home-disciplines", label: "Các bộ môn giảng dạy", note: "Các thẻ bộ môn ở mục 'Các Bộ Môn Giảng Dạy' trên trang chủ (thay đổi ảnh, tên bộ môn, mô tả ngắn và liên kết)", excerptLabel: "Mô tả ngắn của bộ môn *", contentLabel: "Đường dẫn khi bấm vào thẻ (ví dụ: /bo-mon/sao-truc-viet-nam)" },
   { key: "class-details", label: "Lớp học các bộ môn", note: "Từng bộ môn (/bo-mon/slug) - bấm thẻ trên web dẫn thẳng vào bài giới thiệu đầy đủ", tagLabel: "Biểu tượng bộ môn (ví dụ: ♫, ◉, ♩...)", priceLabel: "Đối tượng phù hợp", excerptLabel: "Mô tả ngắn trên thẻ danh sách", contentLabel: "Bạn sẽ học được gì? (mỗi dòng một ý)" },
   { key: "product-groups", label: "Nhóm sáo & phụ kiện", note: "Các nhóm như Sáo ngang, Dizi, Sáo mèo…", tagLabel: "Nhãn phụ", contentLabel: "Nội dung bổ sung" },
   { key: "product-items", label: "Từng sản phẩm", note: "Từng cây sáo hoặc phụ kiện nằm trong một nhóm", tagLabel: "Slug nhóm cha *", tagPlaceholder: "Ví dụ: sao-ngang-viet-nam", priceLabel: "Giá bán (VNĐ hoặc 'Liên hệ')", contentLabel: "Thông tin bổ sung" },
@@ -89,6 +89,7 @@ function entryHref(entry: CmsEntry) {
   if (entry.collection === "articles") return `/bai-viet/${entry.slug}`;
   if (entry.collection === "flute-tabs") return `/cam-am/${entry.slug}`;
   if (entry.collection === "free-guides") return entry.content?.startsWith("http") ? entry.content : `/huong-dan/${entry.slug}`;
+  if (entry.collection === "home-disciplines") return entry.content || `/bo-mon/${entry.slug}`;
   return "";
 }
 
@@ -1691,7 +1692,7 @@ export default function ContentAdmin() {
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     <h2 style={{ margin: 0, fontSize: 18 }}>{entry.title}</h2>
-                    {entry.price && !["class-details", "hero-slides", "social-links", "flute-tabs", "free-guides"].includes(section) && (
+                    {entry.price && !["class-details", "home-disciplines", "social-links", "flute-tabs", "free-guides"].includes(section) && (
                       <span style={{ padding: "2px 8px", background: entry.price.toLowerCase().includes("liên hệ") ? "#fef3c7" : "#ecfdf5", color: entry.price.toLowerCase().includes("liên hệ") ? "#92400e" : "#065f46", border: "1px solid rgba(0,0,0,0.06)", borderRadius: 6, fontSize: 12, fontWeight: 700 }}>
                         {entry.price}
                       </span>
@@ -1789,7 +1790,7 @@ export default function ContentAdmin() {
         <div className="admin-editor-head"><button type="button" onClick={() => setDraft(null)}>← Danh sách</button><div><small>{draft.id ? "CHỈNH SỬA" : "TẠO MỚI"}</small><h2>{draft.title || activeMeta.label}</h2>{entryHref(draft) && <a className="admin-page-url" href={entryHref(draft)} target="_blank" rel="noreferrer">saotrucauco.com{entryHref(draft)} ↗</a>}</div><button className="admin-primary" disabled={busy}>{busy ? "Đang lưu…" : "Lưu nội dung"}</button></div>
         <div className="admin-form-grid">
           <label className="wide">
-            {isTuitionSettings ? "Học phí Khóa 1 tháng *" : "Tiêu đề *"}
+            {isTuitionSettings ? "Học phí Khóa 1 tháng *" : (draft.collection === "home-disciplines" ? "Tên bộ môn *" : "Tiêu đề *")}
             <input
               required
               value={draft.title}
@@ -1801,7 +1802,7 @@ export default function ContentAdmin() {
                   slug: slugify(newTitle),
                 });
               }}
-              placeholder={isTuitionSettings ? "Ví dụ: 2.400.000đ – 3.200.000đ" : undefined}
+              placeholder={isTuitionSettings ? "Ví dụ: 2.400.000đ – 3.200.000đ" : (draft.collection === "home-disciplines" ? "Ví dụ: Sáo trúc Việt Nam" : undefined)}
             />
           </label>
           <label className="wide slug-field">Slug (đường dẫn, không dấu) *<span><input required pattern="[a-z0-9-]+" value={draft.slug} onChange={(event) => setDraft({ ...draft, slug: slugify(event.target.value) })} /><button type="button" onClick={() => setDraft({ ...draft, slug: slugify(draft.title) })}>Tạo lại</button></span></label>
@@ -1882,7 +1883,7 @@ export default function ContentAdmin() {
                 ))}
               </select>
             </label>
-          ) : (
+          ) : draft.collection === "home-disciplines" ? null : (
             <label>{isTuitionSettings ? "Tiêu đề bảng học phí" : (isPaymentSettings ? "Ngân hàng" : fieldMeta.tagLabel || "Phân loại / nhãn")}<input required={isPaymentSettings} value={draft.tag} onChange={(event) => setDraft({ ...draft, tag: event.target.value })} placeholder={isTuitionSettings ? "Ví dụ: Bảng mục học phí" : (isPaymentSettings ? "Ví dụ: STB · Sacombank" : fieldMeta.tagPlaceholder || "Ví dụ: Kỹ thuật")} /></label>
           )}
 
@@ -1897,7 +1898,7 @@ export default function ContentAdmin() {
             </label>
           )}
 
-          {!isPaymentSettings && !isTuitionSettings && !isRecommendLinks && draft.collection !== "page-contact" && draft.collection !== "class-details" && draft.collection !== "hero-slides" && draft.collection !== "social-links" && draft.collection !== "flute-tabs" && draft.collection !== "articles" && (
+          {!isPaymentSettings && !isTuitionSettings && !isRecommendLinks && draft.collection !== "page-contact" && draft.collection !== "class-details" && draft.collection !== "home-disciplines" && draft.collection !== "social-links" && draft.collection !== "flute-tabs" && draft.collection !== "articles" && (
             <label>
               <span>{fieldMeta.priceLabel || (section === "sheets" ? "Giá sheet (VNĐ hoặc 'Liên hệ') *" : "Giá (VNĐ hoặc 'Liên hệ')")}</span>
               <input
@@ -2741,6 +2742,15 @@ export default function ContentAdmin() {
                 ? "Nhập nội dung bài viết...\n\n- In đậm: **chữ in đậm** hoặc bôi đen bấm nút [B]\n- In nghiêng: *chữ in nghiêng* hoặc bôi đen bấm nút [I]\n- Vừa đậm vừa nghiêng: ***chữ vừa đậm vừa nghiêng*** hoặc bấm [BI]\n- Khoảng cách xuống dòng (Enter) được giữ nguyên 100% khi hiển thị trên website."
                 : "Nhập nội dung chi tiết..."}
             />
+          ) : draft.collection === "home-disciplines" ? (
+            <label className="wide">
+              <span>{fieldMeta.contentLabel || "Đường dẫn khi bấm vào thẻ"}</span>
+              <input
+                value={draft.content}
+                onChange={(event) => setDraft({ ...draft, content: event.target.value })}
+                placeholder="Ví dụ: /bo-mon/sao-truc-viet-nam"
+              />
+            </label>
           ) : (
             <label className="wide">{fieldMeta.contentLabel || "Nội dung"}<textarea className="content-editor" rows={12} value={draft.content} onChange={(event) => setDraft({ ...draft, content: event.target.value })} placeholder={section.includes("packages") ? "Mỗi dòng là một ý hiển thị trên website." : "Nhập nội dung chi tiết."} /></label>
           )}
