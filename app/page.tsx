@@ -265,8 +265,8 @@ export default function HomePage() {
     address: "106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam",
     desc: "Không gian học thân thiện, yên tĩnh, dễ di chuyển, phù hợp cho mọi lứa tuổi.",
     imageUrl: "/map-tanphu.jpg",
-    mapUrl: "https://www.google.com/maps/search/?api=1&query=106%2F72+H%C3%B2a+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh%2C+Vi%E1%BB%87t+Nam",
-    directionsUrl: "https://www.google.com/maps/dir/?api=1&destination=106%2F72+H%C3%B2a+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh%2C+Vi%E1%BB%87t+Nam",
+    mapUrl: "https://maps.app.goo.gl/LEoydb9aZkdu2M6J6",
+    directionsUrl: "https://maps.app.goo.gl/LEoydb9aZkdu2M6J6",
     buttonText: "Chỉ đường trên Google Maps",
   });
 
@@ -308,15 +308,16 @@ export default function HomePage() {
         if (mapEntry) {
           const rawAddress = mapEntry.content?.trim() || "106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam";
           const customUrl = mapEntry.tag?.trim();
-          const autoMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(rawAddress)}`;
-          const autoDirUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(rawAddress)}`;
+          const targetUrl = customUrl && customUrl.startsWith("http")
+            ? customUrl
+            : "https://maps.app.goo.gl/LEoydb9aZkdu2M6J6";
           setMapConfig({
             title: mapEntry.title || "Sáo Trúc Âu Cơ",
             address: rawAddress,
             desc: mapEntry.excerpt || "Không gian học thân thiện, yên tĩnh, dễ di chuyển, phù hợp cho mọi lứa tuổi.",
             imageUrl: mapEntry.imageUrl || "/map-tanphu.jpg",
-            mapUrl: customUrl && customUrl.startsWith("http") ? customUrl : autoMapUrl,
-            directionsUrl: autoDirUrl,
+            mapUrl: targetUrl,
+            directionsUrl: targetUrl,
             buttonText: mapEntry.price || "Chỉ đường trên Google Maps",
           });
         }
@@ -381,7 +382,15 @@ export default function HomePage() {
         <div className="w-full max-w-[1560px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <i className="fa-solid fa-location-dot text-white text-xs"></i>
-            <span>{mapConfig.address}</span>
+            <a
+              href={mapConfig.mapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline transition-all"
+              title="Xem trên Google Maps"
+            >
+              {mapConfig.address}
+            </a>
           </div>
           <div className="flex items-center gap-4 font-normal">
             <a

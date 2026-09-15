@@ -724,7 +724,7 @@ export default function ContentAdmin() {
           publishedAt: new Date().toISOString().slice(0, 10),
           excerpt: "Không gian học thân thiện, yên tĩnh, dễ di chuyển, phù hợp cho mọi lứa tuổi.",
           imageUrl: "/map-tanphu.jpg",
-          tag: "https://www.google.com/maps/search/?api=1&query=106%2F72+H%C3%B2a+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh%2C+Vi%E1%BB%87t+Nam",
+          tag: "https://maps.app.goo.gl/LEoydb9aZkdu2M6J6",
           price: "Chỉ đường trên Google Maps",
           content: "106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam",
           visible: true,
@@ -1051,7 +1051,7 @@ export default function ContentAdmin() {
           publishedAt: new Date().toISOString().slice(0, 10),
           excerpt: "Không gian học thân thiện, yên tĩnh, dễ di chuyển, phù hợp cho mọi lứa tuổi.",
           imageUrl: "/map-tanphu.jpg",
-          tag: "https://www.google.com/maps/search/?api=1&query=106%2F72+H%C3%B2a+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh%2C+Vi%E1%BB%87t+Nam",
+          tag: "https://maps.app.goo.gl/LEoydb9aZkdu2M6J6",
           price: "Chỉ đường trên Google Maps",
           content: "106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam",
           visible: true,
@@ -1920,14 +1920,14 @@ export default function ContentAdmin() {
               </label>
 
               <label className="wide">
-                <span>Đường dẫn Google Maps tùy chỉnh (Tùy chọn)</span>
+                <span>Đường dẫn Google Maps (Mặc định hoặc tùy chỉnh link chia sẻ)</span>
                 <input
                   value={draft.tag}
                   onChange={(event) => setDraft({ ...draft, tag: event.target.value })}
-                  placeholder="https://www.google.com/maps/... (để trống hệ thống sẽ tự động tạo link theo địa chỉ trên)"
+                  placeholder="https://maps.app.goo.gl/LEoydb9aZkdu2M6J6"
                 />
                 <small style={{ color: "#64748b", marginTop: 4 }}>
-                  💡 Bạn có thể dán link vị trí hoặc mã chia sẻ Google Maps của bạn vào đây. Nếu để trống, hệ thống sẽ tự động tạo link Google Maps chính xác theo địa chỉ phía trên.
+                  💡 Link mở vị trí trên Google Maps (mặc định: <b>https://maps.app.goo.gl/LEoydb9aZkdu2M6J6</b>). Nếu để trống, hệ thống sẽ tự động dùng link này hoặc tạo link theo địa chỉ ở trên.
                 </small>
               </label>
 
