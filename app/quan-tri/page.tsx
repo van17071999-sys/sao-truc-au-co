@@ -44,6 +44,7 @@ const collections = [
 ];
 
 const singletons = [
+  { key: "home-map", label: "Địa chỉ & Bản đồ Google Maps", note: "Địa chỉ trung tâm, link Google Maps & ảnh bản đồ (đồng bộ toàn website)" },
   { key: "settings", label: "Cài đặt chung & VietQR", note: "Thương hiệu, liên hệ và thanh toán VietQR", contentLabel: "Địa chỉ các chi nhánh (Mỗi chi nhánh 1 dòng - CN1, CN2,...)", excerptLabel: "Khẩu hiệu (Tagline)", priceLabel: "Hotline / Zalo", tagLabel: "Email liên hệ" },
   { key: "tuition", label: "Bảng học phí & Ưu đãi", note: "Mức học phí các khóa 1, 2, 3 tháng và quà tặng ưu đãi" },
   { key: "page-contact", label: "Trang Đăng ký & Tư vấn", note: "Nội dung lời dẫn, hotline, email và form đăng ký (/dang-ky-hoc)" },
@@ -93,6 +94,7 @@ function entryHref(entry: CmsEntry) {
   if (entry.collection === "free-guides") return entry.content?.startsWith("http") ? entry.content : `/huong-dan/${entry.slug}`;
   if (entry.collection === "home-disciplines") return entry.content || `/bo-mon/${entry.slug}`;
   if (entry.collection === "home-intro") return "/#gioi-thieu";
+  if (entry.collection === "home-map") return "/#ban-do";
   if (entry.collection === "classroom-photos") return entry.content || "/#hinh-anh-lop-hoc";
   return "";
 }
@@ -617,6 +619,7 @@ export default function ContentAdmin() {
   const isPaymentSettings = draft?.collection === "settings" && draft.slug === "payment";
   const isTuitionSettings = (draft?.collection === "settings" && draft.slug === "tuition") || section === "tuition";
   const isRecommendLinks = (draft?.collection === "settings" && draft.slug === "recommend-links") || section === "recommend-links";
+  const isHomeMapSettings = (draft?.collection === "home-map" || (draft?.collection === "settings" && draft.slug === "map")) || section === "home-map";
   const fieldMeta = activeMeta as typeof activeMeta & {
     tagLabel?: string;
     tagPlaceholder?: string;
@@ -708,6 +711,25 @@ export default function ContentAdmin() {
           const normTag = entry.tag.replace(/^sheet:/, "");
           return normTag === sheetDisciplineFilter || slugify(normTag) === sheetDisciplineFilter;
         });
+      }
+    }
+    if (section === "home-map") {
+      list = entries.filter((entry) => entry.collection === "home-map" || (entry.collection === "settings" && entry.slug === "map"));
+      if (!list.length) {
+        list = [{
+          id: "home-map-01",
+          collection: "home-map",
+          title: "Sáo Trúc Âu Cơ",
+          slug: "map",
+          publishedAt: new Date().toISOString().slice(0, 10),
+          excerpt: "Không gian học thân thiện, yên tĩnh, dễ di chuyển, phù hợp cho mọi lứa tuổi.",
+          imageUrl: "/map-tanphu.jpg",
+          tag: "https://www.google.com/maps/search/?api=1&query=106%2F72+H%C3%B2a+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh%2C+Vi%E1%BB%87t+Nam",
+          price: "Chỉ đường trên Google Maps",
+          content: "106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam",
+          visible: true,
+          sortOrder: 1,
+        }];
       }
     }
     if (section === "tuition") {
@@ -1016,6 +1038,28 @@ export default function ContentAdmin() {
       setDraft({ ...preferredEntry });
       return;
     }
+    if (section === "home-map") {
+      const mapEntry = entries.find((entry) => entry.collection === "home-map" || (entry.collection === "settings" && entry.slug === "map"));
+      if (mapEntry) {
+        setDraft({ ...mapEntry });
+      } else {
+        setDraft({
+          id: "home-map-01",
+          collection: "home-map",
+          title: "Sáo Trúc Âu Cơ",
+          slug: "map",
+          publishedAt: new Date().toISOString().slice(0, 10),
+          excerpt: "Không gian học thân thiện, yên tĩnh, dễ di chuyển, phù hợp cho mọi lứa tuổi.",
+          imageUrl: "/map-tanphu.jpg",
+          tag: "https://www.google.com/maps/search/?api=1&query=106%2F72+H%C3%B2a+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh%2C+Vi%E1%BB%87t+Nam",
+          price: "Chỉ đường trên Google Maps",
+          content: "106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam",
+          visible: true,
+          sortOrder: 1,
+        });
+      }
+      return;
+    }
     if (section === "tuition") {
       const tuitionEntry = entries.find((entry) => entry.collection === "settings" && entry.slug === "tuition");
       if (tuitionEntry) {
@@ -1173,6 +1217,22 @@ export default function ContentAdmin() {
     setBusy(true);
     setNotice("");
     let payload = draft;
+    if (isHomeMapSettings || payload.collection === "home-map" || (payload.collection === "settings" && payload.slug === "map")) {
+      payload = {
+        ...payload,
+        collection: "home-map",
+        slug: "map",
+        id: payload.id || "home-map-01",
+        title: payload.title || "Sáo Trúc Âu Cơ",
+        content: payload.content || "106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam",
+        imageUrl: payload.imageUrl || "/map-tanphu.jpg",
+        price: payload.price || "Chỉ đường trên Google Maps",
+        excerpt: payload.excerpt || "Không gian học thân thiện, yên tĩnh, dễ di chuyển, phù hợp cho mọi lứa tuổi.",
+        tag: payload.tag || "",
+        visible: true,
+        sortOrder: 1,
+      };
+    }
     if (section === "tuition" || (payload.collection === "settings" && payload.slug === "tuition")) {
       payload = {
         ...payload,
@@ -1793,7 +1853,143 @@ export default function ContentAdmin() {
       </div> : <form className="admin-editor" onSubmit={save}>
         <div className="admin-editor-head"><button type="button" onClick={() => setDraft(null)}>← Danh sách</button><div><small>{draft.id ? "CHỈNH SỬA" : "TẠO MỚI"}</small><h2>{draft.title || activeMeta.label}</h2>{entryHref(draft) && <a className="admin-page-url" href={entryHref(draft)} target="_blank" rel="noreferrer">saotrucauco.com{entryHref(draft)} ↗</a>}</div><button className="admin-primary" disabled={busy}>{busy ? "Đang lưu…" : "Lưu nội dung"}</button></div>
         <div className="admin-form-grid">
-          <label className="wide">
+          {isHomeMapSettings ? (
+            <div className="wide" style={{ display: "grid", gap: 18 }}>
+              <div style={{ padding: "14px 18px", background: "#fdf8f4", border: "1px solid #ead7c8", borderRadius: 8, fontSize: 13, color: "#70141D", lineHeight: 1.6 }}>
+                <b style={{ fontSize: 14 }}>✦ CÀI ĐẶT ĐỒNG BỘ ĐỊA CHỈ & BẢN ĐỒ GOOGLE MAPS TOÀN WEBSITE:</b>
+                <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
+                  <li>Khi bạn thay đổi hoặc chuyển <b>Địa chỉ</b> tại đây, hệ thống sẽ <b>tự động đồng bộ</b> ngay lập tức trên toàn bộ website.</li>
+                  <li>Cập nhật đồng thời: <b>Khung bản đồ mô phỏng trang chủ</b>, <b>Thanh tiện ích trên cùng (Topbar)</b>, <b>Chân trang (Footer)</b>.</li>
+                  <li>Khi khách hàng bấm vào <b>chữ "Sáo Trúc Âu Cơ"</b> hoặc nút <b>"Chỉ đường trên Google Maps"</b>, web sẽ tự động mở Google Maps dẫn đường tới đúng địa chỉ mới!</li>
+                </ul>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <label>
+                  <span>Tên cơ sở / Điểm định vị *</span>
+                  <input
+                    required
+                    value={draft.title}
+                    onChange={(event) => setDraft({ ...draft, title: event.target.value, slug: "map" })}
+                    placeholder="Ví dụ: Sáo Trúc Âu Cơ"
+                    style={{ fontWeight: 700 }}
+                  />
+                  <small style={{ color: "#64748b", marginTop: 4 }}>
+                    Tên hiển thị trên nhãn ghim đỏ ở bản đồ và tiêu đề thẻ
+                  </small>
+                </label>
+
+                <label>
+                  <span>Chữ trên nút dẫn đường Google Maps *</span>
+                  <input
+                    required
+                    value={draft.price}
+                    onChange={(event) => setDraft({ ...draft, price: event.target.value })}
+                    placeholder="Ví dụ: Chỉ đường trên Google Maps"
+                    style={{ fontWeight: 600 }}
+                  />
+                  <small style={{ color: "#64748b", marginTop: 4 }}>
+                    Chữ hiển thị trên nút bấm màu đỏ ở chân khung bản đồ
+                  </small>
+                </label>
+              </div>
+
+              <label className="wide">
+                <span>Địa chỉ chi tiết (Đồng bộ hiển thị toàn website) *</span>
+                <input
+                  required
+                  value={draft.content}
+                  onChange={(event) => setDraft({ ...draft, content: event.target.value })}
+                  placeholder="Ví dụ: 106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam"
+                  style={{ fontSize: 15, fontWeight: 700, color: "#70141D" }}
+                />
+                <small style={{ color: "#64748b", marginTop: 4 }}>
+                  Nếu chuyển địa chỉ mới, bạn chỉ cần sửa ô này rồi bấm "Lưu nội dung" là toàn bộ trang web tự đổi theo!
+                </small>
+              </label>
+
+              <label className="wide">
+                <span>Mô tả ngắn không gian học (hiển thị cạnh bản đồ)</span>
+                <textarea
+                  rows={2}
+                  value={draft.excerpt}
+                  onChange={(event) => setDraft({ ...draft, excerpt: event.target.value })}
+                  placeholder="Ví dụ: Không gian học thân thiện, yên tĩnh, dễ di chuyển, phù hợp cho mọi lứa tuổi."
+                  style={{ width: "100%", padding: "8px 12px", border: "1px solid #ccd2dc", borderRadius: 8, fontSize: 14, fontFamily: "inherit" }}
+                />
+              </label>
+
+              <label className="wide">
+                <span>Đường dẫn Google Maps tùy chỉnh (Tùy chọn)</span>
+                <input
+                  value={draft.tag}
+                  onChange={(event) => setDraft({ ...draft, tag: event.target.value })}
+                  placeholder="https://www.google.com/maps/... (để trống hệ thống sẽ tự động tạo link theo địa chỉ trên)"
+                />
+                <small style={{ color: "#64748b", marginTop: 4 }}>
+                  💡 Bạn có thể dán link vị trí hoặc mã chia sẻ Google Maps của bạn vào đây. Nếu để trống, hệ thống sẽ tự động tạo link Google Maps chính xác theo địa chỉ phía trên.
+                </small>
+              </label>
+
+              <div className="wide" style={{ display: "grid", gap: 8 }}>
+                <label>
+                  <span>Ảnh bản đồ mô phỏng (Tùy chọn tải ảnh mới)</span>
+                  <div className="admin-upload">
+                    <input
+                      value={draft.imageUrl}
+                      onChange={(event) => setDraft({ ...draft, imageUrl: event.target.value })}
+                      placeholder="Mặc định: /map-tanphu.jpg"
+                    />
+                    <span>
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,image/gif"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          if (file) void uploadImage(file);
+                        }}
+                      />
+                      Tải ảnh lên
+                    </span>
+                  </div>
+                </label>
+                {draft.imageUrl && (
+                  <div style={{ display: "flex", gap: 14, alignItems: "center", background: "#f8fafc", padding: "10px 14px", borderRadius: 8, border: "1px solid #e2e8f0" }}>
+                    <img
+                      src={draft.imageUrl}
+                      alt="Xem trước ảnh bản đồ"
+                      style={{ width: 140, height: 80, objectFit: "cover", borderRadius: 6, border: "1px solid #cbd5e1", background: "#fff" }}
+                      onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }}
+                    />
+                    <div>
+                      <b style={{ color: "#1e293b", fontSize: 13 }}>✓ Ảnh nền bản đồ đang sử dụng:</b>
+                      <p style={{ margin: "3px 0 0", color: "#64748b", fontSize: 12 }}>Ảnh này hiển thị làm nền bản đồ mô phỏng ở trang chủ.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Live Preview Card */}
+              <div style={{ marginTop: 8, padding: "16px 18px", background: "#FAF7F2", borderRadius: 12, border: "1px solid #EADBCA" }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "#70141D", display: "block", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  👁 Xem trước thẻ bản đồ trên trang chủ:
+                </span>
+                <div style={{ background: "#fff", padding: "14px 16px", borderRadius: 10, border: "1px solid #ECE5DC", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
+                  <div style={{ flex: 1, minWidth: 200 }}>
+                    <strong style={{ display: "block", color: "#70141D", fontSize: 14 }}>{draft.title || "Sáo Trúc Âu Cơ"}</strong>
+                    <span style={{ display: "block", color: "#6B605A", fontSize: 12, marginTop: 3 }}>
+                      📍 {draft.content || "106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam"}
+                    </span>
+                  </div>
+                  <span style={{ padding: "7px 14px", background: "#70141D", color: "#fff", borderRadius: 6, fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    {draft.price || "Chỉ đường trên Google Maps"} →
+                  </span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <label className="wide">
             {isTuitionSettings ? "Học phí Khóa 1 tháng *" : (draft.collection === "home-disciplines" ? "Tên bộ môn *" : (draft.collection === "home-intro" ? "Tiêu đề phần giới thiệu *" : (draft.collection === "classroom-photos" ? "Tiêu đề ảnh / Tên hoạt động *" : "Tiêu đề *")))}
             <input
               required
@@ -2767,6 +2963,8 @@ export default function ContentAdmin() {
             </label>
           ) : (
             <label className="wide">{fieldMeta.contentLabel || "Nội dung"}<textarea className="content-editor" rows={12} value={draft.content} onChange={(event) => setDraft({ ...draft, content: event.target.value })} placeholder={section.includes("packages") ? "Mỗi dòng là một ý hiển thị trên website." : "Nhập nội dung chi tiết."} /></label>
+          )}
+          </>
           )}
 
           <label className="admin-check wide"><input type="checkbox" checked={draft.visible} onChange={(event) => setDraft({ ...draft, visible: event.target.checked })} />Hiển thị trên website</label>

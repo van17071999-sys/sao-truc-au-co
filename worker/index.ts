@@ -84,6 +84,9 @@ const detailedCmsEntries = [
   // Khung giới thiệu lớp học & chân dung nghệ sĩ ở trang chủ
   ["home-intro-01", "home-intro", "Lớp Dạy Thổi Sáo Tại TP.HCM – Sáo Trúc Âu Cơ", "gioi-thieu-lop-hoc", "Trung tâm Sáo Trúc Âu Cơ dạy thổi sáo trực tiếp tại Tân Phú, TP.HCM, hỗ trợ từ người mới bắt đầu đến trình độ nâng cao. Chúng tôi giảng dạy sáo trúc Việt Nam, Dizi, Recorder, Flute, Tiêu và các loại sáo dân tộc khác, với hình thức học linh hoạt: học tại lớp, học online 1 kèm 1 và gia sư tại nhà.", "/intro-portrait.jpg", "Mỗi người đều có thể thổi được những giai điệu đẹp chỉ cần bắt đầu đúng cách.", "Xem lớp học tại TP.HCM", "/lop-hoc", 1],
 
+  // Địa chỉ & Bản đồ Google Maps ở trang chủ (đồng bộ toàn website)
+  ["home-map-01", "home-map", "Sáo Trúc Âu Cơ", "map", "Không gian học thân thiện, yên tĩnh, dễ di chuyển, phù hợp cho mọi lứa tuổi.", "/map-tanphu.jpg", "https://www.google.com/maps/search/?api=1&query=106%2F72+H%C3%B2a+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh%2C+Vi%E1%BB%87t+Nam", "Chỉ đường trên Google Maps", "106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam", 1],
+
   // Hình ảnh lớp học & học viên ở trang chủ
   ["photo-class-01", "classroom-photos", "Giờ học trực tiếp tại trung tâm", "gio-hoc-truc-tiep", "Giờ học trực tiếp tại trung tâm", "/class-lesson.jpg", "Lớp học", "", "/lop-hoc", 1],
   ["photo-class-02", "classroom-photos", "Học viên của Sáo Trúc Âu Cơ", "hoc-vien-au-co", "Học viên của Sáo Trúc Âu Cơ", "/class-group.jpg", "Tập thể", "", "/lop-hoc", 2],

@@ -260,6 +260,15 @@ export default function HomePage() {
   const [selectedPhoto, setSelectedPhoto] = useState<null | { image: string; caption: string; title: string; href?: string }>(null);
   const [disciplines, setDisciplines] = useState(disciplinesList);
   const [homeIntro, setHomeIntro] = useState(defaultHomeIntro);
+  const [mapConfig, setMapConfig] = useState({
+    title: "Sáo Trúc Âu Cơ",
+    address: "106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam",
+    desc: "Không gian học thân thiện, yên tĩnh, dễ di chuyển, phù hợp cho mọi lứa tuổi.",
+    imageUrl: "/map-tanphu.jpg",
+    mapUrl: "https://www.google.com/maps/search/?api=1&query=106%2F72+H%C3%B2a+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh%2C+Vi%E1%BB%87t+Nam",
+    directionsUrl: "https://www.google.com/maps/dir/?api=1&destination=106%2F72+H%C3%B2a+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh%2C+Vi%E1%BB%87t+Nam",
+    buttonText: "Chỉ đường trên Google Maps",
+  });
 
   useEffect(() => {
     let active = true;
@@ -293,6 +302,22 @@ export default function HomePage() {
             content: intro.content || defaultHomeIntro.content,
             tag: intro.tag || defaultHomeIntro.tag,
             visible: intro.visible !== false,
+          });
+        }
+        const mapEntry = (data.entries || []).find((e) => e.collection === "home-map" || (e.collection === "settings" && e.slug === "map"));
+        if (mapEntry) {
+          const rawAddress = mapEntry.content?.trim() || "106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam";
+          const customUrl = mapEntry.tag?.trim();
+          const autoMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(rawAddress)}`;
+          const autoDirUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(rawAddress)}`;
+          setMapConfig({
+            title: mapEntry.title || "Sáo Trúc Âu Cơ",
+            address: rawAddress,
+            desc: mapEntry.excerpt || "Không gian học thân thiện, yên tĩnh, dễ di chuyển, phù hợp cho mọi lứa tuổi.",
+            imageUrl: mapEntry.imageUrl || "/map-tanphu.jpg",
+            mapUrl: customUrl && customUrl.startsWith("http") ? customUrl : autoMapUrl,
+            directionsUrl: autoDirUrl,
+            buttonText: mapEntry.price || "Chỉ đường trên Google Maps",
           });
         }
         const cmsPhotos = (data.entries || [])
@@ -356,7 +381,7 @@ export default function HomePage() {
         <div className="w-full max-w-[1560px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <i className="fa-solid fa-location-dot text-white text-xs"></i>
-            <span>106/72 Hòa Bình, Tân Phú, Hồ Chí Minh</span>
+            <span>{mapConfig.address}</span>
           </div>
           <div className="flex items-center gap-4 font-normal">
             <a
@@ -749,10 +774,10 @@ export default function HomePage() {
                 </h2>
                 <p className="text-xs sm:text-sm text-[#2B2624] font-semibold flex items-center gap-2">
                   <i className="fa-solid fa-location-dot text-[#70141D]"></i>
-                  <span>106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam</span>
+                  <span>{mapConfig.address}</span>
                 </p>
                 <p className="text-xs text-[#6B605A] leading-relaxed">
-                  Không gian học thân thiện, yên tĩnh, dễ di chuyển, phù hợp cho mọi lứa tuổi.
+                  {mapConfig.desc}
                 </p>
               </div>
 
@@ -777,13 +802,13 @@ export default function HomePage() {
             </div>
 
             {/* Column 2 (Center 4 cols): Embedded Map Card */}
-            <div className="lg:col-span-4 flex flex-col">
+            <div id="ban-do" className="lg:col-span-4 flex flex-col">
               <div className="rounded-xl overflow-hidden border border-[#ECE5DC] shadow-2xs relative group bg-white h-full flex flex-col justify-between">
                 {/* Map Area */}
                 <div className="relative h-44 sm:h-48 overflow-hidden bg-stone-100 grow">
                   {/* Clickable Map Background */}
                   <a
-                    href="https://www.google.com/maps/search/?api=1&query=106%2F72+H%C3%B2a+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh%2C+Vi%E1%BB%87t+Nam"
+                    href={mapConfig.mapUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block w-full h-full cursor-pointer"
@@ -792,8 +817,8 @@ export default function HomePage() {
                     <picture>
                       <source srcSet="/map-tanphu.webp" type="image/webp" />
                       <img
-                        src="/map-tanphu.jpg"
-                        alt="Bản đồ chỉ đường đến Sáo Trúc Âu Cơ Tân Phú"
+                        src={mapConfig.imageUrl}
+                        alt={`Bản đồ chỉ đường đến ${mapConfig.title}`}
                         className="w-full h-full object-cover object-center group-hover:scale-103 transition-transform duration-300"
                       />
                     </picture>
@@ -801,42 +826,42 @@ export default function HomePage() {
 
                   {/* Clickable Pill: Sáo Trúc Âu Cơ -> Mở trực tiếp Google Maps */}
                   <a
-                    href="https://www.google.com/maps/search/?api=1&query=106%2F72+H%C3%B2a+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh%2C+Vi%E1%BB%87t+Nam"
+                    href={mapConfig.mapUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/95 hover:bg-white backdrop-blur-xs px-3 py-1.5 rounded-lg shadow-md hover:shadow-xl border border-[#EADBCA] hover:border-[#70141D]/50 text-xs sm:text-[13px] font-bold text-[#70141D] flex items-center gap-2 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer z-10 select-none group/pin"
-                    title="Bấm vào chữ Sáo Trúc Âu Cơ để mở Google Maps"
+                    title={`Bấm vào chữ ${mapConfig.title} để mở Google Maps`}
                   >
                     <span className="relative flex h-2.5 w-2.5 items-center justify-center">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                       <i className="fa-solid fa-location-dot text-red-600 text-xs relative"></i>
                     </span>
-                    <span className="tracking-tight hover:underline">Sáo Trúc Âu Cơ</span>
+                    <span className="tracking-tight hover:underline">{mapConfig.title}</span>
                     <i className="fa-solid fa-arrow-up-right-from-square text-[10px] text-[#70141D]/70 group-hover/pin:text-[#70141D] group-hover/pin:translate-x-0.5 transition-all"></i>
                   </a>
                 </div>
 
                 <div className="p-3 bg-white border-t border-[#EADBCA] flex items-center justify-between gap-2 shrink-0">
                   <a
-                    href="https://www.google.com/maps/search/?api=1&query=106%2F72+H%C3%B2a+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh%2C+Vi%E1%BB%87t+Nam"
+                    href={mapConfig.mapUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs min-w-0 group/info cursor-pointer block"
                     title="Bấm để xem trên Google Maps"
                   >
-                    <span className="font-bold text-[#70141D] block truncate group-hover/info:underline">Sáo Trúc Âu Cơ</span>
-                    <span className="text-[10.5px] text-[#6B605A] block truncate" title="106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam">
-                      106/72 Hòa Bình, Tân Phú, TP.HCM
+                    <span className="font-bold text-[#70141D] block truncate group-hover/info:underline">{mapConfig.title}</span>
+                    <span className="text-[10.5px] text-[#6B605A] block truncate" title={mapConfig.address}>
+                      {mapConfig.address}
                     </span>
                   </a>
                   <a
-                    href="https://www.google.com/maps/dir/?api=1&destination=106%2F72+H%C3%B2a+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh%2C+Vi%E1%BB%87t+Nam"
+                    href={mapConfig.directionsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-3.5 py-1.5 bg-[#70141D] hover:bg-[#580f16] active:bg-[#43090f] text-white text-[11px] font-semibold rounded-md transition-all duration-200 flex items-center gap-1.5 shrink-0 shadow-xs hover:shadow hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                     title="Chuyển qua Google Maps chỉ đường"
                   >
-                    <span>Chỉ đường trên Google Maps</span>
+                    <span>{mapConfig.buttonText}</span>
                     <i className="fa-solid fa-arrow-right text-[9px]"></i>
                   </a>
                 </div>
@@ -1124,12 +1149,12 @@ export default function HomePage() {
                         Địa chỉ lớp học:
                       </span>
                       <a
-                        href="https://maps.google.com/?q=106/72+Hoà+Bình,+Phường+Hiệp+Tân,+Quận+Tân+Phú,+TP.HCM"
+                        href={mapConfig.mapUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-sm font-semibold text-[#3D2925] hover:text-[#70141D] transition-colors leading-relaxed block"
                       >
-                        106/72 Hoà Bình, P. Tân Phú, HCM
+                        {mapConfig.address}
                       </a>
                     </div>
                   </div>
@@ -1228,7 +1253,7 @@ export default function HomePage() {
               © 2026 <strong className="text-[#70141D] font-bold">Sáo Trúc Âu Cơ</strong>. Tất cả các quyền được bảo lưu.
             </p>
             <p className="normal-case tracking-normal text-[#9E8982]">
-              106/72 Hoà Bình, P. Tân Phú, HCM · Hotline: 0374 261 368
+              {mapConfig.address} · Hotline: 0374 261 368
             </p>
           </div>
 
