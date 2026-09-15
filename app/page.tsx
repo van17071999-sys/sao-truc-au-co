@@ -1076,52 +1076,26 @@ export default function HomePage() {
                 Không gian học tập và thực hành nhạc cụ dân tộc truyền thống uy tín tại TP.HCM. Đào tạo từ căn bản đến nâng cao cho mọi lứa tuổi, dạy trực tiếp và online.
               </p>
 
-              {/* Social Channels */}
-              <div className="pt-1">
+              {/* Student Attendance & Portal */}
+              <div className="pt-2">
                 <span className="block text-xs font-semibold text-[#8C6E66] uppercase tracking-wider mb-2.5">
-                  Kết nối cùng Âu Cơ:
+                  Điểm danh & Học viên:
                 </span>
-                <div className="flex items-center gap-2.5">
-                  <a
-                    href="https://www.youtube.com/@saotrucauco"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-full bg-[#70141D] text-white hover:bg-[#8e1d28] hover:scale-108 flex items-center justify-center transition-all shadow-xs"
-                    aria-label="YouTube"
-                    title="Kênh YouTube Sáo Trúc Âu Cơ"
-                  >
-                    <i className="fa-brands fa-youtube text-sm"></i>
-                  </a>
-                  <a
-                    href="https://www.facebook.com/saotrucauco"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-full bg-[#70141D] text-white hover:bg-[#8e1d28] hover:scale-108 flex items-center justify-center transition-all shadow-xs"
-                    aria-label="Facebook"
-                    title="Trang Facebook Sáo Trúc Âu Cơ"
-                  >
-                    <i className="fa-brands fa-facebook text-sm"></i>
-                  </a>
-                  <a
-                    href="https://www.tiktok.com/@saotrucauco"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-full bg-[#70141D] text-white hover:bg-[#8e1d28] hover:scale-108 flex items-center justify-center transition-all shadow-xs"
-                    aria-label="TikTok"
-                    title="Kênh TikTok Sáo Trúc Âu Cơ"
-                  >
-                    <i className="fa-brands fa-tiktok text-sm"></i>
-                  </a>
-                  <a
-                    href="https://www.instagram.com/saotrucauco"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-full bg-[#70141D] text-white hover:bg-[#8e1d28] hover:scale-108 flex items-center justify-center transition-all shadow-xs"
-                    aria-label="Instagram"
-                    title="Instagram Sáo Trúc Âu Cơ"
-                  >
-                    <i className="fa-brands fa-instagram text-sm"></i>
-                  </a>
+                <Link
+                  href="/diem-danh"
+                  className="inline-flex items-center gap-2.5 px-4 py-2.5 bg-[#70141D] hover:bg-[#8e1d28] active:bg-[#580f16] text-white rounded-xl text-xs font-semibold shadow-sm hover:shadow transition-all group cursor-pointer border border-[#8e1d28]/30"
+                  title="Tra cứu điểm danh, số buổi học và hóa đơn học phí"
+                >
+                  <i className="fa-solid fa-graduation-cap text-amber-300 text-sm group-hover:scale-110 transition-transform"></i>
+                  <span>Tra cứu điểm danh & Hóa đơn</span>
+                  <i className="fa-solid fa-arrow-right text-[10px] text-white/80 group-hover:translate-x-0.5 transition-transform"></i>
+                </Link>
+                <div className="mt-3 flex items-center gap-2 text-xs text-[#8C6E66]">
+                  <span className="text-[11px]">Kết nối MXH:</span>
+                  <a href="https://www.youtube.com/@saotrucauco" target="_blank" rel="noopener noreferrer" className="hover:text-[#70141D] transition-colors p-1" title="YouTube"><i className="fa-brands fa-youtube text-xs"></i></a>
+                  <a href="https://www.facebook.com/saotrucauco" target="_blank" rel="noopener noreferrer" className="hover:text-[#70141D] transition-colors p-1" title="Facebook"><i className="fa-brands fa-facebook text-xs"></i></a>
+                  <a href="https://www.tiktok.com/@saotrucauco" target="_blank" rel="noopener noreferrer" className="hover:text-[#70141D] transition-colors p-1" title="TikTok"><i className="fa-brands fa-tiktok text-xs"></i></a>
+                  <a href="https://www.instagram.com/saotrucauco" target="_blank" rel="noopener noreferrer" className="hover:text-[#70141D] transition-colors p-1" title="Instagram"><i className="fa-brands fa-instagram text-xs"></i></a>
                 </div>
               </div>
             </div>

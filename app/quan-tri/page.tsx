@@ -23,6 +23,7 @@ type CmsEntry = {
 };
 
 const collections = [
+  { key: "students", label: "Học viên & Điểm danh", note: "Quản lý danh sách học viên, điểm danh buổi học (+1 buổi), tạo hóa đơn và link tra cứu", priceLabel: "Học phí", tagLabel: "Mã học viên", excerptLabel: "Số điện thoại" },
   { key: "services", label: "8 mục chính", note: "Các thẻ lớn trên trang chủ", priceLabel: "Giá / Phí (VNĐ hoặc 'Liên hệ')" },
   { key: "home-intro", label: "Giới thiệu lớp học TP.HCM", note: "Khung giới thiệu lớp học & ảnh chân dung trên trang chủ (thay đổi ảnh chân dung, tiêu đề, mô tả, nút bấm và câu trích dẫn)", tagLabel: "Câu trích dẫn bên phải", tagPlaceholder: "Ví dụ: Mỗi người đều có thể thổi được những giai điệu đẹp chỉ cần bắt đầu đúng cách.", priceLabel: "Chữ trên nút bấm", pricePlaceholder: "Ví dụ: Xem lớp học tại TP.HCM", excerptLabel: "Nội dung giới thiệu lớp học *", excerptPlaceholder: "Nhập nội dung giới thiệu...", contentLabel: "Đường dẫn khi bấm nút", contentPlaceholder: "Ví dụ: /lop-hoc" },
   { key: "home-disciplines", label: "Các bộ môn giảng dạy", note: "Các thẻ bộ môn ở mục 'Các Bộ Môn Giảng Dạy' trên trang chủ (thay đổi ảnh, tên bộ môn, mô tả ngắn và liên kết)", excerptLabel: "Mô tả ngắn của bộ môn *", contentLabel: "Đường dẫn khi bấm vào thẻ (ví dụ: /bo-mon/sao-truc-viet-nam)" },
@@ -96,6 +97,7 @@ function entryHref(entry: CmsEntry) {
   if (entry.collection === "home-intro") return "/#gioi-thieu";
   if (entry.collection === "home-map") return "/#ban-do";
   if (entry.collection === "classroom-photos") return entry.content || "/#hinh-anh-lop-hoc";
+  if (entry.collection === "students") return `/diem-danh?id=${entry.slug || entry.id}`;
   return "";
 }
 
@@ -312,6 +314,66 @@ function parseRecommendToFields(content: string, title?: string): RecommendField
 
 function assembleRecommendFields(f: RecommendFields): string {
   return `${f.badge1}|${f.title1}|${f.href1}\n${f.badge2}|${f.title2}|${f.href2}\n${f.badge3}|${f.title3}|${f.href3}`;
+}
+
+type StudentFields = {
+  status: string;
+  phone: string;
+  course: string;
+  packageSessions: number;
+  attendedSessions: number;
+  tuition: string;
+  invoiceCode: string;
+  invoiceDate: string;
+  unitPrice: string;
+  totalAmount: string;
+  paidAmount: string;
+  debtAmount: string;
+  paymentStatus: string;
+  attendanceList: Array<{ date: string; status: string; note: string }>;
+};
+
+function parseStudentFields(content: string, fallbackPhone = "", fallbackPrice = ""): StudentFields {
+  try {
+    const d = JSON.parse(content || "{}");
+    return {
+      status: d.status || "Đang học",
+      phone: d.phone || fallbackPhone || "09xxxxxxx",
+      course: d.course || "Sáo trúc cơ bản",
+      packageSessions: Number(d.packageSessions || d.totalSessions || 12),
+      attendedSessions: Number(d.attendedSessions || 0),
+      tuition: d.tuition || fallbackPrice || "3.600.000đ",
+      invoiceCode: d.invoiceCode || `HD-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`,
+      invoiceDate: d.invoiceDate || new Date().toLocaleDateString("vi-VN"),
+      unitPrice: d.unitPrice || "300.000đ",
+      totalAmount: d.totalAmount || fallbackPrice || "3.600.000đ",
+      paidAmount: d.paidAmount || fallbackPrice || "3.600.000đ",
+      debtAmount: d.debtAmount || "0đ",
+      paymentStatus: d.paymentStatus || "Đã thanh toán",
+      attendanceList: Array.isArray(d.attendanceList) ? d.attendanceList : [],
+    };
+  } catch {
+    return {
+      status: "Đang học",
+      phone: fallbackPhone || "09xxxxxxx",
+      course: "Sáo trúc cơ bản",
+      packageSessions: 12,
+      attendedSessions: 0,
+      tuition: fallbackPrice || "3.600.000đ",
+      invoiceCode: `HD-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`,
+      invoiceDate: new Date().toLocaleDateString("vi-VN"),
+      unitPrice: "300.000đ",
+      totalAmount: fallbackPrice || "3.600.000đ",
+      paidAmount: fallbackPrice || "3.600.000đ",
+      debtAmount: "0đ",
+      paymentStatus: "Đã thanh toán",
+      attendanceList: [],
+    };
+  }
+}
+
+function assembleStudentFields(f: StudentFields): string {
+  return JSON.stringify(f);
 }
 
 type ClassDetailFields = {
@@ -620,6 +682,7 @@ export default function ContentAdmin() {
   const isTuitionSettings = (draft?.collection === "settings" && draft.slug === "tuition") || section === "tuition";
   const isRecommendLinks = (draft?.collection === "settings" && draft.slug === "recommend-links") || section === "recommend-links";
   const isHomeMapSettings = (draft?.collection === "home-map" || (draft?.collection === "settings" && draft.slug === "map")) || section === "home-map";
+  const isStudents = (draft?.collection === "students") || section === "students";
   const fieldMeta = activeMeta as typeof activeMeta & {
     tagLabel?: string;
     tagPlaceholder?: string;
@@ -727,6 +790,50 @@ export default function ContentAdmin() {
           tag: "https://maps.app.goo.gl/LEoydb9aZkdu2M6J6",
           price: "Chỉ đường trên Google Maps",
           content: "106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam",
+          visible: true,
+          sortOrder: 1,
+        }];
+      }
+    }
+    if (section === "students") {
+      list = entries.filter((entry) => entry.collection === "students");
+      if (!list.length) {
+        list = [{
+          id: "student-01",
+          collection: "students",
+          title: "Nguyễn Văn An",
+          slug: "HV-2026-00128",
+          publishedAt: new Date().toISOString().slice(0, 10),
+          excerpt: "09xxxxxxx",
+          imageUrl: "/avatar.png",
+          tag: "HV-2026-00128",
+          price: "3.600.000đ",
+          content: JSON.stringify({
+            name: "Nguyễn Văn An",
+            status: "Đang học",
+            phone: "09xxxxxxx",
+            course: "Sáo trúc cơ bản",
+            packageSessions: 12,
+            tuition: "3.600.000đ",
+            attendedSessions: 8,
+            invoiceCode: "HD-2026-00128",
+            invoiceDate: "15/09/2026",
+            unitPrice: "300.000đ",
+            totalAmount: "3.600.000đ",
+            paidAmount: "3.600.000đ",
+            debtAmount: "0đ",
+            paymentStatus: "Đã thanh toán",
+            attendanceList: [
+              { date: "15/09/2026", status: "Đã học", note: "Đã điểm danh" },
+              { date: "12/09/2026", status: "Đã học", note: "-" },
+              { date: "08/09/2026", status: "Đã học", note: "-" },
+              { date: "05/09/2026", status: "Đã học", note: "-" },
+              { date: "01/09/2026", status: "Đã học", note: "-" },
+              { date: "28/08/2026", status: "Đã học", note: "-" },
+              { date: "25/08/2026", status: "Đã học", note: "-" },
+              { date: "22/08/2026", status: "Đã học", note: "-" }
+            ]
+          }),
           visible: true,
           sortOrder: 1,
         }];
@@ -1038,6 +1145,39 @@ export default function ContentAdmin() {
       setDraft({ ...preferredEntry });
       return;
     }
+    if (section === "students") {
+      const code = `HV-2026-${Math.floor(100 + Math.random() * 900)}`;
+      setDraft({
+        id: `student-${Date.now()}`,
+        collection: "students",
+        title: "",
+        slug: code,
+        publishedAt: new Date().toISOString().slice(0, 10),
+        excerpt: "",
+        imageUrl: "/avatar.png",
+        tag: code,
+        price: "3.600.000đ",
+        content: JSON.stringify({
+          status: "Đang học",
+          phone: "",
+          course: "Sáo trúc cơ bản",
+          packageSessions: 12,
+          attendedSessions: 0,
+          tuition: "3.600.000đ",
+          invoiceCode: `HD-2026-${Math.floor(10000 + Math.random() * 90000)}`,
+          invoiceDate: new Date().toLocaleDateString("vi-VN"),
+          unitPrice: "300.000đ",
+          totalAmount: "3.600.000đ",
+          paidAmount: "3.600.000đ",
+          debtAmount: "0đ",
+          paymentStatus: "Đã thanh toán",
+          attendanceList: [],
+        }),
+        visible: true,
+        sortOrder: 1,
+      });
+      return;
+    }
     if (section === "home-map") {
       const mapEntry = entries.find((entry) => entry.collection === "home-map" || (entry.collection === "settings" && entry.slug === "map"));
       if (mapEntry) {
@@ -1211,12 +1351,59 @@ export default function ContentAdmin() {
     setNotice("Đã tải ảnh lên.");
   }
 
+  async function quickAttendance(entry: CmsEntry) {
+    const student = parseStudentFields(entry.content, entry.excerpt, entry.price);
+    const today = new Date();
+    const formatted = `${String(today.getDate()).padStart(2, "0")}/${String(today.getMonth() + 1).padStart(2, "0")}/${today.getFullYear()}`;
+    if (student.attendanceList.some((a) => a.date === formatted)) {
+      setNotice(`Học viên ${entry.title} đã được điểm danh hôm nay (${formatted}) rồi!`);
+      return;
+    }
+    const updatedAttended = student.attendedSessions + 1;
+    const updatedList = [{ date: formatted, status: "Đã học", note: "Đã điểm danh" }, ...student.attendanceList];
+    const updatedStudent = {
+      ...student,
+      attendedSessions: updatedAttended,
+      attendanceList: updatedList,
+    };
+    const newContent = assembleStudentFields(updatedStudent);
+    const updatedEntry: CmsEntry = {
+      ...entry,
+      content: newContent,
+    };
+    setEntries((prev) => prev.map((e) => (e.id === entry.id ? updatedEntry : e)));
+    if (draft && draft.id === entry.id) {
+      setDraft(updatedEntry);
+    }
+    setNotice(`✓ Đã điểm danh cho ${entry.title}: buổi thứ ${updatedAttended}/${student.packageSessions}!`);
+    try {
+      await fetch("/api/cms/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "save", entry: updatedEntry }),
+      });
+    } catch {}
+  }
+
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!draft) return;
     setBusy(true);
     setNotice("");
     let payload = draft;
+    if (isStudents || payload.collection === "students") {
+      payload = {
+        ...payload,
+        collection: "students",
+        slug: payload.slug || payload.tag || `HV-${Date.now()}`,
+        id: payload.id || `student-${Date.now()}`,
+        title: payload.title || "Học viên",
+        price: payload.price || "3.600.000đ",
+        excerpt: payload.excerpt || "09xxxxxxx",
+        tag: payload.slug || payload.tag || `HV-${Date.now()}`,
+        visible: true,
+      };
+    }
     if (isHomeMapSettings || payload.collection === "home-map" || (payload.collection === "settings" && payload.slug === "map")) {
       payload = {
         ...payload,
@@ -1762,10 +1949,29 @@ export default function ContentAdmin() {
                       </span>
                     )}
                   </div>
-                  <p style={{ margin: "4px 0 0", color: "#64748b", fontSize: 13 }}>{entry.excerpt || "Chưa có mô tả ngắn"}</p>
+                  {section === "students" ? (() => {
+                    const st = parseStudentFields(entry.content, entry.excerpt, entry.price);
+                    return (
+                      <p style={{ margin: "4px 0 0", color: "#475569", fontSize: 13 }}>
+                        <span style={{ color: "#2563eb", fontWeight: 700 }}>Đã học {st.attendedSessions} / {st.packageSessions} buổi</span> · SĐT: {st.phone} · Khóa: {st.course} · HĐ: {st.invoiceCode} ({st.paymentStatus})
+                      </p>
+                    );
+                  })() : (
+                    <p style={{ margin: "4px 0 0", color: "#64748b", fontSize: 13 }}>{entry.excerpt || "Chưa có mô tả ngắn"}</p>
+                  )}
                 </div>
                 <span className={entry.visible ? "status visible" : "status"}>{entry.visible ? "Đang hiển thị" : "Đang ẩn"}</span>
                 <div className="admin-row-actions">
+                  {section === "students" && (
+                    <button
+                      type="button"
+                      style={{ background: "#2563eb", color: "#fff", border: 0, fontWeight: 700 }}
+                      onClick={() => void quickAttendance(entry)}
+                      title="Điểm danh ngay cho buổi học hôm nay"
+                    >
+                      + Điểm danh hôm nay
+                    </button>
+                  )}
                   {entryHref(entry) && <a href={entryHref(entry)} target="_blank" rel="noreferrer">Xem trang</a>}
                   <button onClick={() => setDraft({ ...entry })}>Sửa</button>
                   <button className="danger" onClick={() => void remove(entry)}>Xóa</button>
@@ -1853,7 +2059,336 @@ export default function ContentAdmin() {
       </div> : <form className="admin-editor" onSubmit={save}>
         <div className="admin-editor-head"><button type="button" onClick={() => setDraft(null)}>← Danh sách</button><div><small>{draft.id ? "CHỈNH SỬA" : "TẠO MỚI"}</small><h2>{draft.title || activeMeta.label}</h2>{entryHref(draft) && <a className="admin-page-url" href={entryHref(draft)} target="_blank" rel="noreferrer">saotrucauco.com{entryHref(draft)} ↗</a>}</div><button className="admin-primary" disabled={busy}>{busy ? "Đang lưu…" : "Lưu nội dung"}</button></div>
         <div className="admin-form-grid">
-          {isHomeMapSettings ? (
+          {isStudents ? (
+            <div className="wide" style={{ display: "grid", gap: 20 }}>
+              {(() => {
+                const s = parseStudentFields(draft.content, draft.excerpt, draft.price);
+                const remaining = Math.max(0, s.packageSessions - s.attendedSessions);
+                const progressPct = Math.min(100, Math.round((s.attendedSessions / s.packageSessions) * 100));
+
+                const updateStudent = (fields: Partial<StudentFields>) => {
+                  const updated = { ...s, ...fields };
+                  const newContent = assembleStudentFields(updated);
+                  setDraft({
+                    ...draft,
+                    price: updated.tuition || draft.price,
+                    excerpt: updated.phone || draft.excerpt,
+                    content: newContent,
+                  });
+                };
+
+                const doQuickCheckIn = () => {
+                  const today = new Date();
+                  const formatted = `${String(today.getDate()).padStart(2, "0")}/${String(today.getMonth() + 1).padStart(2, "0")}/${today.getFullYear()}`;
+                  if (s.attendanceList.some((a) => a.date === formatted)) {
+                    setNotice(`Buổi hôm nay (${formatted}) đã được điểm danh rồi!`);
+                    return;
+                  }
+                  const updatedAttended = s.attendedSessions + 1;
+                  const updatedList = [{ date: formatted, status: "Đã học", note: "Đã điểm danh" }, ...s.attendanceList];
+                  updateStudent({
+                    attendedSessions: updatedAttended,
+                    attendanceList: updatedList,
+                  });
+                  setNotice(`✓ Đã điểm danh buổi hôm nay (${formatted})! Hãy bấm "Lưu nội dung" để hoàn tất.`);
+                };
+
+                const studentLink = typeof window !== "undefined" ? `${window.location.origin}/diem-danh?id=${draft.slug || draft.id}` : `/diem-danh?id=${draft.slug || draft.id}`;
+
+                return (
+                  <>
+                    {/* Top Student Header Bar */}
+                    <div style={{ background: "#fdf8f4", border: "1px solid #ead7c8", borderRadius: 12, padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                          <span style={{ fontSize: 18, fontWeight: 800, color: "#70141D" }}>
+                            {draft.title || "Chưa đặt tên học viên"}
+                          </span>
+                          <span style={{ padding: "2px 10px", background: "#dcfce7", color: "#166534", borderRadius: 12, fontSize: 11, fontWeight: 700 }}>
+                            {s.status}
+                          </span>
+                        </div>
+                        <p style={{ margin: "4px 0 0", color: "#64748b", fontSize: 13 }}>
+                          Mã HV: <b>{draft.slug || draft.tag || "HV-001"}</b> · SĐT: <b>{draft.excerpt || "Chưa có"}</b> · Khóa: <b>{s.course}</b>
+                        </p>
+                      </div>
+
+                      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+                        <div style={{ textAlign: "right" }}>
+                          <small style={{ display: "block", color: "#64748b", fontSize: 11, fontWeight: 600 }}>ĐÃ HỌC</small>
+                          <b style={{ fontSize: 22, color: "#2563eb" }}>{s.attendedSessions} <span style={{ fontSize: 13, color: "#64748b" }}>/ {s.packageSessions} buổi</span></b>
+                        </div>
+                        <div style={{ width: 1, height: 32, background: "#cbd5e1" }}></div>
+                        <div style={{ textAlign: "right" }}>
+                          <small style={{ display: "block", color: "#64748b", fontSize: 11, fontWeight: 600 }}>CÒN LẠI</small>
+                          <b style={{ fontSize: 22, color: "#16a34a" }}>{remaining} <span style={{ fontSize: 13, color: "#64748b" }}>buổi</span></b>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quick Action Buttons */}
+                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                      <button
+                        type="button"
+                        onClick={doQuickCheckIn}
+                        style={{ padding: "8px 18px", background: "#2563eb", color: "#fff", border: 0, borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}
+                      >
+                        + Điểm danh buổi hôm nay
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (navigator.clipboard) {
+                            navigator.clipboard.writeText(studentLink);
+                            setNotice("✓ Đã sao chép link học viên: " + studentLink);
+                          }
+                        }}
+                        style={{ padding: "8px 16px", background: "#fff", color: "#334155", border: "1px solid #cbd5e1", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+                      >
+                        🔗 Sao chép link học viên
+                      </button>
+
+                      <a
+                        href={studentLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ padding: "8px 16px", background: "#70141D", color: "#fff", borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6 }}
+                      >
+                        👁 Mở trang học viên ↗
+                      </a>
+                    </div>
+
+                    {/* Form Group 1: Student Information */}
+                    <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, padding: "16px 20px", display: "grid", gap: 14 }}>
+                      <b style={{ fontSize: 14, color: "#1e293b" }}>1. THÔNG TIN HỌC VIÊN & KHÓA HỌC:</b>
+                      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", gap: 14 }}>
+                        <label>
+                          <span>Họ và tên học viên *</span>
+                          <input
+                            required
+                            value={draft.title}
+                            onChange={(e) => {
+                              const newTitle = e.target.value;
+                              const updated = { ...s };
+                              setDraft({ ...draft, title: newTitle, content: assembleStudentFields(updated) });
+                            }}
+                            placeholder="Ví dụ: Nguyễn Văn An"
+                            style={{ fontWeight: 700 }}
+                          />
+                        </label>
+                        <label>
+                          <span>Mã học viên (dùng trong link tra cứu) *</span>
+                          <input
+                            required
+                            value={draft.slug}
+                            onChange={(e) => setDraft({ ...draft, slug: e.target.value, tag: e.target.value })}
+                            placeholder="Ví dụ: HV-2026-00128"
+                            style={{ fontWeight: 600 }}
+                          />
+                        </label>
+                        <label>
+                          <span>Số điện thoại *</span>
+                          <input
+                            value={draft.excerpt}
+                            onChange={(e) => {
+                              const newPhone = e.target.value;
+                              updateStudent({ phone: newPhone });
+                              setDraft({ ...draft, excerpt: newPhone });
+                            }}
+                            placeholder="Ví dụ: 0934 567 890"
+                          />
+                        </label>
+                      </div>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", gap: 14 }}>
+                        <label>
+                          <span>Khóa học đang học *</span>
+                          <input
+                            value={s.course}
+                            onChange={(e) => updateStudent({ course: e.target.value })}
+                            placeholder="Ví dụ: Sáo trúc cơ bản, Sáo Dizi..."
+                          />
+                        </label>
+                        <label>
+                          <span>Trạng thái học viên</span>
+                          <select
+                            value={s.status}
+                            onChange={(e) => updateStudent({ status: e.target.value })}
+                            style={{ width: "100%", padding: "8px 12px", border: "1px solid #ccd2dc", borderRadius: 8, fontSize: 14 }}
+                          >
+                            <option value="Đang học">Đang học</option>
+                            <option value="Đã hoàn thành">Đã hoàn thành</option>
+                            <option value="Tạm dừng / Bảo lưu">Tạm dừng / Bảo lưu</option>
+                          </select>
+                        </label>
+                        <label>
+                          <span>Gói học (Tổng số buổi) *</span>
+                          <input
+                            type="number"
+                            value={s.packageSessions}
+                            onChange={(e) => updateStudent({ packageSessions: Number(e.target.value) || 12 })}
+                            placeholder="12"
+                            style={{ fontWeight: 700 }}
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Form Group 2: Attendance Management */}
+                    <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, padding: "16px 20px", display: "grid", gap: 14 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <b style={{ fontSize: 14, color: "#1e293b" }}>
+                          2. TIẾN ĐỘ & LỊCH SỬ ĐIỂM DANH ({s.attendedSessions} / {s.packageSessions} buổi - {progressPct}%):
+                        </b>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const date = prompt("Nhập ngày điểm danh (dd/mm/yyyy):", new Date().toLocaleDateString("vi-VN"));
+                            if (date) {
+                              updateStudent({
+                                attendedSessions: s.attendedSessions + 1,
+                                attendanceList: [{ date, status: "Đã học", note: "Thêm thủ công" }, ...s.attendanceList],
+                              });
+                            }
+                          }}
+                          style={{ padding: "4px 12px", background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                        >
+                          + Thêm ngày điểm danh
+                        </button>
+                      </div>
+
+                      <div style={{ maxHeight: 220, overflowY: "auto", border: "1px solid #e2e8f0", borderRadius: 8 }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, textAlign: "left" }}>
+                          <thead style={{ background: "#f8fafc", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>
+                            <tr>
+                              <th style={{ padding: "8px 12px" }}>Ngày</th>
+                              <th style={{ padding: "8px 12px" }}>Trạng thái</th>
+                              <th style={{ padding: "8px 12px" }}>Ghi chú</th>
+                              <th style={{ padding: "8px 12px", textAlign: "right" }}>Thao tác</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {s.attendanceList.length === 0 ? (
+                              <tr>
+                                <td colSpan={4} style={{ padding: "14px", textAlign: "center", color: "#94a3b8" }}>Chưa có buổi học nào được điểm danh.</td>
+                              </tr>
+                            ) : (
+                              s.attendanceList.map((item, idx) => (
+                                <tr key={idx} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                                  <td style={{ padding: "8px 12px", fontWeight: 600 }}>{item.date}</td>
+                                  <td style={{ padding: "8px 12px" }}>
+                                    <span style={{ padding: "2px 8px", background: "#dcfce7", color: "#166534", borderRadius: 10, fontSize: 11, fontWeight: 700 }}>
+                                      ✓ {item.status}
+                                    </span>
+                                  </td>
+                                  <td style={{ padding: "8px 12px", color: "#64748b" }}>{item.note}</td>
+                                  <td style={{ padding: "8px 12px", textAlign: "right" }}>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const nextList = s.attendanceList.filter((_, i) => i !== idx);
+                                        updateStudent({
+                                          attendedSessions: Math.max(0, s.attendedSessions - 1),
+                                          attendanceList: nextList,
+                                        });
+                                      }}
+                                      style={{ border: 0, background: "none", color: "#ef4444", cursor: "pointer", fontSize: 12, fontWeight: 600 }}
+                                    >
+                                      Xóa
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* Form Group 3: Invoice & Payment */}
+                    <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, padding: "16px 20px", display: "grid", gap: 14 }}>
+                      <b style={{ fontSize: 14, color: "#1e293b" }}>3. HÓA ĐƠN & THÔNG TIN THANH TOÁN:</b>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+                        <label>
+                          <span>Mã hóa đơn *</span>
+                          <input
+                            value={s.invoiceCode}
+                            onChange={(e) => updateStudent({ invoiceCode: e.target.value })}
+                            placeholder="HD-2026-00128"
+                          />
+                        </label>
+                        <label>
+                          <span>Ngày tạo hóa đơn *</span>
+                          <input
+                            value={s.invoiceDate}
+                            onChange={(e) => updateStudent({ invoiceDate: e.target.value })}
+                            placeholder="15/09/2026"
+                          />
+                        </label>
+                        <label>
+                          <span>Đơn giá / buổi</span>
+                          <input
+                            value={s.unitPrice}
+                            onChange={(e) => updateStudent({ unitPrice: e.target.value })}
+                            placeholder="300.000đ"
+                          />
+                        </label>
+                      </div>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+                        <label>
+                          <span>Tổng học phí *</span>
+                          <input
+                            value={s.totalAmount}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              updateStudent({ totalAmount: val, tuition: val });
+                              setDraft({ ...draft, price: val });
+                            }}
+                            placeholder="3.600.000đ"
+                            style={{ fontWeight: 700, color: "#70141D" }}
+                          />
+                        </label>
+                        <label>
+                          <span>Số tiền đã thanh toán</span>
+                          <input
+                            value={s.paidAmount}
+                            onChange={(e) => updateStudent({ paidAmount: e.target.value })}
+                            placeholder="3.600.000đ"
+                            style={{ fontWeight: 700, color: "#16a34a" }}
+                          />
+                        </label>
+                        <label>
+                          <span>Số tiền còn nợ</span>
+                          <input
+                            value={s.debtAmount}
+                            onChange={(e) => updateStudent({ debtAmount: e.target.value })}
+                            placeholder="0đ"
+                          />
+                        </label>
+                      </div>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                        <label>
+                          <span>Trạng thái thanh toán</span>
+                          <select
+                            value={s.paymentStatus}
+                            onChange={(e) => updateStudent({ paymentStatus: e.target.value })}
+                            style={{ width: "100%", padding: "8px 12px", border: "1px solid #ccd2dc", borderRadius: 8, fontSize: 14 }}
+                          >
+                            <option value="Đã thanh toán">Đã thanh toán</option>
+                            <option value="Còn nợ một phần">Còn nợ một phần</option>
+                            <option value="Chưa thanh toán">Chưa thanh toán</option>
+                          </select>
+                        </label>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          ) : isHomeMapSettings ? (
             <div className="wide" style={{ display: "grid", gap: 18 }}>
               <div style={{ padding: "14px 18px", background: "#fdf8f4", border: "1px solid #ead7c8", borderRadius: 8, fontSize: 13, color: "#70141D", lineHeight: 1.6 }}>
                 <b style={{ fontSize: 14 }}>✦ CÀI ĐẶT ĐỒNG BỘ ĐỊA CHỈ & BẢN ĐỒ GOOGLE MAPS TOÀN WEBSITE:</b>

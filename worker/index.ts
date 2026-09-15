@@ -91,6 +91,34 @@ const detailedCmsEntries = [
   ["photo-class-02", "classroom-photos", "Học viên của Sáo Trúc Âu Cơ", "hoc-vien-au-co", "Học viên của Sáo Trúc Âu Cơ", "/class-group.jpg", "Tập thể", "", "/lop-hoc", 2],
   ["photo-class-03", "classroom-photos", "Học viên tiến bộ sau 3 tháng", "hoc-vien-tien-bo", "Học viên tiến bộ sau 3 tháng", "/class-student.jpg", "Cá nhân", "", "/lop-hoc", 3],
 
+  // Học viên & Điểm danh mẫu
+  ["student-01", "students", "Nguyễn Văn An", "HV-2026-00128", "09xxxxxxx", "/avatar.png", "HV-2026-00128", "3.600.000đ", JSON.stringify({
+    name: "Nguyễn Văn An",
+    status: "Đang học",
+    phone: "09xxxxxxx",
+    course: "Sáo trúc cơ bản",
+    packageSessions: 12,
+    tuition: "3.600.000đ",
+    attendedSessions: 8,
+    invoiceCode: "HD-2026-00128",
+    invoiceDate: "15/09/2026",
+    unitPrice: "300.000đ",
+    totalAmount: "3.600.000đ",
+    paidAmount: "3.600.000đ",
+    debtAmount: "0đ",
+    paymentStatus: "Đã thanh toán",
+    attendanceList: [
+      { date: "15/09/2026", status: "Đã học", note: "Đã điểm danh" },
+      { date: "12/09/2026", status: "Đã học", note: "-" },
+      { date: "08/09/2026", status: "Đã học", note: "-" },
+      { date: "05/09/2026", status: "Đã học", note: "-" },
+      { date: "01/09/2026", status: "Đã học", note: "-" },
+      { date: "28/08/2026", status: "Đã học", note: "-" },
+      { date: "25/08/2026", status: "Đã học", note: "-" },
+      { date: "22/08/2026", status: "Đã học", note: "-" }
+    ]
+  }), 1],
+
   // Chi tiết các bộ môn. Toàn bộ nội dung trang /bo-mon/slug có thể chỉnh sửa trong CMS.
   ["class-sao-truc", "class-details", "Sáo trúc Việt Nam", "sao-truc-viet-nam", "Mang hơi thở dân tộc vào từng giai điệu.", "/carousel-saotruc.webp", "♫", "Người mới bắt đầu, người từng tự học nhưng chưa vững nền tảng, hoặc học viên muốn nâng cao khả năng biểu diễn.", "[TIÊU ĐỀ BÀI]\nMột lộ trình rõ ràng để chơi nhạc bằng chính cảm xúc của bạn.\n\n[GIỚI THIỆU]\nSáo trúc Việt Nam có âm sắc mộc mạc, gần gũi nhưng giàu khả năng biểu cảm. Tại trung tâm, học viên không chỉ học cách thổi đúng nốt mà còn được xây dựng cột hơi, tiếng sáo và tư duy xử lý tác phẩm một cách bài bản.\n\n[BẠN SẼ HỌC ĐƯỢC GÌ]\nTư thế cầm sáo, khẩu hình và điểm đặt môi\nKiểm soát cột hơi, cao độ và chất lượng âm thanh\nNgón bấm, đánh lưỡi, rung hơi, láy và vuốt\nĐọc nhạc, cảm âm và luyện tập cùng beat\nXử lý dân ca, nhạc trữ tình và ca khúc hiện đại\n\n[LỘ TRÌNH HỌC]\nGiai đoạn 1 · Làm quen & tạo tiếng\nGiai đoạn 2 · Nốt nhạc & nhịp điệu\nGiai đoạn 3 · Kỹ thuật biểu cảm\nGiai đoạn 4 · Hoàn thiện tác phẩm\n\n[TRÍCH DẪN]\nHọc đúng kỹ thuật để tự do thể hiện cảm xúc — đó là nền tảng của mỗi chương trình.\n\n[HÌNH THỨC HỌC]\nTrực tiếp tại trung tâm\nGia sư tại nhà\nOnline 1 kèm 1\n\n[THỜI GIAN]\nLinh động theo lịch học viên", 1],
   ["class-dizi", "class-details", "Sáo Dizi", "sao-dizi", "Âm sắc rực rỡ của những giai điệu cổ phong.", "/carousel-dizi.webp", "◉", "Người yêu âm nhạc Trung Hoa, nhạc phim cổ trang và muốn khám phá màu âm Dizi.", "[TIÊU ĐỀ BÀI]\nLàm chủ màng rung và kỹ thuật diễn tấu Trung Hoa.\n\n[GIỚI THIỆU]\nDizi tạo dấu ấn bằng màng rung đặc trưng và âm sắc sáng, vang. Khóa học kết hợp kỹ thuật nhạc cụ với cách xử lý tác phẩm Trung Hoa, giúp học viên tạo được màu âm rõ ràng và tự nhiên.\n\n[BẠN SẼ HỌC ĐƯỢC GÌ]\nCấu tạo Dizi và cách chọn tone phù hợp\nDán, căn chỉnh và bảo quản màng rung\nKhẩu hình, cột hơi và hệ thống ngón\nLuyến, láy, vuốt và kỹ thuật cổ phong\nThực hành nhạc phim và tác phẩm Trung Hoa\n\n[LỘ TRÌNH HỌC]\nGiai đoạn 1 · Làm chủ màng rung\nGiai đoạn 2 · Hơi & ngón Dizi\nGiai đoạn 3 · Kỹ thuật cổ phong\nGiai đoạn 4 · Hoàn thiện tác phẩm\n\n[TRÍCH DẪN]\nTiếng sáo Dizi bay bổng là sự hòa quyện giữa màng rung và hơi thở người nghệ sĩ.\n\n[HÌNH THỨC HỌC]\nTrực tiếp tại trung tâm\nGia sư tại nhà\nOnline 1 kèm 1\n\n[THỜI GIAN]\nLinh động theo lịch học viên", 2],
