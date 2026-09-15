@@ -687,8 +687,11 @@ export default function ContentAdmin() {
     tagLabel?: string;
     tagPlaceholder?: string;
     priceLabel?: string;
+    pricePlaceholder?: string;
     excerptLabel?: string;
+    excerptPlaceholder?: string;
     contentLabel?: string;
+    contentPlaceholder?: string;
   };
 
   const defaultProductGroupList = useMemo(() => [
@@ -1612,6 +1615,52 @@ export default function ContentAdmin() {
           </div>
         </div>
       ) : !draft ? <div className="admin-list-panel">
+        {section === "students" && (
+          <div style={{
+            marginBottom: 20,
+            padding: "16px 20px",
+            background: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)",
+            border: "1px solid #bfdbfe",
+            borderRadius: 12,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 12
+          }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <span style={{ fontSize: 20 }}>🎓</span>
+                <b style={{ color: "#1e40af", fontSize: 16 }}>Hệ thống Quản lý Học viên & Điểm danh (7 Phân hệ)</b>
+                <span style={{ background: "#2563eb", color: "#fff", fontSize: 11, padding: "2px 8px", borderRadius: 999, fontWeight: 700 }}>Chuyên sâu</span>
+              </div>
+              <p style={{ margin: 0, fontSize: 13, color: "#1e3a8a", lineHeight: 1.5 }}>
+                Đầy đủ 7 phân hệ: <b>Học viên</b> (thông tin, 8/12 buổi, số buổi còn lại, lưu ý bảo lưu), <b>Lớp học</b> (điểm danh cả lớp 1 chạm), <b>Lịch dạy</b> (xác nhận buổi học), <b>Hóa đơn</b> (xem/in/tải PDF), <b>Giáo viên</b>, <b>Báo cáo</b> (cảnh báo học viên sắp hết buổi), và <b>Cài đặt trung tâm</b>.
+              </p>
+            </div>
+            <a
+              href="/diem-danh"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "10px 18px",
+                background: "#2563eb",
+                color: "#fff",
+                borderRadius: 8,
+                fontWeight: 700,
+                fontSize: 14,
+                textDecoration: "none",
+                boxShadow: "0 2px 8px rgba(37, 99, 235, 0.3)",
+                whiteSpace: "nowrap"
+              }}
+            >
+              Mở Cổng Quản Lý 7 Phân Hệ ↗
+            </a>
+          </div>
+        )}
         {section === "product-items" && productGroups.length > 0 && (
           <div style={{ marginBottom: 18, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: "#475569" }}>Lọc theo nhóm:</span>
