@@ -61,7 +61,11 @@ function StudentPortalContent() {
   const searchParams = useSearchParams();
   const studentId = searchParams.get("id") || "";
   
-  const [student, setStudent] = useState<StudentData>(DEFAULT_STUDENT);
+  const [student, setStudent] = useState<StudentData | null>(null);
+  const [allStudents, setAllStudents] = useState<any[]>([]);
+  const [lookupInput, setLookupInput] = useState("");
+  const [lookupError, setLookupError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [showAllAttendance, setShowAllAttendance] = useState(false);
@@ -72,52 +76,96 @@ function StudentPortalContent() {
     setTimeout(() => setToastMessage(""), 3000);
   };
 
+  const parseStudentEntry = (target: any): StudentData => {
+    try {
+      const parsed = typeof target.content === "string" && target.content.startsWith("{") 
+        ? JSON.parse(target.content) 
+        : null;
+      if (parsed) {
+        return {
+          id: target.id || DEFAULT_STUDENT.id,
+          name: target.title || DEFAULT_STUDENT.name,
+          status: parsed.status || DEFAULT_STUDENT.status,
+          phone: target.excerpt || parsed.phone || DEFAULT_STUDENT.phone,
+          course: target.slug || parsed.course || DEFAULT_STUDENT.course,
+          packageSessions: Number(parsed.packageSessions || parsed.totalSessions || DEFAULT_STUDENT.packageSessions),
+          tuition: target.price || parsed.tuition || DEFAULT_STUDENT.tuition,
+          attendedSessions: Number(parsed.attendedSessions || DEFAULT_STUDENT.attendedSessions),
+          invoiceCode: parsed.invoiceCode || DEFAULT_STUDENT.invoiceCode,
+          invoiceDate: parsed.invoiceDate || DEFAULT_STUDENT.invoiceDate,
+          unitPrice: parsed.unitPrice || DEFAULT_STUDENT.unitPrice,
+          totalAmount: parsed.totalAmount || target.price || DEFAULT_STUDENT.totalAmount,
+          paidAmount: parsed.paidAmount || DEFAULT_STUDENT.paidAmount,
+          debtAmount: parsed.debtAmount || DEFAULT_STUDENT.debtAmount,
+          paymentStatus: parsed.paymentStatus || DEFAULT_STUDENT.paymentStatus,
+          attendanceList: Array.isArray(parsed.attendanceList) ? parsed.attendanceList : DEFAULT_STUDENT.attendanceList,
+        };
+      }
+    } catch {}
+    return {
+      ...DEFAULT_STUDENT,
+      id: target.id || DEFAULT_STUDENT.id,
+      name: target.title || DEFAULT_STUDENT.name,
+      course: target.slug || DEFAULT_STUDENT.course,
+      phone: target.excerpt || DEFAULT_STUDENT.phone,
+      tuition: target.price || DEFAULT_STUDENT.tuition,
+    };
+  };
+
   useEffect(() => {
+    setIsLoading(true);
     fetch("/api/cms/content")
       .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then((data) => {
         const entries: any[] = data.entries || [];
         const studentEntries = entries.filter((e) => e.collection === "students");
-        if (studentEntries.length > 0) {
-          let target = studentEntries[0];
-          if (studentId) {
-            const found = studentEntries.find((e) => e.id === studentId || e.slug === studentId || e.tag === studentId);
-            if (found) target = found;
-          }
-          try {
-            const parsed = typeof target.content === "string" && target.content.startsWith("{") 
-              ? JSON.parse(target.content) 
-              : null;
-            if (parsed) {
-              setStudent({
-                id: target.id || DEFAULT_STUDENT.id,
-                name: target.title || DEFAULT_STUDENT.name,
-                status: parsed.status || DEFAULT_STUDENT.status,
-                phone: target.excerpt || parsed.phone || DEFAULT_STUDENT.phone,
-                course: target.slug || parsed.course || DEFAULT_STUDENT.course,
-                packageSessions: Number(parsed.packageSessions || parsed.totalSessions || DEFAULT_STUDENT.packageSessions),
-                tuition: target.price || parsed.tuition || DEFAULT_STUDENT.tuition,
-                attendedSessions: Number(parsed.attendedSessions || DEFAULT_STUDENT.attendedSessions),
-                invoiceCode: parsed.invoiceCode || DEFAULT_STUDENT.invoiceCode,
-                invoiceDate: parsed.invoiceDate || DEFAULT_STUDENT.invoiceDate,
-                unitPrice: parsed.unitPrice || DEFAULT_STUDENT.unitPrice,
-                totalAmount: parsed.totalAmount || target.price || DEFAULT_STUDENT.totalAmount,
-                paidAmount: parsed.paidAmount || DEFAULT_STUDENT.paidAmount,
-                debtAmount: parsed.debtAmount || DEFAULT_STUDENT.debtAmount,
-                paymentStatus: parsed.paymentStatus || DEFAULT_STUDENT.paymentStatus,
-                attendanceList: Array.isArray(parsed.attendanceList) ? parsed.attendanceList : DEFAULT_STUDENT.attendanceList,
-              });
-            }
-          } catch {
-            // fallback
+        setAllStudents(studentEntries);
+        if (studentId) {
+          const query = studentId.toLowerCase().trim();
+          const found = studentEntries.find((e) => 
+            (e.id && e.id.toLowerCase() === query) ||
+            (e.slug && e.slug.toLowerCase() === query) ||
+            (e.tag && e.tag.toLowerCase() === query) ||
+            (e.excerpt && e.excerpt.toLowerCase() === query) ||
+            (e.title && e.title.toLowerCase().includes(query))
+          );
+          if (found) {
+            setStudent(parseStudentEntry(found));
+          } else if (query === "hv-2026-00128" || query === "default") {
+            setStudent(DEFAULT_STUDENT);
+          } else {
+            setLookupError(`Không tìm thấy dữ liệu học viên với mã: "${studentId}"`);
           }
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        if (studentId) setStudent(DEFAULT_STUDENT);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, [studentId]);
 
-  const remainingSessions = Math.max(0, student.packageSessions - student.attendedSessions);
-  const progressPercent = Math.min(100, Math.round((student.attendedSessions / student.packageSessions) * 100));
+  const handleLookupSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLookupError("");
+    const query = lookupInput.trim().toLowerCase();
+    if (!query) return;
+    const found = allStudents.find((s) => 
+      (s.id && s.id.toLowerCase() === query) ||
+      (s.slug && s.slug.toLowerCase() === query) ||
+      (s.tag && s.tag.toLowerCase() === query) ||
+      (s.excerpt && s.excerpt.toLowerCase() === query) ||
+      (s.title && s.title.toLowerCase().includes(query))
+    );
+    if (found) {
+      setStudent(parseStudentEntry(found));
+    } else if (query === "hv-2026-00128" || query.includes("nguyễn văn an") || query === "09xxxxxxx") {
+      setStudent(DEFAULT_STUDENT);
+    } else {
+      setLookupError("Không tìm thấy học viên với thông tin này. Vui lòng kiểm tra lại Mã học viên hoặc Số điện thoại.");
+    }
+  };
 
   const copyStudentLink = () => {
     const url = typeof window !== "undefined" ? window.location.href : "";
@@ -130,6 +178,7 @@ function StudentPortalContent() {
   };
 
   const handleQuickAttendance = async () => {
+    if (!student) return;
     const today = new Date();
     const formattedDate = `${String(today.getDate()).padStart(2, "0")}/${String(today.getMonth() + 1).padStart(2, "0")}/${today.getFullYear()}`;
     
@@ -188,6 +237,74 @@ function StudentPortalContent() {
       // offline or view-only mode
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#F4F6FA] flex items-center justify-center text-sm text-slate-500">
+        Đang tải thông tin học viên...
+      </div>
+    );
+  }
+
+  // PRIVATE ACCESS GATEWAY (When no student is selected or direct private access)
+  if (!student) {
+    return (
+      <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center p-4">
+        <div className="bg-white max-w-md w-full rounded-2xl p-6 sm:p-8 shadow-xl border border-[#EADBCA] text-center space-y-5">
+          <div className="w-16 h-16 rounded-full bg-[#FAF1F3] text-[#70141D] flex items-center justify-center mx-auto text-2xl border-2 border-[#EEDBDF]">
+            <i className="fa-solid fa-user-lock"></i>
+          </div>
+          <div>
+            <span className="text-[11px] font-bold text-[#70141D] uppercase tracking-wider block mb-1">
+              SÁO TRÚC ÂU CƠ · NỘI BỘ
+            </span>
+            <h1 className="text-xl font-bold text-[#2D2825]">Cổng Tra Cứu Điểm Danh & Học Viên</h1>
+            <p className="text-xs text-[#7A6B65] mt-1.5 leading-relaxed">
+              Trang nội bộ không hiển thị công khai. Vui lòng nhập <b>Mã học viên</b> hoặc <b>Số điện thoại</b> do trung tâm cung cấp để xem thông tin điểm danh và hóa đơn.
+            </p>
+          </div>
+          <form onSubmit={handleLookupSubmit} className="space-y-3.5 text-left">
+            <div>
+              <label className="block text-xs font-semibold text-[#4A3E39] mb-1.5">
+                Mã học viên hoặc Số điện thoại:
+              </label>
+              <input
+                type="text"
+                value={lookupInput}
+                onChange={(e) => setLookupInput(e.target.value)}
+                placeholder="Ví dụ: HV-2026-00128 hoặc 09xxxxxxx"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[#D9CDBB] text-sm focus:outline-none focus:border-[#70141D] focus:ring-1 focus:ring-[#70141D]"
+                required
+                autoFocus
+              />
+            </div>
+            {lookupError && (
+              <div className="p-2.5 bg-red-50 text-red-700 text-xs rounded-lg border border-red-200">
+                {lookupError}
+              </div>
+            )}
+            <button
+              type="submit"
+              className="w-full py-2.5 bg-[#70141D] hover:bg-[#580f16] text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer shadow-sm"
+            >
+              Tra cứu thông tin học viên →
+            </button>
+          </form>
+          <div className="pt-3 border-t border-[#ECE5DC] flex items-center justify-between text-xs text-[#8C766F]">
+            <Link href="/" className="hover:underline hover:text-[#70141D]">
+              ← Quay về trang chủ
+            </Link>
+            <Link href="/quan-tri" className="text-[#70141D] font-semibold hover:underline">
+              Quản trị viên đăng nhập ↗
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const remainingSessions = Math.max(0, student.packageSessions - student.attendedSessions);
+  const progressPercent = Math.min(100, Math.round((student.attendedSessions / student.packageSessions) * 100));
 
   return (
     <div className="min-h-screen bg-[#F4F6FA] flex flex-col md:flex-row text-[#1E293B] font-sans antialiased">
