@@ -170,7 +170,7 @@ const faqs = [
   {
     question: "Lớp học ở đâu?",
     answer:
-      "Lớp học trực tiếp tọa lạc tại địa chỉ: 106/72 Hòa Bình, Phường Tân Phú, TP. Hồ Chí Minh. Không gian học yên tĩnh, đầy đủ nhạc cụ chuẩn âm, giá để bài và môi trường truyền cảm hứng.",
+      "Lớp học trực tiếp tọa lạc tại địa chỉ: 106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam. Không gian học yên tĩnh, đầy đủ nhạc cụ chuẩn âm, giá để bài và môi trường truyền cảm hứng.",
   },
   {
     question: "Có học online không?",
@@ -356,7 +356,7 @@ export default function HomePage() {
         <div className="w-full max-w-[1560px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <i className="fa-solid fa-location-dot text-white text-xs"></i>
-            <span>106/72 Hòa Bình, P. Tân Phú, TP.HCM</span>
+            <span>106/72 Hòa Bình, Tân Phú, Hồ Chí Minh</span>
           </div>
           <div className="flex items-center gap-4 font-normal">
             <a
@@ -749,7 +749,7 @@ export default function HomePage() {
                 </h2>
                 <p className="text-xs sm:text-sm text-[#2B2624] font-semibold flex items-center gap-2">
                   <i className="fa-solid fa-location-dot text-[#70141D]"></i>
-                  <span>106/72 Hòa Bình, P. Tân Phú, TP.HCM</span>
+                  <span>106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam</span>
                 </p>
                 <p className="text-xs text-[#6B605A] leading-relaxed">
                   Không gian học thân thiện, yên tĩnh, dễ di chuyển, phù hợp cho mọi lứa tuổi.
@@ -779,29 +779,92 @@ export default function HomePage() {
             {/* Column 2 (Center 4 cols): Embedded Map Card */}
             <div className="lg:col-span-4 flex flex-col">
               <div className="rounded-xl overflow-hidden border border-[#ECE5DC] shadow-2xs relative group bg-white h-full flex flex-col justify-between">
-                <div className="relative h-44 sm:h-48 overflow-hidden bg-stone-100 grow">
-                  <img
-                    src="/map-tanphu.jpg"
-                    alt="Bản đồ chỉ đường đến Sáo Trúc Âu Cơ Tân Phú"
-                    className="w-full h-full object-cover object-center group-hover:scale-102 transition-transform duration-300"
-                  />
-                  {/* Visual Map Marker Pin */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-xs px-2.5 py-1 rounded-md shadow border border-[#EADBCA] text-[11px] font-bold text-[#70141D] flex items-center gap-1.5 pointer-events-none">
-                    <i className="fa-solid fa-location-dot text-red-600"></i>
-                    <span>Sáo Trúc Âu Cơ</span>
+                {/* Clickable Map Area -> Goes directly to Google Maps */}
+                <a
+                  href="https://www.google.com/maps/search/?api=1&query=106%2F72+H%C3%B2a+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh%2C+Vi%E1%BB%87t+Nam"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative h-44 sm:h-48 overflow-hidden bg-stone-100 grow block cursor-pointer select-none"
+                  title="Bấm để mở định vị Sáo Trúc Âu Cơ trên Google Maps"
+                >
+                  <picture>
+                    <source srcSet="/map-tanphu.webp" type="image/webp" />
+                    <img
+                      src="/map-tanphu.jpg"
+                      alt="Bản đồ định vị 106/72 Hòa Bình, Tân Phú, Hồ Chí Minh"
+                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
+                    />
+                  </picture>
+
+                  {/* Top-Left: Google Maps Live Status Badge */}
+                  <div className="absolute top-2.5 left-2.5 z-10 bg-white/95 backdrop-blur-xs px-2.5 py-1 rounded-full shadow-sm border border-stone-200/90 text-[10.5px] font-semibold text-stone-700 flex items-center gap-1.5 pointer-events-none">
+                    <span className="flex h-2 w-2 relative">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[#EA4335]"></span>
+                    </span>
+                    <span className="tracking-tight">Google Maps</span>
                   </div>
-                </div>
+
+                  {/* Top-Right: Zoom Controls Simulation */}
+                  <div className="absolute top-2.5 right-2.5 z-10 flex flex-col bg-white/95 backdrop-blur-xs rounded-md shadow-sm border border-stone-200/80 overflow-hidden pointer-events-none text-stone-600">
+                    <span className="w-5 h-5 flex items-center justify-center text-[11px] font-bold border-b border-stone-100">＋</span>
+                    <span className="w-5 h-5 flex items-center justify-center text-[11px] font-bold">－</span>
+                  </div>
+
+                  {/* Bottom-Left: Google Watermark */}
+                  <div className="absolute bottom-2 left-2 z-10 select-none pointer-events-none text-[10px] font-bold text-stone-500/80 bg-white/80 backdrop-blur-xs px-1.5 py-0.5 rounded shadow-2xs font-sans tracking-tight">
+                    Google
+                  </div>
+
+                  {/* Interactive Map Marker Pin & Info Card */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full z-20 flex flex-col items-center group-hover:-translate-y-[calc(100%+4px)] transition-transform duration-300">
+                    {/* Floating Info Tooltip */}
+                    <div className="bg-white/98 backdrop-blur-sm px-3 py-1.5 rounded-xl shadow-lg border border-[#EADBCA] text-[#70141D] flex items-center gap-2 mb-1 whitespace-nowrap">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></div>
+                      <div className="text-left">
+                        <div className="text-[11.5px] font-bold text-[#70141D] leading-tight flex items-center gap-1.5">
+                          <span>Sáo Trúc Âu Cơ</span>
+                          <span className="text-[9px] font-medium text-amber-700 bg-amber-50 px-1 rounded border border-amber-200">5.0 ★</span>
+                        </div>
+                        <div className="text-[9.5px] text-[#6B605A] leading-tight">
+                          106/72 Hòa Bình, Tân Phú
+                        </div>
+                      </div>
+                      <i className="fa-solid fa-arrow-up-right-from-square text-[9px] text-[#70141D] opacity-70 group-hover:opacity-100 transition-opacity ml-0.5"></i>
+                    </div>
+
+                    {/* Teardrop Pin + Pulse Ripple */}
+                    <div className="relative flex items-center justify-center">
+                      <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-2 bg-red-600/30 rounded-full animate-ping pointer-events-none"></span>
+                      <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-3.5 h-1.5 bg-black/25 rounded-full blur-[1px] pointer-events-none"></span>
+
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="w-8 h-8 text-[#EA4335] drop-shadow-[0_4px_6px_rgba(0,0,0,0.35)] transition-transform duration-300 group-hover:scale-110"
+                        fill="currentColor"
+                      >
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+                        <circle cx="12" cy="9" r="2.8" fill="#FFFFFF" />
+                      </svg>
+                    </div>
+                  </div>
+                </a>
+
                 <div className="p-3 bg-white border-t border-[#EADBCA] flex items-center justify-between gap-2 shrink-0">
                   <div className="text-xs min-w-0">
                     <span className="font-bold text-[#70141D] block truncate">Sáo Trúc Âu Cơ</span>
-                    <span className="text-[10.5px] text-[#6B605A] block truncate">106/72 Hòa Bình, Tân Phú, TP.HCM</span>
+                    <span className="text-[10.5px] text-[#6B605A] block truncate" title="106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam">
+                      106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam
+                    </span>
                   </div>
                   <a
-                    href="https://www.google.com/maps/dir/?api=1&destination=106%2F72+Ho%C3%A0+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh"
+                    href="https://www.google.com/maps/dir/?api=1&destination=106%2F72+H%C3%B2a+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh%2C+Vi%E1%BB%87t+Nam"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-1.5 bg-[#223326] hover:bg-[#162219] text-white text-[11px] font-semibold rounded-md transition-colors flex items-center gap-1 shrink-0"
+                    className="px-3.5 py-1.5 bg-[#70141D] hover:bg-[#580f16] active:bg-[#43090f] text-white text-[11px] font-semibold rounded-md transition-all duration-200 flex items-center gap-1.5 shrink-0 shadow-xs hover:shadow hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                    title="Chuyển qua Google Maps chỉ đường"
                   >
+                    <i className="fa-solid fa-location-arrow text-[10px]"></i>
                     <span>Chỉ đường trên Google Maps</span>
                     <i className="fa-solid fa-arrow-right text-[9px]"></i>
                   </a>
