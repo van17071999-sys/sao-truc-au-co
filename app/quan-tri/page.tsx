@@ -719,7 +719,7 @@ export default function ContentAdmin() {
         list = [{
           id: "home-map-01",
           collection: "home-map",
-          title: "Sáo Trúc Âu Cơ",
+          title: "Lớp Sáo Trúc Âu Cơ",
           slug: "map",
           publishedAt: new Date().toISOString().slice(0, 10),
           excerpt: "Không gian học thân thiện, yên tĩnh, dễ di chuyển, phù hợp cho mọi lứa tuổi.",
@@ -1046,7 +1046,7 @@ export default function ContentAdmin() {
         setDraft({
           id: "home-map-01",
           collection: "home-map",
-          title: "Sáo Trúc Âu Cơ",
+          title: "Lớp Sáo Trúc Âu Cơ",
           slug: "map",
           publishedAt: new Date().toISOString().slice(0, 10),
           excerpt: "Không gian học thân thiện, yên tĩnh, dễ di chuyển, phù hợp cho mọi lứa tuổi.",

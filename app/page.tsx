@@ -261,7 +261,7 @@ export default function HomePage() {
   const [disciplines, setDisciplines] = useState(disciplinesList);
   const [homeIntro, setHomeIntro] = useState(defaultHomeIntro);
   const [mapConfig, setMapConfig] = useState({
-    title: "Sáo Trúc Âu Cơ",
+    title: "Lớp Sáo Trúc Âu Cơ",
     address: "106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam",
     desc: "Không gian học thân thiện, yên tĩnh, dễ di chuyển, phù hợp cho mọi lứa tuổi.",
     imageUrl: "/map-tanphu.jpg",
@@ -308,11 +308,10 @@ export default function HomePage() {
         if (mapEntry) {
           const rawAddress = mapEntry.content?.trim() || "106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam";
           const customUrl = mapEntry.tag?.trim();
-          const targetUrl = customUrl && customUrl.startsWith("http")
-            ? customUrl
-            : "https://maps.app.goo.gl/LEoydb9aZkdu2M6J6";
+          const isOldSearchUrl = !customUrl || customUrl.includes("google.com/maps/search") || customUrl.includes("google.com/maps/dir");
+          const targetUrl = isOldSearchUrl ? "https://maps.app.goo.gl/LEoydb9aZkdu2M6J6" : customUrl;
           setMapConfig({
-            title: mapEntry.title || "Sáo Trúc Âu Cơ",
+            title: mapEntry.title || "Lớp Sáo Trúc Âu Cơ",
             address: rawAddress,
             desc: mapEntry.excerpt || "Không gian học thân thiện, yên tĩnh, dễ di chuyển, phù hợp cho mọi lứa tuổi.",
             imageUrl: mapEntry.imageUrl || "/map-tanphu.jpg",
