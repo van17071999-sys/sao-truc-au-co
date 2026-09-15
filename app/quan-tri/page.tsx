@@ -1615,52 +1615,71 @@ export default function ContentAdmin() {
           </div>
         </div>
       ) : !draft ? <div className="admin-list-panel">
-        {section === "students" && (
-          <div style={{
-            marginBottom: 20,
-            padding: "16px 20px",
-            background: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)",
-            border: "1px solid #bfdbfe",
-            borderRadius: 12,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 12
-          }}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                <span style={{ fontSize: 20 }}>🎓</span>
-                <b style={{ color: "#1e40af", fontSize: 16 }}>Hệ thống Quản lý Học viên & Điểm danh (7 Phân hệ)</b>
-                <span style={{ background: "#2563eb", color: "#fff", fontSize: 11, padding: "2px 8px", borderRadius: 999, fontWeight: 700 }}>Chuyên sâu</span>
+        {section === "students" ? (
+          <div style={{ display: "grid", gap: 14 }}>
+            <div style={{
+              padding: "14px 20px",
+              background: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)",
+              border: "1px solid #bfdbfe",
+              borderRadius: 12,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 12
+            }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                  <span style={{ fontSize: 20 }}>🎓</span>
+                  <b style={{ color: "#1e40af", fontSize: 15 }}>Hệ Thống Quản Lý Đào Tạo & Điểm Danh (7 Phân Hệ)</b>
+                  <span style={{ background: "#2563eb", color: "#fff", fontSize: 11, padding: "2px 8px", borderRadius: 999, fontWeight: 700 }}>Toàn quyền Admin</span>
+                </div>
+                <p style={{ margin: 0, fontSize: 13, color: "#1e3a8a", lineHeight: 1.5 }}>
+                  Bao gồm đầy đủ 7 phân hệ: <b>Học viên</b>, <b>Lớp học</b>, <b>Lịch dạy</b>, <b>Hóa đơn</b>, <b>Giáo viên</b>, <b>Báo cáo</b>, <b>Cài đặt</b> với tính năng Thêm, Sửa, Xóa.
+                  Học viên khi nhận link tra cứu chỉ xem duy nhất 1 trang thông tin cá nhân của họ.
+                </p>
               </div>
-              <p style={{ margin: 0, fontSize: 13, color: "#1e3a8a", lineHeight: 1.5 }}>
-                Đầy đủ 7 phân hệ: <b>Học viên</b> (thông tin, 8/12 buổi, số buổi còn lại, lưu ý bảo lưu), <b>Lớp học</b> (điểm danh cả lớp 1 chạm), <b>Lịch dạy</b> (xác nhận buổi học), <b>Hóa đơn</b> (xem/in/tải PDF), <b>Giáo viên</b>, <b>Báo cáo</b> (cảnh báo học viên sắp hết buổi), và <b>Cài đặt trung tâm</b>.
-              </p>
+              <a
+                href="/diem-danh?admin=1"
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "9px 18px",
+                  background: "#2563eb",
+                  color: "#fff",
+                  borderRadius: 8,
+                  fontWeight: 700,
+                  fontSize: 13,
+                  textDecoration: "none",
+                  boxShadow: "0 2px 8px rgba(37, 99, 235, 0.25)",
+                  whiteSpace: "nowrap"
+                }}
+              >
+                Mở toàn màn hình ↗
+              </a>
             </div>
-            <a
-              href="/diem-danh"
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "10px 18px",
-                background: "#2563eb",
-                color: "#fff",
-                borderRadius: 8,
-                fontWeight: 700,
-                fontSize: 14,
-                textDecoration: "none",
-                boxShadow: "0 2px 8px rgba(37, 99, 235, 0.3)",
-                whiteSpace: "nowrap"
-              }}
-            >
-              Mở Cổng Quản Lý 7 Phân Hệ ↗
-            </a>
+
+            <div style={{
+              width: "100%",
+              height: "calc(100vh - 170px)",
+              minHeight: 760,
+              borderRadius: 14,
+              overflow: "hidden",
+              border: "1px solid #cbd5e1",
+              boxShadow: "0 4px 18px rgba(0,0,0,0.06)",
+              background: "#fff"
+            }}>
+              <iframe
+                src="/diem-danh?admin=1"
+                title="Hệ thống Quản lý Học viên & Điểm danh Âu Cơ"
+                style={{ width: "100%", height: "100%", border: "none", display: "block" }}
+              />
+            </div>
           </div>
-        )}
+        ) : null}
         {section === "product-items" && productGroups.length > 0 && (
           <div style={{ marginBottom: 18, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: "#475569" }}>Lọc theo nhóm:</span>
@@ -1891,7 +1910,7 @@ export default function ContentAdmin() {
           </div>
         )}
 
-        {sectionEntries.length ? <div className="admin-entry-list">{sectionEntries.map((entry, index) => {
+        {section !== "students" && (sectionEntries.length ? <div className="admin-entry-list">{sectionEntries.map((entry, index) => {
           const parentProductGroup = section === "product-items" ? productGroups.find((g) => g.slug === entry.tag) : null;
           const parentCourseGroup = section === "course-items" ? courseGroups.find((g) => g.slug === entry.tag) : null;
           const videoDiscipline = section === "single-videos" ? videoDisciplinesList.find((d) => d.slug === entry.tag || slugify(d.slug) === slugify(entry.tag)) : null;
@@ -2104,7 +2123,7 @@ export default function ContentAdmin() {
               )}
             </article>
           );
-        })}</div> : <div className="admin-empty"><b>✦</b><h2>Chưa có nội dung</h2><p>Tạo nội dung đầu tiên cho mục {activeMeta.label}.</p><button className="admin-primary" onClick={startCreate}>+ Tạo nội dung</button></div>}
+        })}</div> : <div className="admin-empty"><b>✦</b><h2>Chưa có nội dung</h2><p>Tạo nội dung đầu tiên cho mục {activeMeta.label}.</p><button className="admin-primary" onClick={startCreate}>+ Tạo nội dung</button></div>)}
       </div> : <form className="admin-editor" onSubmit={save}>
         <div className="admin-editor-head"><button type="button" onClick={() => setDraft(null)}>← Danh sách</button><div><small>{draft.id ? "CHỈNH SỬA" : "TẠO MỚI"}</small><h2>{draft.title || activeMeta.label}</h2>{entryHref(draft) && <a className="admin-page-url" href={entryHref(draft)} target="_blank" rel="noreferrer">saotrucauco.com{entryHref(draft)} ↗</a>}</div><button className="admin-primary" disabled={busy}>{busy ? "Đang lưu…" : "Lưu nội dung"}</button></div>
         <div className="admin-form-grid">
