@@ -779,84 +779,56 @@ export default function HomePage() {
             {/* Column 2 (Center 4 cols): Embedded Map Card */}
             <div className="lg:col-span-4 flex flex-col">
               <div className="rounded-xl overflow-hidden border border-[#ECE5DC] shadow-2xs relative group bg-white h-full flex flex-col justify-between">
-                {/* Clickable Map Area -> Goes directly to Google Maps */}
-                <a
-                  href="https://www.google.com/maps/search/?api=1&query=106%2F72+H%C3%B2a+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh%2C+Vi%E1%BB%87t+Nam"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative h-44 sm:h-48 overflow-hidden bg-stone-100 grow block cursor-pointer select-none"
-                  title="Bấm để mở định vị Sáo Trúc Âu Cơ trên Google Maps"
-                >
-                  <picture>
-                    <source srcSet="/map-tanphu.webp" type="image/webp" />
-                    <img
-                      src="/map-tanphu.jpg"
-                      alt="Bản đồ định vị 106/72 Hòa Bình, Tân Phú, Hồ Chí Minh"
-                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
-                    />
-                  </picture>
+                {/* Map Area */}
+                <div className="relative h-44 sm:h-48 overflow-hidden bg-stone-100 grow">
+                  {/* Clickable Map Background */}
+                  <a
+                    href="https://www.google.com/maps/search/?api=1&query=106%2F72+H%C3%B2a+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh%2C+Vi%E1%BB%87t+Nam"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full h-full cursor-pointer"
+                    title="Bấm vào bản đồ để chuyển sang Google Maps"
+                  >
+                    <picture>
+                      <source srcSet="/map-tanphu.webp" type="image/webp" />
+                      <img
+                        src="/map-tanphu.jpg"
+                        alt="Bản đồ chỉ đường đến Sáo Trúc Âu Cơ Tân Phú"
+                        className="w-full h-full object-cover object-center group-hover:scale-103 transition-transform duration-300"
+                      />
+                    </picture>
+                  </a>
 
-                  {/* Top-Left: Google Maps Live Status Badge */}
-                  <div className="absolute top-2.5 left-2.5 z-10 bg-white/95 backdrop-blur-xs px-2.5 py-1 rounded-full shadow-sm border border-stone-200/90 text-[10.5px] font-semibold text-stone-700 flex items-center gap-1.5 pointer-events-none">
-                    <span className="flex h-2 w-2 relative">
+                  {/* Clickable Pill: Sáo Trúc Âu Cơ -> Mở trực tiếp Google Maps */}
+                  <a
+                    href="https://www.google.com/maps/search/?api=1&query=106%2F72+H%C3%B2a+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh%2C+Vi%E1%BB%87t+Nam"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/95 hover:bg-white backdrop-blur-xs px-3 py-1.5 rounded-lg shadow-md hover:shadow-xl border border-[#EADBCA] hover:border-[#70141D]/50 text-xs sm:text-[13px] font-bold text-[#70141D] flex items-center gap-2 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer z-10 select-none group/pin"
+                    title="Bấm vào chữ Sáo Trúc Âu Cơ để mở Google Maps"
+                  >
+                    <span className="relative flex h-2.5 w-2.5 items-center justify-center">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[#EA4335]"></span>
+                      <i className="fa-solid fa-location-dot text-red-600 text-xs relative"></i>
                     </span>
-                    <span className="tracking-tight">Google Maps</span>
-                  </div>
-
-                  {/* Top-Right: Zoom Controls Simulation */}
-                  <div className="absolute top-2.5 right-2.5 z-10 flex flex-col bg-white/95 backdrop-blur-xs rounded-md shadow-sm border border-stone-200/80 overflow-hidden pointer-events-none text-stone-600">
-                    <span className="w-5 h-5 flex items-center justify-center text-[11px] font-bold border-b border-stone-100">＋</span>
-                    <span className="w-5 h-5 flex items-center justify-center text-[11px] font-bold">－</span>
-                  </div>
-
-                  {/* Bottom-Left: Google Watermark */}
-                  <div className="absolute bottom-2 left-2 z-10 select-none pointer-events-none text-[10px] font-bold text-stone-500/80 bg-white/80 backdrop-blur-xs px-1.5 py-0.5 rounded shadow-2xs font-sans tracking-tight">
-                    Google
-                  </div>
-
-                  {/* Interactive Map Marker Pin & Info Card */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full z-20 flex flex-col items-center group-hover:-translate-y-[calc(100%+4px)] transition-transform duration-300">
-                    {/* Floating Info Tooltip */}
-                    <div className="bg-white/98 backdrop-blur-sm px-3 py-1.5 rounded-xl shadow-lg border border-[#EADBCA] text-[#70141D] flex items-center gap-2 mb-1 whitespace-nowrap">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></div>
-                      <div className="text-left">
-                        <div className="text-[11.5px] font-bold text-[#70141D] leading-tight flex items-center gap-1.5">
-                          <span>Sáo Trúc Âu Cơ</span>
-                          <span className="text-[9px] font-medium text-amber-700 bg-amber-50 px-1 rounded border border-amber-200">5.0 ★</span>
-                        </div>
-                        <div className="text-[9.5px] text-[#6B605A] leading-tight">
-                          106/72 Hòa Bình, Tân Phú
-                        </div>
-                      </div>
-                      <i className="fa-solid fa-arrow-up-right-from-square text-[9px] text-[#70141D] opacity-70 group-hover:opacity-100 transition-opacity ml-0.5"></i>
-                    </div>
-
-                    {/* Teardrop Pin + Pulse Ripple */}
-                    <div className="relative flex items-center justify-center">
-                      <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-2 bg-red-600/30 rounded-full animate-ping pointer-events-none"></span>
-                      <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-3.5 h-1.5 bg-black/25 rounded-full blur-[1px] pointer-events-none"></span>
-
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="w-8 h-8 text-[#EA4335] drop-shadow-[0_4px_6px_rgba(0,0,0,0.35)] transition-transform duration-300 group-hover:scale-110"
-                        fill="currentColor"
-                      >
-                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
-                        <circle cx="12" cy="9" r="2.8" fill="#FFFFFF" />
-                      </svg>
-                    </div>
-                  </div>
-                </a>
+                    <span className="tracking-tight hover:underline">Sáo Trúc Âu Cơ</span>
+                    <i className="fa-solid fa-arrow-up-right-from-square text-[10px] text-[#70141D]/70 group-hover/pin:text-[#70141D] group-hover/pin:translate-x-0.5 transition-all"></i>
+                  </a>
+                </div>
 
                 <div className="p-3 bg-white border-t border-[#EADBCA] flex items-center justify-between gap-2 shrink-0">
-                  <div className="text-xs min-w-0">
-                    <span className="font-bold text-[#70141D] block truncate">Sáo Trúc Âu Cơ</span>
+                  <a
+                    href="https://www.google.com/maps/search/?api=1&query=106%2F72+H%C3%B2a+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh%2C+Vi%E1%BB%87t+Nam"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs min-w-0 group/info cursor-pointer block"
+                    title="Bấm để xem trên Google Maps"
+                  >
+                    <span className="font-bold text-[#70141D] block truncate group-hover/info:underline">Sáo Trúc Âu Cơ</span>
                     <span className="text-[10.5px] text-[#6B605A] block truncate" title="106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam">
-                      106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam
+                      106/72 Hòa Bình, Tân Phú, TP.HCM
                     </span>
-                  </div>
+                  </a>
                   <a
                     href="https://www.google.com/maps/dir/?api=1&destination=106%2F72+H%C3%B2a+B%C3%ACnh%2C+T%C3%A2n+Ph%C3%BA%2C+H%E1%BB%93+Ch%C3%AD+Minh%2C+Vi%E1%BB%87t+Nam"
                     target="_blank"
@@ -864,7 +836,6 @@ export default function HomePage() {
                     className="px-3.5 py-1.5 bg-[#70141D] hover:bg-[#580f16] active:bg-[#43090f] text-white text-[11px] font-semibold rounded-md transition-all duration-200 flex items-center gap-1.5 shrink-0 shadow-xs hover:shadow hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                     title="Chuyển qua Google Maps chỉ đường"
                   >
-                    <i className="fa-solid fa-location-arrow text-[10px]"></i>
                     <span>Chỉ đường trên Google Maps</span>
                     <i className="fa-solid fa-arrow-right text-[9px]"></i>
                   </a>
