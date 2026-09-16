@@ -609,11 +609,6 @@ export default function HomePage() {
 
               {/* Middle: Studio Description & CTA Button */}
               <div className="lg:col-span-5 space-y-4">
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-600/30 text-amber-900 text-xs font-semibold">
-                    <i className="fa-solid fa-clock-rotate-left"></i> Đang cập nhật nội dung
-                  </span>
-                </div>
                 <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#70141D] leading-tight">
                   {homeIntro.title}
                 </h2>
