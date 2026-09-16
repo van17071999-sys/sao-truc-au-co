@@ -188,75 +188,359 @@ function useServiceData() {
 // 01. LỚP HỌC CÁC BỘ MÔN
 export function ClassesPage() {
   const { t, translate } = useLanguage();
-  const { visibleCollection } = useServiceData();
-  const [openDiscipline, setOpenDiscipline] = useState<number | null>(0);
 
-  const cmsClassDetails = visibleCollection("class-details");
-  const fallbackDisciplines = [
-    { slug: "sao-truc-viet-nam", image: "/carousel-saotruc.webp", imageAlt: "Minh họa bộ môn sáo trúc Việt Nam", icon: "♫", title: "Sáo trúc Việt Nam", short: "Nền tảng hơi, ngón và kỹ thuật biểu cảm đặc trưng.", intro: "Bộ môn chủ đạo dành cho người mới lẫn người muốn biểu diễn chuyên sâu. Học viên được xây dựng nền tảng vững chắc và phát triển tiếng sáo tự nhiên, giàu cảm xúc.", learn: ["Tư thế, khẩu hình và cột hơi", "Ngón bấm, đánh lưỡi, rung hơi", "Dân ca, nhạc trữ tình và nhạc trẻ"], suitable: "Người mới bắt đầu, người chơi tự học hoặc học viên muốn biểu diễn." },
-    { slug: "sao-dizi", image: "/carousel-dizi.webp", imageAlt: "Minh họa bộ môn sáo Dizi", icon: "◉", title: "Sáo Dizi", short: "Âm sắc sáng, vang với màng rung và phong cách cổ phong.", intro: "Chương trình tập trung vào cách tạo âm Dizi đặc trưng, xử lý màng rung và kỹ thuật diễn tấu các tác phẩm Trung Hoa từ dễ đến nâng cao.", learn: ["Dán và điều chỉnh màng rung", "Hệ thống ngón và kỹ thuật hơi", "Luyến, láy và xử lý tác phẩm cổ phong"], suitable: "Người yêu nhạc Trung Hoa, nhạc phim và âm sắc Dizi." },
-    { slug: "sao-recorder", image: "/carousel-recorder.webp", imageAlt: "Minh họa bộ môn sáo Recorder", icon: "♩", title: "Sáo Recorder", short: "Dễ tiếp cận, phù hợp trẻ em và giáo dục âm nhạc.", intro: "Lộ trình recorder kết hợp kỹ thuật nhạc cụ và đọc nhạc, giúp người học chơi đúng ngay từ đầu và có thể tham gia hòa tấu.", learn: ["Tư thế, hơi và ngón bấm chuẩn", "Đọc bản nhạc và giữ nhịp", "Độc tấu, song tấu và hòa tấu"], suitable: "Trẻ em, người mới học và giáo viên âm nhạc phổ thông." },
-    { slug: "dong-tieu-xiao", image: "/carousel-tieu.webp", imageAlt: "Minh họa bộ môn động tiêu và Xiao", icon: "♬", title: "Động tiêu & Xiao", short: "Âm thanh trầm ấm, sâu lắng và giàu chất thiền.", intro: "Khóa học giúp người học làm chủ huyệt thổi dọc, cột hơi dài và sắc thái tinh tế của động tiêu Việt Nam và Xiao Trung Quốc.", learn: ["Tạo tiếng và kiểm soát âm trầm", "Ngón bấm hai hệ nhạc cụ", "Vuốt, rung và xử lý giai điệu chậm"], suitable: "Người yêu âm nhạc nhẹ nhàng, cổ phong và thiền định." },
-    { slug: "flute", image: "/carousel-flute.webp", imageAlt: "Minh họa bộ môn Flute", icon: "♪", title: "Flute", short: "Kỹ thuật phương Tây bài bản, âm sắc trong trẻo linh hoạt.", intro: "Từ nền tảng tư thế đến gam, etude và tác phẩm, chương trình flute được cá nhân hóa theo trình độ và mục tiêu của từng học viên.", learn: ["Tư thế, khẩu hình và cao độ", "Gam, etude và kỹ thuật lưỡi", "Đọc nhạc và xử lý tác phẩm"], suitable: "Người mới, học sinh nghệ thuật hoặc người muốn nâng cao kỹ thuật." },
-    { slug: "sao-hmong", image: "/carousel-saotruc.webp", imageAlt: "Minh họa bộ môn sáo H’Mông", icon: "❋", title: "Sáo H’Mông", short: "Khám phá âm hưởng Tây Bắc mộc mạc và da diết.", intro: "Người học làm quen với nguyên lý lam đồng, hệ thống ngón và những làn điệu mang bản sắc âm nhạc vùng cao.", learn: ["Tạo tiếng và điều khiển lam đồng", "Hệ thống ngón đặc trưng", "Làn điệu và phong cách Tây Bắc"], suitable: "Người yêu âm nhạc dân tộc và muốn khám phá nhạc cụ mới." },
+  const disciplines = [
+    {
+      code: "BỘ MÔN 01",
+      slug: "sao-truc-viet-nam",
+      title: "Sáo trúc Việt Nam",
+      image: "/class-saotruc-vn.webp",
+      desc: "Khám phá vẻ đẹp của sáo trúc Việt qua những làn điệu dân tộc, từ cơ bản đến nâng cao.",
+      href: "/bo-mon/sao-truc-viet-nam",
+      suitable: "Người mới",
+      type: "1 kèm 1",
+      format: "Online / Trực tiếp",
+    },
+    {
+      code: "BỘ MÔN 02",
+      slug: "sao-dizi",
+      title: "Sáo Dizi",
+      image: "/class-dizi.webp",
+      desc: "Sáo ngang Trung Quốc với âm thanh đặc trưng, giàu biểu cảm và kỹ thuật đa dạng.",
+      href: "/bo-mon/sao-dizi",
+      suitable: "Người mới",
+      type: "1 kèm 1",
+      format: "Online / Trực tiếp",
+    },
+    {
+      code: "BỘ MÔN 03",
+      slug: "sao-recorder",
+      title: "Sáo Recorder",
+      image: "/class-recorder.webp",
+      desc: "Dễ tiếp cận, phù hợp cho trẻ em và người mới bắt đầu làm quen với âm nhạc.",
+      href: "/bo-mon/sao-recorder",
+      suitable: "Người mới",
+      type: "1 kèm 1",
+      format: "Online / Trực tiếp",
+    },
+    {
+      code: "BỘ MÔN 04",
+      slug: "dong-tieu-xiao",
+      title: "Động tiêu & Xiao",
+      image: "/class-tieu-xiao.webp",
+      desc: "Âm thanh trầm ấm, sâu lắng, mang đậm tinh thần phương Đông và giá trị thiền.",
+      href: "/bo-mon/dong-tieu-xiao",
+      suitable: "Người mới",
+      type: "1 kèm 1",
+      format: "Online / Trực tiếp",
+    },
+    {
+      code: "BỘ MÔN 05",
+      slug: "flute",
+      title: "Flute",
+      image: "/class-flute.webp",
+      desc: "Kỹ thuật phương Tây bài bản, âm sắc trong trẻo, linh hoạt, phù hợp nhiều thể loại.",
+      href: "/bo-mon/flute",
+      suitable: "Người mới",
+      type: "1 kèm 1",
+      format: "Online / Trực tiếp",
+    },
+    {
+      code: "BỘ MÔN 06",
+      slug: "sao-hmong",
+      title: "Sáo H'Mông",
+      image: "/class-hmong.webp",
+      desc: "Khám phá âm hưởng Tây Bắc mộc mạc, độc đáo qua tiếng sáo của núi rừng.",
+      href: "/bo-mon/sao-hmong",
+      suitable: "Người mới",
+      type: "1 kèm 1",
+      format: "Online / Trực tiếp",
+    },
   ];
 
-  const rawDisciplines = cmsClassDetails.length ? cmsClassDetails.map((entry) => ({
-    slug: entry.slug, image: entry.imageUrl || "/carousel-saotruc.webp", imageAlt: `Minh họa bộ môn ${entry.title}`,
-    icon: entry.tag || "♪", title: entry.title, short: entry.excerpt, intro: entry.excerpt,
-    learn: entry.content.split(/\n+/).map((l) => l.trim()).filter(Boolean), suitable: entry.price || "Phù hợp với mọi người yêu âm nhạc.",
-  })) : fallbackDisciplines;
-
-  const displayedDisciplines = rawDisciplines.map((d) => ({
-    ...d,
-    title: translate(d.title),
-    short: translate(d.short),
-    intro: translate(d.intro),
-    learn: d.learn.map((pt) => translate(pt)),
-    suitable: translate(d.suitable),
-  }));
-
-  const cmsArticles = visibleCollection("articles");
-  const articles = cmsArticles.length ? cmsArticles.map((entry) => ({
-    slug: entry.slug, tag: translate(entry.tag) || t("Kỹ thuật", "Technique"), title: translate(entry.title),
-    excerpt: translate(entry.excerpt), imageUrl: entry.imageUrl || "", date: entry.publishedAt ? new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN") : "",
-  })) : [
-    { slug: "5-buoc-tao-tieng-sao", tag: "Kỹ thuật", title: "5 bước tạo tiếng sáo trong và ổn định", excerpt: "Từ tư thế, khẩu hình đến luồng hơi — nền tảng dành cho người mới bắt đầu.", date: "08.08.2026", imageUrl: "" },
-    { slug: "nguoi-moi-chon-sao-tone-nao", tag: "Chọn nhạc cụ", title: "Người mới nên bắt đầu với sáo tone nào?", excerpt: "So sánh sáo Đô C5, La A4 và Sol G4 để chọn cây sáo phù hợp với mục tiêu học.", date: "02.08.2026", imageUrl: "" },
-    { slug: "cach-luyen-hoi-dai", tag: "Luyện tập", title: "Cách luyện hơi dài mà không bị căng", excerpt: "Một lịch tập ngắn, an toàn và hiệu quả để cải thiện cột hơi mỗi ngày.", date: "28.07.2026", imageUrl: "" },
+  const whyUsPillars = [
+    {
+      icon: "fa-solid fa-users",
+      title: "1 kèm 1",
+      desc: "Giáo viên đồng hành sát sao, chỉnh sửa chi tiết theo năng lực của bạn.",
+    },
+    {
+      icon: "fa-solid fa-chart-line",
+      title: "Lộ trình riêng",
+      desc: "Chương trình cá nhân hóa theo mục tiêu và sở thích.",
+    },
+    {
+      icon: "fa-solid fa-laptop",
+      title: "Online & trực tiếp",
+      desc: "Linh hoạt hình thức học, dễ dàng sắp xếp thời gian.",
+    },
+    {
+      icon: "fa-solid fa-clipboard-check",
+      title: "Theo dõi từng buổi học",
+      desc: "Nhận xét và đánh giá định hướng rõ ràng để tiến bộ nhanh hơn.",
+    },
   ];
 
   return (
-    <main className="subject-page content-page">
+    <main className="min-h-screen bg-[#FAF6F0] text-[#2B2624] selection:bg-[#70141D] selection:text-white">
       <ServicePageHeader />
-      <section className="content-list-hero">
-        <p className="eyebrow">{t("CÁC BỘ MÔN GIẢNG DẠY", "TRAINING DISCIPLINES")}</p>
-        <h1>{t("Các Bộ Môn Sáo Giảng Dạy Tại TP.HCM & Online", "Instrument Classes & Disciplines")}</h1>
-        <p>{t("Mỗi bộ môn có một màu sắc riêng. Khám phá nội dung học, đối tượng phù hợp và đăng ký tư vấn trực tiếp hoặc online 1 kèm 1.", "Explore syllabus, prerequisites, and enroll in direct offline or 1-on-1 online classes.")}</p>
-      </section>
 
-      <section className="courses section" style={{ maxWidth: 1100, margin: "0 auto", padding: "20px 20px 60px" }}>
-        <div className="discipline-grid">
-          {displayedDisciplines.map((item, i) => (
-            <article className="discipline-card" key={item.title}>
-              <Link className="discipline-summary" href={`/bo-mon/${item.slug}`}>
-                <span className="discipline-photo"><img src={item.image} alt={item.imageAlt} width="640" height="420" loading="lazy" decoding="async" /><i>{item.icon}</i></span>
-                <span className="discipline-copy"><small>{t("BỘ MÔN", "DISCIPLINE")} 0{i + 1}</small><h3>{item.title}</h3><p>{item.short}</p></span>
-                <b className="discipline-cta">{t("Xem chi tiết →", "View details →")}</b>
-              </Link>
-            </article>
-          ))}
+      {/* 1. HERO & 6 BỘ MÔN SECTION - DARK ORIENTAL BACKDROP CHUẨN MÔ TẢ HÌNH ẢNH */}
+      <section className="bg-[#0A0706] text-white pt-8 pb-16 px-4 sm:px-6 lg:px-8 border-b border-[#291816] relative overflow-hidden">
+        {/* Subtle background ambiance glow */}
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#70141D]/20 rounded-full blur-3xl pointer-events-none -translate-y-1/2"></div>
+        
+        <div className="max-w-[1380px] mx-auto space-y-8 relative z-10">
+          
+          {/* Header row with Title box & Oriental Art */}
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div className="space-y-3.5 max-w-3xl">
+              <span className="inline-block px-3.5 py-1 rounded-full bg-[#FAF5EE] text-[#70141D] text-xs font-bold uppercase tracking-wider shadow-sm">
+                Lớp học
+              </span>
+
+              {/* Title Pill Frame */}
+              <div>
+                <h1 className="inline-block px-6 sm:px-8 py-3 rounded-2xl sm:rounded-full bg-[#FAF5EE] text-[#70141D] font-serif font-bold text-2xl sm:text-3xl lg:text-4xl shadow-md border border-[#EADBCA] leading-tight">
+                  Các Bộ Môn Sáo Giảng Dạy Tại TP.HCM & Online
+                </h1>
+              </div>
+
+              {/* Description Card */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#FAF5EE]/95 text-[#4D3F3A] border border-[#EADBCA] shadow-sm max-w-2xl">
+                <p className="text-xs sm:text-sm leading-relaxed">
+                  Khám phá thế giới âm nhạc qua những nhạc cụ đặc sắc từ Việt Nam và các nền văn hóa khác. Mỗi khóa học được thiết kế bài bản, phù hợp với mọi lứa tuổi và trình độ, cùng bạn trên hành trình nuôi dưỡng đam mê âm nhạc.
+                </p>
+              </div>
+            </div>
+
+            {/* Right Decorative Art (Sun, Mountains, Bamboo & Au Co Seal) */}
+            <div className="hidden lg:block shrink-0 relative w-80 h-44 pointer-events-none select-none">
+              <img
+                src="/class-hero-art.webp"
+                alt="Minh họa nghệ thuật Sáo Trúc Âu Cơ"
+                className="w-full h-full object-contain drop-shadow-xl"
+              />
+            </div>
+          </div>
+
+          {/* 6 Disciplines Grid (3 columns x 2 rows) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 pt-2">
+            {disciplines.map((item) => (
+              <div
+                key={item.slug}
+                className="bg-[#FAF5EE] rounded-2xl sm:rounded-3xl border border-[#E8DFD3] p-3 sm:p-3.5 flex gap-3.5 sm:gap-4 items-stretch hover:border-[#70141D] hover:shadow-xl transition-all duration-300 group"
+              >
+                {/* Thumbnail Image */}
+                <div className="w-28 sm:w-32 aspect-square rounded-xl sm:rounded-2xl overflow-hidden shrink-0 shadow-xs relative bg-[#EDE4D8]">
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 flex flex-col justify-between py-0.5 min-w-0 space-y-1.5">
+                  <div className="space-y-1">
+                    <span className="block text-[10px] sm:text-[10.5px] font-bold uppercase tracking-wider text-[#8C1B26]">
+                      {item.code}
+                    </span>
+                    <h2 className="font-serif font-bold text-base sm:text-lg text-[#70141D] group-hover:text-[#8C1B26] transition-colors leading-snug truncate">
+                      <Link href={item.href}>
+                        {item.title}
+                      </Link>
+                    </h2>
+                    <p className="text-[11px] sm:text-xs text-[#5C4D47] leading-relaxed line-clamp-2">
+                      {item.desc}
+                    </p>
+                  </div>
+
+                  {/* Attributes & Button */}
+                  <div className="space-y-2 pt-1 border-t border-[#E8DFD3]/80">
+                    <div className="text-[9.5px] sm:text-[10px] text-[#7A6963] font-medium flex items-center flex-wrap gap-x-1.5 gap-y-0.5">
+                      <span>👤 {item.suitable}</span>
+                      <span>•</span>
+                      <span>👥 {item.type}</span>
+                      <span>•</span>
+                      <span>💻 {item.format}</span>
+                    </div>
+
+                    <Link
+                      href={item.href}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#70141D] hover:bg-[#8C1B26] text-white text-[11px] sm:text-xs font-bold transition-all shadow-xs w-fit"
+                    >
+                      <span>Xem chương trình</span>
+                      <span>→</span>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
         </div>
       </section>
 
-      <section className="articles section" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px 60px" }}>
-        <div className="articles-head"><div><p className="eyebrow">{t("KIẾN THỨC & CẢM HỨNG", "KNOWLEDGE & INSPIRATION")}</p><h2>{t("Bài viết mới", "Recent Articles")}</h2></div><p>{t("Những hướng dẫn ngắn gọn, dễ áp dụng để bạn hiểu nhạc cụ và luyện tập đúng cách.", "Concise, actionable guides to help you understand traditional instruments and practice effectively.")}</p></div>
-        <div className="article-grid">{articles.map((article, i) => <article key={article.title}><div className={`article-visual ${article.imageUrl ? "has-image" : ""}`}>{article.imageUrl ? <><img src={article.imageUrl} alt={article.title} className="article-visual-img" onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }} /><span>0{i + 1}</span></> : <><span>0{i + 1}</span><b>♪</b></>}</div><div className="article-body"><small>{article.tag} · {article.date}</small><h3>{article.title}</h3><p>{article.excerpt}</p><Link href={`/bai-viet/${article.slug}`}>{t("Đọc bài viết", "Read article")} <span>→</span></Link></div></article>)}</div>
+      {/* 2. VÌ SAO NÊN HỌC TẠI CHÚNG TÔI - HỌC TẠI SÁO TRÚC ÂU CƠ */}
+      <section className="py-12 sm:py-16 bg-[#FAF5ED] border-b border-[#EADBCA] relative overflow-hidden">
+        {/* Subtle decorative corners */}
+        <div className="absolute left-0 top-0 w-24 sm:w-28 opacity-40 pointer-events-none select-none">
+          <img src="/why-us-bamboo.webp" alt="Minh họa trúc" className="w-full h-auto" />
+        </div>
+        <div className="absolute right-0 bottom-0 w-28 sm:w-32 opacity-40 pointer-events-none select-none">
+          <img src="/why-us-boat.webp" alt="Minh họa sông núi" className="w-full h-auto" />
+        </div>
+
+        <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-10 relative z-10">
+          
+          {/* Header */}
+          <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4 pb-4 border-b border-[#E0D5C3]">
+            <div>
+              <span className="text-[11px] uppercase tracking-widest font-bold text-[#8C1B26] block mb-1">
+                VÌ SAO NÊN HỌC TẠI CHÚNG TÔI
+              </span>
+              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#70141D]">
+                Học tại Sáo Trúc Âu Cơ
+              </h2>
+            </div>
+            <p className="text-xs sm:text-sm text-[#6E5D57] leading-relaxed italic max-w-xl">
+              Không chỉ là những bài học âm nhạc, mà còn là hành trình nuôi dưỡng tâm hồn, kết nối văn hóa và lan tỏa những giá trị đẹp đẽ của âm nhạc dân tộc.
+            </p>
+          </div>
+
+          {/* 4 Pillars Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 divide-y sm:divide-y-0 sm:divide-x divide-[#E0D5C3]">
+            {whyUsPillars.map((pillar, idx) => (
+              <div
+                key={idx}
+                className={`flex items-start gap-4 ${idx !== 0 ? "pt-4 sm:pt-0 sm:pl-6" : ""}`}
+              >
+                <div className="w-12 h-12 rounded-full bg-[#70141D] text-white flex items-center justify-center text-lg shrink-0 shadow-sm mt-0.5">
+                  <i className={pillar.icon}></i>
+                </div>
+                <div className="space-y-1">
+                  <h3 className="font-serif font-bold text-base text-[#70141D]">
+                    {pillar.title}
+                  </h3>
+                  <p className="text-xs sm:text-[13px] text-[#6B5A53] leading-relaxed">
+                    {pillar.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </div>
       </section>
 
-      <div style={{ textAlign: "center", paddingBottom: 40 }}>
-        <Link className="button button-outline" href="/">{t("← Quay lại trang chủ", "← Back to Homepage")}</Link>
+      {/* 3. INTERNAL LINKS Ở CHÂN TRANG: GIÁO TRÌNH, CHUYỂN SOẠN SHEET, CÁC SẢN PHẨM SÁO */}
+      <section className="py-12 sm:py-16 bg-[#F5EFE6] border-b border-[#EADBCA]">
+        <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+          
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <span className="text-xs uppercase tracking-widest font-bold text-[#A87932] block">
+              ✦ HỆ SINH THÁI TÀI LIỆU & NHẠC CỤ ĐỒNG HÀNH ✦
+            </span>
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#70141D]">
+              Tài Liệu & Nhạc Cụ Đồng Hành Cùng Bạn
+            </h2>
+            <p className="text-xs sm:text-sm text-[#6B5751] leading-relaxed">
+              Trung tâm hỗ trợ trọn gói từ giáo trình chuẩn, dịch vụ ký âm chuyển soạn bài bản đến các sản phẩm sáo trúc tuyển chọn chuẩn âm hòa tấu.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Internal Link 1: Giáo trình sáo trúc */}
+            <Link
+              href="/giao-trinh-va-sheet"
+              className="group bg-white rounded-2xl p-6 border border-[#E0D5C3] shadow-xs hover:shadow-xl hover:border-[#70141D]/40 transition-all flex flex-col justify-between space-y-4"
+            >
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-[#70141D]/10 text-[#70141D] flex items-center justify-center text-2xl border border-[#70141D]/20 group-hover:scale-110 transition-transform">
+                  📖
+                </div>
+                <span className="text-[10px] uppercase tracking-wider font-bold text-[#A87932] block">
+                  TÀI LIỆU HỌC TẬP BÀI BẢN
+                </span>
+                <h3 className="font-serif text-lg font-bold text-slate-900 group-hover:text-[#70141D] transition-colors leading-snug">
+                  Giáo Trình Sáo Trúc
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Bộ giáo trình tự học bài bản từ vỡ lòng, kỹ thuật bấm ngón, luyện hơi đến các bài luyện ngón chuyên sâu có video và hướng dẫn chi tiết.
+                </p>
+              </div>
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#70141D] group-hover:translate-x-1 transition-transform">
+                <span>Xem giáo trình sáo trúc</span>
+                <span>→</span>
+              </div>
+            </Link>
+
+            {/* Internal Link 2: Chuyển soạn sheet nhạc */}
+            <Link
+              href="/giao-trinh-va-sheet"
+              className="group bg-white rounded-2xl p-6 border border-[#E0D5C3] shadow-xs hover:shadow-xl hover:border-[#70141D]/40 transition-all flex flex-col justify-between space-y-4"
+            >
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-[#70141D]/10 text-[#70141D] flex items-center justify-center text-2xl border border-[#70141D]/20 group-hover:scale-110 transition-transform">
+                  🎼
+                </div>
+                <span className="text-[10px] uppercase tracking-wider font-bold text-[#A87932] block">
+                  DỊCH VỤ CHUYÊN NGHIỆP
+                </span>
+                <h3 className="font-serif text-lg font-bold text-slate-900 group-hover:text-[#70141D] transition-colors leading-snug">
+                  Chuyển Soạn Sheet Nhạc & Cảm Âm
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Dịch vụ ký âm chuyên nghiệp, chuyển soạn sheet nhạc nốt hoa, cảm âm sáo trúc chuẩn hòa tấu và beat nhạc nền độc quyền cho mọi ca khúc bạn yêu thích.
+                </p>
+              </div>
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#70141D] group-hover:translate-x-1 transition-transform">
+                <span>Xem dịch vụ chuyển soạn sheet</span>
+                <span>→</span>
+              </div>
+            </Link>
+
+            {/* Internal Link 3: Các sản phẩm sáo */}
+            <Link
+              href="/sao-va-phu-kien"
+              className="group bg-white rounded-2xl p-6 border border-[#E0D5C3] shadow-xs hover:shadow-xl hover:border-[#70141D]/40 transition-all flex flex-col justify-between space-y-4"
+            >
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-[#70141D]/10 text-[#70141D] flex items-center justify-center text-2xl border border-[#70141D]/20 group-hover:scale-110 transition-transform">
+                  🎋
+                </div>
+                <span className="text-[10px] uppercase tracking-wider font-bold text-[#A87932] block">
+                  NHẠC CỤ CHUẨN ÂM HÒA TẤU
+                </span>
+                <h3 className="font-serif text-lg font-bold text-slate-900 group-hover:text-[#70141D] transition-colors leading-snug">
+                  Các Sản Phẩm Sáo & Phụ Kiện
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Cung cấp sáo nứa Bắc, nứa Nam, sáo Dizi, động tiêu, sáo mèo chuẩn âm hòa tấu, được chính nghệ sĩ tuyển chọn và căn chỉnh, bảo hành trọn đời.
+                </p>
+              </div>
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#70141D] group-hover:translate-x-1 transition-transform">
+                <span>Xem các sản phẩm sáo</span>
+                <span>→</span>
+              </div>
+            </Link>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 4. FOOTER & HOME RETURN */}
+      <div className="py-8 text-center bg-[#FAF5EE]">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#70141D] text-[#70141D] hover:bg-[#70141D] hover:text-white transition-all text-xs font-bold uppercase tracking-wider shadow-xs"
+        >
+          <span>← Quay lại trang chủ</span>
+        </Link>
       </div>
+
       <ServicePageFooter />
     </main>
   );
