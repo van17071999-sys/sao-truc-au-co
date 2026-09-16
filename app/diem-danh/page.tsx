@@ -520,6 +520,17 @@ function StudentPortalContent() {
     });
   }, [students, searchTerm, statusFilter]);
 
+  // Group students by course / discipline for vertical grouped list
+  const groupedStudents = useMemo(() => {
+    const map: Record<string, StudentData[]> = {};
+    filteredStudents.forEach((s) => {
+      const courseName = s.course || "Bộ môn khác";
+      if (!map[courseName]) map[courseName] = [];
+      map[courseName].push(s);
+    });
+    return map;
+  }, [filteredStudents]);
+
   // =========================================================================
   // 1. TRƯỜNG HỢP HỌC VIÊN XEM (Chỉ xem duy nhất 1 link là học viên, KHÔNG có sidebar)
   // =========================================================================
@@ -907,67 +918,119 @@ function StudentPortalContent() {
 
         {/* ---------------- 1. TAB HỌC VIÊN ---------------- */}
         {activeTab === "hoc-vien" && (
-          <>
-            {/* Top Bar with Actions */}
-            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-              <div className="flex flex-1 gap-2 items-center">
-                <div className="relative flex-1 max-w-md">
+          <div className="flex flex-col lg:flex-row gap-5 items-start">
+            {/* CỘT BÊN TRÁI: DANH SÁCH HỌC VIÊN DỌC CHIA THEO BỘ MÔN */}
+            <div className="w-full lg:w-80 shrink-0 bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-3.5">
+              {/* Header & Thêm mới */}
+              <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900">Danh Sách Học Viên</h2>
+                  <span className="text-[11px] text-slate-400">({filteredStudents.length} học viên)</span>
+                </div>
+                <button
+                  onClick={() => setShowAddStudentModal(true)}
+                  className="px-3 py-1.5 bg-[#4A101D] hover:bg-[#631728] text-white text-xs font-bold rounded-xl shadow transition-colors flex items-center gap-1 cursor-pointer"
+                >
+                  <span>+ Thêm HV</span>
+                </button>
+              </div>
+
+              {/* Tìm kiếm & Lọc */}
+              <div className="space-y-2">
+                <div className="relative">
                   <input
                     type="text"
-                    placeholder="Tìm theo tên học viên, SĐT hoặc mã..."
+                    placeholder="Tìm theo tên, SĐT, mã..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 bg-white rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#4A101D]"
+                    className="w-full pl-8 pr-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#4A101D]"
                   />
-                  <span className="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
+                  <span className="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
                 </div>
+
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="bg-white border border-slate-200 text-xs rounded-xl px-3 py-2 font-medium text-slate-700"
+                  className="w-full bg-slate-50 border border-slate-200 text-xs rounded-xl px-2.5 py-1.5 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#4A101D]"
                 >
-                  <option value="all">Tất cả trạng thái</option>
+                  <option value="all">Tất cả trạng thái ({students.length})</option>
                   <option value="Đang học">Đang học</option>
                   <option value="Hết buổi">Hết buổi</option>
                   <option value="Bảo lưu">Bảo lưu</option>
                 </select>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => setShowAddStudentModal(true)}
-                  className="px-4 py-2 bg-[#4A101D] hover:bg-[#631728] text-white text-xs font-bold rounded-xl shadow transition-colors flex items-center gap-1.5"
-                >
-                  <span>+ Thêm học viên</span>
-                </button>
+              {/* DANH SÁCH THEO CHIỀU DỌC - CHIA THEO BỘ MÔN */}
+              <div className="space-y-4 max-h-[calc(100vh-270px)] overflow-y-auto pr-1">
+                {Object.entries(groupedStudents).map(([courseName, stList]) => (
+                  <div key={courseName} className="space-y-1.5">
+                    {/* Header Nhóm Bộ Môn */}
+                    <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-800 font-bold text-xs border border-slate-200/60">
+                      <span className="flex items-center gap-1.5 truncate">
+                        <span className="text-[#4A101D]">🎼</span>
+                        <span className="truncate">{courseName}</span>
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white text-slate-700 font-bold shadow-xs">
+                        {stList.length}
+                      </span>
+                    </div>
+
+                    {/* Danh sách học viên dọc trong bộ môn */}
+                    <div className="space-y-1 pl-0.5">
+                      {stList.map((s) => {
+                        const isSelected = currentStudent.id === s.id;
+                        return (
+                          <button
+                            key={s.id}
+                            onClick={() => setSelectedStudentId(s.id)}
+                            className={`w-full p-2.5 rounded-xl text-left transition-all flex items-center justify-between gap-2 border cursor-pointer ${
+                              isSelected
+                                ? "bg-[#4A101D] text-white border-[#4A101D] shadow-md ring-2 ring-[#4A101D]/20"
+                                : "bg-white hover:bg-slate-50 text-slate-800 border-slate-200/80"
+                            }`}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className={`w-2 h-2 rounded-full shrink-0 ${
+                                  s.status === "Đang học" ? "bg-emerald-500" :
+                                  s.status === "Bảo lưu" ? "bg-amber-500" : "bg-rose-500"
+                                }`} />
+                                <span className="font-bold text-xs truncate">{s.name}</span>
+                              </div>
+                              <div className={`text-[10px] truncate mt-0.5 ${isSelected ? "text-slate-200" : "text-slate-400"}`}>
+                                {s.phone} · {s.id}
+                              </div>
+                            </div>
+
+                            <div className="text-right shrink-0">
+                              <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                                isSelected
+                                  ? "bg-white/20 text-white"
+                                  : s.status === "Đang học"
+                                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                  : s.status === "Bảo lưu"
+                                  ? "bg-amber-50 text-amber-700 border border-amber-200"
+                                  : "bg-rose-50 text-rose-700 border border-rose-200"
+                              }`}>
+                                {s.attendedSessions}/{s.packageSessions}
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+
+                {Object.keys(groupedStudents).length === 0 && (
+                  <p className="text-xs text-slate-400 italic text-center py-6">Không tìm thấy học viên nào phù hợp.</p>
+                )}
               </div>
             </div>
 
-            {/* Students List Horizontal Pills */}
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
-              {filteredStudents.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => setSelectedStudentId(s.id)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold shrink-0 transition-all flex items-center gap-2 border ${
-                    currentStudent.id === s.id
-                      ? "bg-[#4A101D] text-white border-[#4A101D] shadow-md"
-                      : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
-                  }`}
-                >
-                  <span>{s.name}</span>
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                    s.status === "Đang học" ? "bg-emerald-500/20 text-emerald-400" :
-                    s.status === "Bảo lưu" ? "bg-amber-500/20 text-amber-400" : "bg-rose-500/20 text-rose-300"
-                  }`}>
-                    {s.attendedSessions}/{s.packageSessions}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Selected Student Full Card */}
-            <div className="bg-white rounded-2xl p-5 sm:p-7 shadow-sm border border-slate-200 space-y-6">
+            {/* CỘT BÊN PHẢI: THÔNG TIN CHI TIẾT HỌC VIÊN ĐƯỢC CHỌN */}
+            <div className="flex-1 min-w-0 w-full space-y-5">
+              <div className="bg-white rounded-2xl p-5 sm:p-7 shadow-sm border border-slate-200 space-y-6">
               {/* Profile Header */}
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-slate-100">
                 <div className="flex items-center gap-4">
@@ -1146,8 +1209,9 @@ function StudentPortalContent() {
                 <b className="text-amber-800">LƯU Ý VỀ HỌC PHÍ & BẢO LƯU:</b> "{settings.policyNote}"
               </div>
             </div>
-          </>
-        )}
+          </div>
+        </div>
+      )}
 
         {/* ---------------- 2. TAB LỚP HỌC ---------------- */}
         {activeTab === "lop-hoc" && (
