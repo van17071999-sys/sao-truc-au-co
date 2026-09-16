@@ -598,17 +598,16 @@ export default function HomePage() {
             
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
               
-              {/* Left: Teacher Portrait / Studio Image */}
-              <div className="lg:col-span-4 rounded-xl overflow-hidden shadow-2xs border border-[#E0D5C3] bg-[#FAF7F2]">
-                <img
-                  src={homeIntro.imageUrl || "/intro-portrait.jpg"}
-                  alt={homeIntro.title}
-                  className="w-full h-56 sm:h-64 object-cover object-center hover:scale-103 transition-transform duration-500"
-                />
+              {/* Left: Callout Quote Box */}
+              <div className="order-3 lg:order-1 lg:col-span-3 p-5 bg-transparent text-center space-y-3">
+                <p className="font-serif italic text-xs sm:text-[13.5px] text-[#5A4D46] leading-relaxed">
+                  “ {homeIntro.tag || "Mỗi người đều có thể thổi được những giai điệu đẹp chỉ cần bắt đầu đúng cách."} ”
+                </p>
+                <div className="text-amber-700/60 text-xs">―― ❖ ――</div>
               </div>
 
               {/* Middle: Studio Description & CTA Button */}
-              <div className="lg:col-span-5 space-y-4">
+              <div className="order-2 lg:order-2 lg:col-span-5 space-y-4">
                 <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#70141D] leading-tight">
                   {homeIntro.title}
                 </h2>
@@ -626,12 +625,13 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Right: Callout Quote Box */}
-              <div className="lg:col-span-3 p-5 bg-transparent text-center space-y-3">
-                <p className="font-serif italic text-xs sm:text-[13.5px] text-[#5A4D46] leading-relaxed">
-                  “ {homeIntro.tag || "Mỗi người đều có thể thổi được những giai điệu đẹp chỉ cần bắt đầu đúng cách."} ”
-                </p>
-                <div className="text-amber-700/60 text-xs">―― ❖ ――</div>
+              {/* Right: Teacher Portrait / Studio Image */}
+              <div className="order-1 lg:order-3 lg:col-span-4 rounded-xl overflow-hidden shadow-2xs border border-[#E0D5C3] bg-[#FAF7F2]">
+                <img
+                  src={homeIntro.imageUrl || "/intro-portrait.jpg"}
+                  alt={homeIntro.title}
+                  className="w-full h-56 sm:h-64 object-cover object-center hover:scale-103 transition-transform duration-500"
+                />
               </div>
 
             </div>
