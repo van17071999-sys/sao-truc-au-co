@@ -11,6 +11,8 @@ const catalogPaths = [
 ];
 
 const servicePages = [
+  "/gioi-thieu-admin",
+  "/gioi-thieu",
   "/lop-hoc",
   "/dang-ky-hoc",
   "/sao-va-phu-kien",

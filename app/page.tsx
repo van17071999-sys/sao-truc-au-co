@@ -55,11 +55,11 @@ const disciplinesList = [
 const defaultHomeIntro = {
   id: "home-intro-01",
   collection: "home-intro",
-  title: "Lớp Dạy Thổi Sáo Tại TP.HCM – Sáo Trúc Âu Cơ",
-  excerpt: "Trung tâm Sáo Trúc Âu Cơ dạy thổi sáo trực tiếp tại Tân Phú, TP.HCM, hỗ trợ từ người mới bắt đầu đến trình độ nâng cao. Chúng tôi giảng dạy sáo trúc Việt Nam, Dizi, Recorder, Flute, Tiêu và các loại sáo dân tộc khác, với hình thức học linh hoạt: học tại lớp, học online 1 kèm 1 và gia sư tại nhà.",
+  title: "Người Sáng Lập Sáo Trúc Âu Cơ – Thầy Quách Hạ Văn",
+  excerpt: "Hơn 8 năm tâm huyết nghiên cứu, giảng dạy và lan tỏa nghệ thuật sáo trúc Việt Nam. Trung tâm Sáo Trúc Âu Cơ đào tạo sáo trúc từ cơ bản đến nâng cao, với hình thức học linh hoạt: học tại lớp Tân Phú (TP.HCM) và học online 1 kèm 1 toàn quốc.",
   imageUrl: "/intro-portrait.jpg",
-  price: "Xem lớp học tại TP.HCM",
-  content: "/lop-hoc",
+  price: "Giới thiệu nhà sáng lập",
+  content: "/gioi-thieu-admin",
   tag: "Mỗi người đều có thể thổi được những giai điệu đẹp chỉ cần bắt đầu đúng cách.",
   visible: true,
 };
@@ -617,10 +617,10 @@ export default function HomePage() {
                 </p>
                 <div>
                   <Link
-                    href={homeIntro.content || "/lop-hoc"}
+                    href={(!homeIntro.content || homeIntro.content === "/lop-hoc") ? "/gioi-thieu-admin" : homeIntro.content}
                     className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#70141D] hover:bg-[#5a0e16] text-white text-xs sm:text-sm font-semibold rounded-md shadow-2xs hover:shadow transition-all"
                   >
-                    <span>{homeIntro.price || "Xem lớp học tại TP.HCM"}</span>
+                    <span>{(!homeIntro.price || homeIntro.price === "Xem lớp học tại TP.HCM") ? "Giới thiệu nhà sáng lập" : homeIntro.price}</span>
                     <i className="fa-solid fa-arrow-right text-xs"></i>
                   </Link>
                 </div>

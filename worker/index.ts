@@ -81,8 +81,8 @@ const detailedCmsEntries = [
   ["home-disc-05", "home-disciplines", "Flute", "flute", "Âm thanh trong trẻo, hiện đại và linh hoạt.", "/inst-flute.jpg", "", "", "/bo-mon/flute", 5],
   ["home-disc-06", "home-disciplines", "Sáo H'Mông / Sáo mèo", "sao-hmong", "Âm sắc mộc mạc, đậm đà bản sắc vùng cao.", "/inst-hmong.jpg", "", "", "/bo-mon/sao-hmong", 6],
 
-  // Khung giới thiệu lớp học & chân dung nghệ sĩ ở trang chủ
-  ["home-intro-01", "home-intro", "Lớp Dạy Thổi Sáo Tại TP.HCM – Sáo Trúc Âu Cơ", "gioi-thieu-lop-hoc", "Trung tâm Sáo Trúc Âu Cơ dạy thổi sáo trực tiếp tại Tân Phú, TP.HCM, hỗ trợ từ người mới bắt đầu đến trình độ nâng cao. Chúng tôi giảng dạy sáo trúc Việt Nam, Dizi, Recorder, Flute, Tiêu và các loại sáo dân tộc khác, với hình thức học linh hoạt: học tại lớp, học online 1 kèm 1 và gia sư tại nhà.", "/intro-portrait.jpg", "Mỗi người đều có thể thổi được những giai điệu đẹp chỉ cần bắt đầu đúng cách.", "Xem lớp học tại TP.HCM", "/lop-hoc", 1],
+  // Khung giới thiệu nhà sáng lập & chân dung nghệ sĩ ở trang chủ
+  ["home-intro-01", "home-intro", "Người Sáng Lập Sáo Trúc Âu Cơ – Thầy Quách Hạ Văn", "gioi-thieu-nha-sang-lap", "Hơn 8 năm tâm huyết nghiên cứu, giảng dạy và lan tỏa nghệ thuật sáo trúc Việt Nam. Trung tâm Sáo Trúc Âu Cơ đào tạo sáo trúc từ cơ bản đến nâng cao, với hình thức học linh hoạt: học tại lớp Tân Phú (TP.HCM) và học online 1 kèm 1 toàn quốc.", "/intro-portrait.jpg", "Mỗi người đều có thể thổi được những giai điệu đẹp chỉ cần bắt đầu đúng cách.", "Giới thiệu nhà sáng lập", "/gioi-thieu-admin", 1],
 
   ["home-map-01", "home-map", "Lớp Sáo Trúc Âu Cơ", "map", "Không gian học thân thiện, yên tĩnh, dễ di chuyển, phù hợp cho mọi lứa tuổi.", "/map-tanphu.jpg", "https://maps.app.goo.gl/LEoydb9aZkdu2M6J6", "Chỉ đường trên Google Maps", "106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam", 1],
 

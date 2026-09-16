@@ -26,7 +26,7 @@ type CmsEntry = {
 const collections = [
   { key: "students", label: "Học viên & Điểm danh", note: "Quản lý danh sách học viên, điểm danh buổi học (+1 buổi), tạo hóa đơn và link tra cứu", priceLabel: "Học phí", tagLabel: "Mã học viên", excerptLabel: "Số điện thoại" },
   { key: "services", label: "8 mục chính", note: "Các thẻ lớn trên trang chủ", priceLabel: "Giá / Phí (VNĐ hoặc 'Liên hệ')" },
-  { key: "home-intro", label: "Giới thiệu lớp học TP.HCM", note: "Khung giới thiệu lớp học & ảnh chân dung trên trang chủ (thay đổi ảnh chân dung, tiêu đề, mô tả, nút bấm và câu trích dẫn)", tagLabel: "Câu trích dẫn bên phải", tagPlaceholder: "Ví dụ: Mỗi người đều có thể thổi được những giai điệu đẹp chỉ cần bắt đầu đúng cách.", priceLabel: "Chữ trên nút bấm", pricePlaceholder: "Ví dụ: Xem lớp học tại TP.HCM", excerptLabel: "Nội dung giới thiệu lớp học *", excerptPlaceholder: "Nhập nội dung giới thiệu...", contentLabel: "Đường dẫn khi bấm nút", contentPlaceholder: "Ví dụ: /lop-hoc" },
+  { key: "home-intro", label: "Giới thiệu nhà sáng lập", note: "Khung giới thiệu người sáng lập & ảnh chân dung trên trang chủ (thay đổi ảnh chân dung, tiêu đề, mô tả, nút bấm và câu trích dẫn)", tagLabel: "Câu trích dẫn bên phải", tagPlaceholder: "Ví dụ: Mỗi người đều có thể thổi được những giai điệu đẹp chỉ cần bắt đầu đúng cách.", priceLabel: "Chữ trên nút bấm", pricePlaceholder: "Ví dụ: Giới thiệu nhà sáng lập", excerptLabel: "Nội dung giới thiệu ngắn *", excerptPlaceholder: "Nhập nội dung giới thiệu...", contentLabel: "Đường dẫn khi bấm nút", contentPlaceholder: "Ví dụ: /gioi-thieu-admin" },
   { key: "home-disciplines", label: "Các bộ môn giảng dạy", note: "Các thẻ bộ môn ở mục 'Các Bộ Môn Giảng Dạy' trên trang chủ (thay đổi ảnh, tên bộ môn, mô tả ngắn và liên kết)", excerptLabel: "Mô tả ngắn của bộ môn *", contentLabel: "Đường dẫn khi bấm vào thẻ (ví dụ: /bo-mon/sao-truc-viet-nam)" },
   { key: "classroom-photos", label: "Hình ảnh lớp học & Học viên", note: "Hình ảnh lớp học & học viên ở trang chủ (thêm ảnh mới, đổi ảnh, sửa chú thích/mô tả lớp học)", tagLabel: "Nhãn phân loại (tùy chọn)", tagPlaceholder: "Ví dụ: Lớp học, Tập thể, Cá nhân", excerptLabel: "Mô tả / Chú thích hiển thị dưới ảnh *", excerptPlaceholder: "Ví dụ: Giờ học trực tiếp tại trung tâm", contentLabel: "Đường dẫn khi bấm vào ảnh (tùy chọn)", contentPlaceholder: "Ví dụ: /lop-hoc" },
   { key: "class-details", label: "Lớp học các bộ môn", note: "Từng bộ môn (/bo-mon/slug) - bấm thẻ trên web dẫn thẳng vào bài giới thiệu đầy đủ", tagLabel: "Biểu tượng bộ môn (ví dụ: ♫, ◉, ♩...)", priceLabel: "Đối tượng phù hợp", excerptLabel: "Mô tả ngắn trên thẻ danh sách", contentLabel: "Bạn sẽ học được gì? (mỗi dòng một ý)" },
@@ -2606,7 +2606,7 @@ export default function ContentAdmin() {
                   slug: slugify(newTitle),
                 });
               }}
-              placeholder={isTuitionSettings ? "Ví dụ: 2.400.000đ – 3.200.000đ" : (draft.collection === "home-disciplines" ? "Ví dụ: Sáo trúc Việt Nam" : (draft.collection === "home-intro" ? "Ví dụ: Lớp Dạy Thổi Sáo Tại TP.HCM – Sáo Trúc Âu Cơ" : (draft.collection === "classroom-photos" ? "Ví dụ: Giờ học trực tiếp tại trung tâm" : undefined)))}
+              placeholder={isTuitionSettings ? "Ví dụ: 2.400.000đ – 3.200.000đ" : (draft.collection === "home-disciplines" ? "Ví dụ: Sáo trúc Việt Nam" : (draft.collection === "home-intro" ? "Ví dụ: Người Sáng Lập Sáo Trúc Âu Cơ – Thầy Quách Hạ Văn" : (draft.collection === "classroom-photos" ? "Ví dụ: Giờ học trực tiếp tại trung tâm" : undefined)))}
             />
           </label>
           <label className="wide slug-field">Slug (đường dẫn, không dấu) *<span><input required pattern="[a-z0-9-]+" value={draft.slug} onChange={(event) => setDraft({ ...draft, slug: slugify(event.target.value) })} /><button type="button" onClick={() => setDraft({ ...draft, slug: slugify(draft.title) })}>Tạo lại</button></span></label>
@@ -3562,7 +3562,7 @@ export default function ContentAdmin() {
               <input
                 value={draft.content}
                 onChange={(event) => setDraft({ ...draft, content: event.target.value })}
-                placeholder={draft.collection === "classroom-photos" ? "Ví dụ: /lop-hoc hoặc link xem chi tiết (tùy chọn)" : (draft.collection === "home-intro" ? "Ví dụ: /lop-hoc" : "Ví dụ: /bo-mon/sao-truc-viet-nam")}
+                placeholder={draft.collection === "classroom-photos" ? "Ví dụ: /lop-hoc hoặc link xem chi tiết (tùy chọn)" : (draft.collection === "home-intro" ? "Ví dụ: /gioi-thieu-admin" : "Ví dụ: /bo-mon/sao-truc-viet-nam")}
               />
             </label>
           ) : (
