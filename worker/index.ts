@@ -681,6 +681,110 @@ const worker = {
       return Response.json({ ok: true });
     }
 
+    if (url.pathname === "/api/attendance-notify" || url.pathname === "/api/diem-danh-notify") {
+      if (request.method !== "POST") {
+        return Response.json({ error: "Method not allowed" }, { status: 405, headers: { Allow: "POST" } });
+      }
+
+      if (!requestHasSameOrigin(request, url)) {
+        return Response.json({ error: "Invalid origin" }, { status: 403 });
+      }
+
+      let data: Record<string, unknown>;
+      try {
+        data = await request.json() as Record<string, unknown>;
+      } catch {
+        return Response.json({ error: "Invalid request" }, { status: 400 });
+      }
+
+      const clean = (value: unknown, maxLength = 300) => String(value ?? "").trim().slice(0, maxLength);
+      const studentName = clean(data.studentName || data.name);
+      const studentCode = clean(data.studentCode || data.code || data.id);
+      const course = clean(data.course);
+      const sessionCount = clean(data.sessionCount || data.attendedSessions);
+      const packageSessions = clean(data.packageSessions || data.totalSessions);
+      const remainingSessions = clean(data.remainingSessions);
+      const date = clean(data.date) || new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", dateStyle: "short" }).format(new Date());
+      const time = clean(data.time) || new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", timeStyle: "short" }).format(new Date());
+      const note = clean(data.note, 500);
+      const teacher = clean(data.teacher);
+      const isTest = Boolean(data.isTest);
+      const type = clean(data.type) || "single";
+      const className = clean(data.className);
+      const classCount = clean(data.classCount);
+
+      const botToken = clean(data.telegramBotToken) || env?.TELEGRAM_BOT_TOKEN || "";
+      const chatId = clean(data.telegramChatId) || env?.TELEGRAM_CHAT_ID || "";
+
+      if (!botToken || !chatId) {
+        return Response.json({
+          ok: false,
+          error: "Chưa cấu hình Telegram Bot Token hoặc Chat ID.",
+          needsConfig: true,
+        }, { status: 400 });
+      }
+
+      let notification = "";
+      if (isTest) {
+        notification = [
+          "🔔 THỬ NGHIỆM KẾT NỐI TELEGRAM THÀNH CÔNG!",
+          "",
+          "Cổng thông báo Telegram của Sáo Trúc Âu Cơ đã sẵn sàng hoạt động.",
+          `Thời gian: ${time} ngày ${date}`,
+          "Từ bây giờ, mỗi khi điểm danh học viên thành công, hệ thống sẽ tự động gửi tin nhắn báo về đây.",
+        ].join("\n");
+      } else if (type === "class") {
+        notification = [
+          "📋 ĐIỂM DANH LỚP HỌC THÀNH CÔNG",
+          "",
+          `Lớp: ${className || "Lớp tập thể"}`,
+          `Số lượng học viên: ${classCount || "Tất cả"} học viên`,
+          `Thời gian: ${time} ngày ${date}`,
+          teacher ? `Giáo viên: ${teacher}` : "",
+          note ? `Ghi chú: ${note}` : "",
+          "",
+          "Hệ thống Sáo Trúc Âu Cơ đã ghi nhận buổi học của tất cả học viên trong lớp.",
+        ].filter(Boolean).join("\n");
+      } else {
+        notification = [
+          "✅ ĐIỂM DANH HỌC VIÊN THÀNH CÔNG",
+          "",
+          `Họ tên: ${studentName || "Học viên"}`,
+          studentCode ? `Mã HV: ${studentCode}` : "",
+          course ? `Khóa học: ${course}` : "",
+          sessionCount ? `Buổi học: Buổi thứ ${sessionCount}${packageSessions ? ` / ${packageSessions}` : ""}` : "",
+          remainingSessions !== "" ? `Số buổi còn lại: ${remainingSessions} buổi` : "",
+          `Thời gian: ${time} ngày ${date}`,
+          teacher ? `Giáo viên phụ trách: ${teacher}` : "",
+          note ? `Ghi chú: ${note}` : "",
+        ].filter(Boolean).join("\n");
+      }
+
+      try {
+        const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text: notification,
+            disable_web_page_preview: true,
+          }),
+        });
+        const respData = await telegramResponse.json().catch(() => null) as Record<string, unknown> | null;
+        if (!telegramResponse.ok) {
+          return Response.json({
+            ok: false,
+            error: (respData?.description as string) || `Lỗi từ Telegram API (${telegramResponse.status})`,
+            status: telegramResponse.status,
+          }, { status: 502 });
+        }
+        return Response.json({ ok: true, message: "Đã gửi thông báo Telegram thành công!" });
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Lỗi kết nối tới Telegram";
+        return Response.json({ ok: false, error: message }, { status: 500 });
+      }
+    }
+
     if (url.pathname === "/_vinext/image") {
       const allowedWidths = [...DEFAULT_DEVICE_SIZES, ...DEFAULT_IMAGE_SIZES];
       return handleImageOptimization(request, {

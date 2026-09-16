@@ -71,6 +71,9 @@ export interface CenterSettings {
   invoicePrefix: string;
   defaultPackages: string;
   policyNote: string;
+  telegramBotToken?: string;
+  telegramChatId?: string;
+  notifyTelegramOnAttendance?: boolean;
 }
 
 // ================= DEFAULT DATA =================
@@ -84,6 +87,9 @@ const DEFAULT_SETTINGS: CenterSettings = {
   invoicePrefix: "HD-2026-",
   defaultPackages: "8, 12, 16, 24",
   policyNote: "Học phí đã đăng ký không hoàn lại dưới mọi hình thức; số buổi còn lại được bảo lưu; thời hạn bảo lưu tùy từng trường hợp nghỉ học và giáo viên sẽ thông báo cụ thể.",
+  telegramBotToken: "",
+  telegramChatId: "",
+  notifyTelegramOnAttendance: true,
 };
 
 // ================= SECURE RANDOM STUDENT CODE GENERATOR =================
@@ -509,6 +515,41 @@ function StudentPortalContent() {
   const [showAddTeacherModal, setShowAddTeacherModal] = useState(false);
   const [editingTeacher, setEditingTeacher] = useState<TeacherData | null>(null);
 
+  // Telegram Test States
+  const [isTestingTelegram, setIsTestingTelegram] = useState(false);
+  const [telegramTestStatus, setTelegramTestStatus] = useState<{ ok?: boolean; msg?: string } | null>(null);
+
+  const handleTestTelegram = async () => {
+    setIsTestingTelegram(true);
+    setTelegramTestStatus(null);
+    try {
+      const res = await fetch("/api/attendance-notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          isTest: true,
+          telegramBotToken: settings.telegramBotToken || "",
+          telegramChatId: settings.telegramChatId || "",
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (data?.ok) {
+        setTelegramTestStatus({ ok: true, msg: "✓ Kết nối Telegram thành công! Tin nhắn thử nghiệm đã được gửi đến Telegram của bạn." });
+        showToast("✓ Đã gửi tin nhắn thử nghiệm qua Telegram!");
+      } else {
+        setTelegramTestStatus({
+          ok: false,
+          msg: `❌ Không gửi được tin nhắn: ${data?.error || "Vui lòng kiểm tra lại Bot Token và Chat ID"}. Lưu ý: Bạn cần mở bot trên Telegram và bấm 'Start' để bot có quyền gửi tin.`,
+        });
+      }
+    } catch (e: unknown) {
+      const errorMsg = e instanceof Error ? e.message : "Lỗi kết nối";
+      setTelegramTestStatus({ ok: false, msg: `❌ Lỗi mạng hoặc máy chủ: ${errorMsg}` });
+    } finally {
+      setIsTestingTelegram(false);
+    }
+  };
+
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(""), 3500);
@@ -548,17 +589,21 @@ function StudentPortalContent() {
     const formattedDate = `${String(today.getDate()).padStart(2, "0")}/${String(today.getMonth() + 1).padStart(2, "0")}/${today.getFullYear()}`;
     const formattedTime = `${String(today.getHours()).padStart(2, "0")}:${String(today.getMinutes()).padStart(2, "0")}`;
 
+    const targetStudent = students.find((s) => s.id === stId) || currentStudent;
+    if (!targetStudent) return;
+
+    const newAttended = targetStudent.attendedSessions + 1;
+    const newRecord: AttendanceRecord = {
+      date: formattedDate,
+      time: formattedTime,
+      status: "Đã học",
+      note: customNote || "Điểm danh tại trung tâm",
+    };
+    const newStatus = newAttended >= targetStudent.packageSessions ? "Hết buổi" : targetStudent.status;
+
     setStudents((prev) =>
       prev.map((s) => {
         if (s.id !== stId) return s;
-        const newAttended = s.attendedSessions + 1;
-        const newRecord: AttendanceRecord = {
-          date: formattedDate,
-          time: formattedTime,
-          status: "Đã học",
-          note: customNote || "Điểm danh tại trung tâm",
-        };
-        const newStatus = newAttended >= s.packageSessions ? "Hết buổi" : s.status;
         return {
           ...s,
           attendedSessions: newAttended,
@@ -567,7 +612,40 @@ function StudentPortalContent() {
         };
       })
     );
-    showToast(`✓ Đã điểm danh thành công buổi học cho ${currentStudent?.name || "học viên"}!`);
+    showToast(`✓ Đã điểm danh thành công buổi học cho ${targetStudent.name || "học viên"}!`);
+
+    // Tự động báo qua cổng Telegram nếu được kích hoạt
+    if (settings.notifyTelegramOnAttendance !== false) {
+      const remaining = Math.max(0, targetStudent.packageSessions - newAttended);
+      fetch("/api/attendance-notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "single",
+          studentName: targetStudent.name,
+          studentCode: targetStudent.id,
+          course: targetStudent.course,
+          sessionCount: newAttended,
+          packageSessions: targetStudent.packageSessions,
+          remainingSessions: remaining,
+          date: formattedDate,
+          time: formattedTime,
+          note: customNote || "Điểm danh tại trung tâm",
+          teacher: targetStudent.teacherName || "",
+          telegramBotToken: settings.telegramBotToken || "",
+          telegramChatId: settings.telegramChatId || "",
+        }),
+      })
+        .then(async (res) => {
+          const data = await res.json().catch(() => null);
+          if (data?.ok) {
+            showToast("📲 Đã báo điểm danh qua Telegram của bạn!");
+          }
+        })
+        .catch((err) => {
+          console.error("Lỗi gửi thông báo Telegram:", err);
+        });
+    }
   };
 
   // Check in whole class
@@ -579,11 +657,13 @@ function StudentPortalContent() {
     const formattedTime = `${String(today.getHours()).padStart(2, "0")}:${String(today.getMinutes()).padStart(2, "0")}`;
 
     let count = 0;
+    const studentNames: string[] = [];
     setStudents((prev) =>
       prev.map((s) => {
         if (!targetClass.studentIds.includes(s.id)) return s;
         if (s.attendanceList.some((a) => a.date === formattedDate)) return s;
         count++;
+        studentNames.push(s.name);
         return {
           ...s,
           attendedSessions: s.attendedSessions + 1,
@@ -592,6 +672,34 @@ function StudentPortalContent() {
       })
     );
     showToast(`✓ Đã điểm danh đồng loạt cho ${count} học viên thuộc lớp "${targetClass.name}"!`);
+
+    // Báo qua Telegram cho điểm danh lớp
+    if (count > 0 && settings.notifyTelegramOnAttendance !== false) {
+      fetch("/api/attendance-notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "class",
+          className: targetClass.name,
+          classCount: count,
+          teacher: targetClass.teacher,
+          date: formattedDate,
+          time: formattedTime,
+          note: `Đã điểm danh: ${studentNames.slice(0, 5).join(", ")}${studentNames.length > 5 ? "..." : ""}`,
+          telegramBotToken: settings.telegramBotToken || "",
+          telegramChatId: settings.telegramChatId || "",
+        }),
+      })
+        .then(async (res) => {
+          const data = await res.json().catch(() => null);
+          if (data?.ok) {
+            showToast("📲 Đã báo điểm danh lớp qua Telegram của bạn!");
+          }
+        })
+        .catch((err) => {
+          console.error("Lỗi gửi thông báo Telegram:", err);
+        });
+    }
   };
 
   // Delete student
@@ -1950,6 +2058,97 @@ function StudentPortalContent() {
                   onChange={(e) => setSettings({ ...settings, policyNote: e.target.value })}
                   className="w-full p-3 border border-amber-300 bg-amber-50/50 rounded-xl text-xs text-amber-950 font-medium focus:ring-2 focus:ring-amber-500"
                 />
+              </div>
+
+              {/* Telegram Notification Settings */}
+              <div className="pt-4 border-t border-slate-100 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">✈️</span>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900">Thông Báo Điểm Danh Qua Telegram</h3>
+                      <p className="text-[11px] text-slate-500">Tự động gửi tin nhắn báo về Telegram cá nhân hoặc nhóm mỗi khi điểm danh thành công</p>
+                    </div>
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={settings.notifyTelegramOnAttendance !== false}
+                      onChange={(e) => setSettings({ ...settings, notifyTelegramOnAttendance: e.target.checked })}
+                      className="w-4 h-4 text-[#4A101D] rounded border-slate-300 focus:ring-[#4A101D]"
+                    />
+                    <span className="text-xs font-semibold text-slate-700">Kích hoạt</span>
+                  </label>
+                </div>
+
+                <div className="bg-sky-50/60 border border-sky-200 rounded-xl p-3 space-y-3">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 block mb-1">
+                      Telegram Bot Token
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.telegramBotToken || ""}
+                      onChange={(e) => setSettings({ ...settings, telegramBotToken: e.target.value })}
+                      placeholder="Ví dụ: 7891234567:AAFnG..."
+                      className="w-full px-3 py-2 border border-slate-200 bg-white rounded-xl text-xs font-mono focus:ring-2 focus:ring-[#4A101D]"
+                    />
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      💡 <b>Cách lấy:</b> Mở Telegram, tìm bot <code>@BotFather</code>, gõ <code>/newbot</code> để tạo bot và copy Token.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 block mb-1">
+                      Telegram Chat ID (ID người nhận hoặc ID nhóm)
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.telegramChatId || ""}
+                      onChange={(e) => setSettings({ ...settings, telegramChatId: e.target.value })}
+                      placeholder="Ví dụ: 123456789 hoặc -100..."
+                      className="w-full px-3 py-2 border border-slate-200 bg-white rounded-xl text-xs font-mono focus:ring-2 focus:ring-[#4A101D]"
+                    />
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      💡 <b>Cách lấy:</b> Chat với <code>@userinfobot</code> hoặc <code>@myidbot</code> trên Telegram để xem ID của bạn. <b>Quan trọng:</b> Bạn cần mở bot vừa tạo và bấm <b>Start</b> thì bot mới gửi được tin nhắn cho bạn.
+                    </p>
+                  </div>
+
+                  {/* Test button & feedback */}
+                  <div className="pt-1 flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={handleTestTelegram}
+                      disabled={isTestingTelegram}
+                      className="px-3.5 py-2 bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white font-semibold text-xs rounded-xl shadow-sm transition-colors flex items-center gap-1.5"
+                    >
+                      {isTestingTelegram ? (
+                        <>
+                          <span className="animate-spin text-xs">⏳</span>
+                          <span>Đang gửi thử...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>🚀</span>
+                          <span>Gửi Thử Tin Nhắn Telegram</span>
+                        </>
+                      )}
+                    </button>
+                    <span className="text-[11px] text-slate-500">Bấm để kiểm tra kết nối ngay lập tức</span>
+                  </div>
+
+                  {telegramTestStatus && (
+                    <div
+                      className={`p-2.5 rounded-xl text-xs ${
+                        telegramTestStatus.ok
+                          ? "bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium"
+                          : "bg-rose-50 text-rose-800 border border-rose-200"
+                      }`}
+                    >
+                      {telegramTestStatus.msg}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="pt-3">

@@ -1405,6 +1405,32 @@ export default function ContentAdmin() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "save", entry: updatedEntry }),
       });
+      let clientToken = "";
+      let clientChat = "";
+      if (typeof window !== "undefined") {
+        try {
+          const s = JSON.parse(localStorage.getItem("auco_settings_data") || "{}");
+          clientToken = s.telegramBotToken || "";
+          clientChat = s.telegramChatId || "";
+        } catch {}
+      }
+      fetch("/api/attendance-notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "single",
+          studentName: entry.title,
+          studentCode: entry.slug || entry.tag,
+          course: student.course,
+          sessionCount: updatedAttended,
+          packageSessions: student.packageSessions,
+          remainingSessions: Math.max(0, student.packageSessions - updatedAttended),
+          date: formatted,
+          note: "Điểm danh nhanh trong Quản trị CMS",
+          telegramBotToken: clientToken,
+          telegramChatId: clientChat,
+        }),
+      }).catch(() => null);
     } catch {}
   }
 
