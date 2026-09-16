@@ -479,6 +479,17 @@ function StudentPortalContent() {
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
   const [editingStudent, setEditingStudent] = useState<StudentData | null>(null);
 
+  const [editingAttendance, setEditingAttendance] = useState<{
+    studentId: string;
+    index: number;
+    date: string;
+    time: string;
+    status: string;
+    note: string;
+  } | null>(null);
+
+  const [showEditPolicyModal, setShowEditPolicyModal] = useState(false);
+
   const [showAddClassModal, setShowAddClassModal] = useState(false);
   const [editingClass, setEditingClass] = useState<ClassData | null>(null);
 
@@ -1302,29 +1313,70 @@ function StudentPortalContent() {
                               ✓ {item.status}
                             </span>
                           </td>
-                          <td className="py-2.5 px-3 text-slate-600">{item.note}</td>
-                          <td className="py-2.5 px-3 text-right">
-                            <button
-                              onClick={() => {
-                                if (confirm("Bạn có chắc muốn xóa bản ghi điểm danh này? (Số buổi đã học sẽ giảm 1)")) {
-                                  setStudents((prev) =>
-                                    prev.map((st) => {
-                                      if (st.id !== currentStudent.id) return st;
-                                      const updatedList = st.attendanceList.filter((_, i) => i !== idx);
-                                      return {
-                                        ...st,
-                                        attendedSessions: Math.max(0, st.attendedSessions - 1),
-                                        attendanceList: updatedList,
-                                      };
-                                    })
-                                  );
-                                  showToast("Đã xóa bản ghi điểm danh.");
-                                }
-                              }}
-                              className="text-rose-500 hover:text-rose-700 font-medium"
+                          <td className="py-2.5 px-3">
+                            <div
+                              onClick={() =>
+                                setEditingAttendance({
+                                  studentId: currentStudent.id,
+                                  index: idx,
+                                  date: item.date,
+                                  time: item.time || "19:00",
+                                  status: item.status,
+                                  note: item.note,
+                                })
+                              }
+                              className="group flex items-center justify-between gap-2 p-1.5 -m-1.5 rounded-lg hover:bg-amber-50/80 transition-colors cursor-pointer"
+                              title="Bấm để chỉnh sửa nội dung / ghi chú buổi học này"
                             >
-                              Xóa
-                            </button>
+                              <span className="text-slate-700 text-xs">
+                                {item.note || <i className="text-slate-400">Chưa có ghi chú (Bấm để thêm)</i>}
+                              </span>
+                              <span className="opacity-0 group-hover:opacity-100 text-[#4A101D] text-[11px] font-bold shrink-0 transition-opacity bg-white/80 px-1.5 py-0.5 rounded shadow-2xs border border-amber-200">
+                                ✏️ Sửa
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-2.5 px-3 text-right">
+                            <div className="flex items-center justify-end gap-2.5">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setEditingAttendance({
+                                    studentId: currentStudent.id,
+                                    index: idx,
+                                    date: item.date,
+                                    time: item.time || "19:00",
+                                    status: item.status,
+                                    note: item.note,
+                                  })
+                                }
+                                className="text-blue-600 hover:text-blue-800 font-semibold cursor-pointer text-xs flex items-center gap-0.5"
+                              >
+                                <span>✏️ Sửa</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (confirm("Bạn có chắc muốn xóa bản ghi điểm danh này? (Số buổi đã học sẽ giảm 1)")) {
+                                    setStudents((prev) =>
+                                      prev.map((st) => {
+                                        if (st.id !== currentStudent.id) return st;
+                                        const updatedList = st.attendanceList.filter((_, i) => i !== idx);
+                                        return {
+                                          ...st,
+                                          attendedSessions: Math.max(0, st.attendedSessions - 1),
+                                          attendanceList: updatedList,
+                                        };
+                                      })
+                                    );
+                                    showToast("Đã xóa bản ghi điểm danh.");
+                                  }
+                                }}
+                                className="text-rose-500 hover:text-rose-700 font-semibold cursor-pointer text-xs"
+                              >
+                                Xóa
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -1341,8 +1393,18 @@ function StudentPortalContent() {
               </div>
 
               {/* Policy Note Box */}
-              <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-4 text-xs text-amber-900 leading-relaxed">
-                <b className="text-amber-800">LƯU Ý VỀ HỌC PHÍ & BẢO LƯU:</b> "{settings.policyNote}"
+              <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-4 text-xs text-amber-900 leading-relaxed flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+                <div className="flex-1">
+                  <b className="text-amber-800">LƯU Ý VỀ HỌC PHÍ & BẢO LƯU:</b> "{settings.policyNote}"
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowEditPolicyModal(true)}
+                  className="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-[11px] rounded-lg transition-colors shrink-0 cursor-pointer flex items-center gap-1 border border-amber-300/60"
+                  title="Chỉnh sửa nội dung lưu ý học phí & bảo lưu"
+                >
+                  <span>✏️ Sửa lưu ý</span>
+                </button>
               </div>
             </div>
           </div>
@@ -1991,6 +2053,202 @@ function StudentPortalContent() {
                   Hủy
                 </button>
                 <button type="submit" className="px-5 py-2 bg-[#4A101D] text-white rounded-xl font-bold shadow">
+                  Lưu thay đổi
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL: CHỈNH SỬA GHI CHÚ & BUỔI ĐIỂM DANH ================= */}
+      {editingAttendance && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
+            <h3 className="text-base font-bold text-slate-900 mb-1 flex items-center gap-2">
+              <span className="text-[#4A101D]">✏️</span>
+              <span>Chỉnh Sửa Ghi Chú & Buổi Điểm Danh</span>
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Học viên: <b className="text-slate-800">{currentStudent.name}</b> (Mã: {currentStudent.id})
+            </p>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const form = e.target as any;
+                const newNote = form.note.value.trim();
+                const newDate = form.date.value.trim();
+                const newTime = form.time.value.trim();
+                const newStatus = form.status.value;
+
+                setStudents((prev) =>
+                  prev.map((st) => {
+                    if (st.id !== editingAttendance.studentId) return st;
+                    const updatedList = [...st.attendanceList];
+                    if (updatedList[editingAttendance.index]) {
+                      updatedList[editingAttendance.index] = {
+                        date: newDate || editingAttendance.date,
+                        time: newTime || editingAttendance.time,
+                        status: newStatus,
+                        note: newNote,
+                      };
+                    }
+                    return {
+                      ...st,
+                      attendanceList: updatedList,
+                    };
+                  })
+                );
+                setEditingAttendance(null);
+                showToast("✓ Đã cập nhật nội dung ghi chú buổi học!");
+              }}
+              className="space-y-4 text-xs"
+            >
+              <div>
+                <label className="font-semibold text-slate-700 block mb-1">
+                  Nội dung / Ghi chú buổi học *
+                </label>
+                <textarea
+                  name="note"
+                  rows={3}
+                  required
+                  defaultValue={editingAttendance.note}
+                  placeholder="Nhập nội dung giảng dạy, bài luyện tập, đánh giá tiến độ học sinh..."
+                  className="w-full p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#4A101D] text-xs font-medium text-slate-800"
+                />
+                {/* Gợi ý nhanh ghi chú */}
+                <div className="mt-2 space-y-1">
+                  <span className="text-[10px] text-slate-400 font-semibold block">Gợi ý nhanh (bấm để chèn):</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      "Luyện âm thanh & nhịp cơ bản",
+                      "Thổi bài Bèo dạt mây trôi",
+                      "Ngón bấm nốt Rê - Mi - Son",
+                      "Kỹ thuật vuốt ngón & láy rền",
+                      "Kiểm tra bài tập về nhà",
+                      "Bảo lưu từ ngày...",
+                    ].map((sug) => (
+                      <button
+                        key={sug}
+                        type="button"
+                        onClick={(e) => {
+                          const form = (e.currentTarget.closest("form") as any);
+                          if (form && form.note) form.note.value = sug;
+                        }}
+                        className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[10px] transition-colors cursor-pointer border border-slate-200/50"
+                      >
+                        + {sug}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2.5">
+                <div>
+                  <label className="font-semibold text-slate-700 block mb-1">Ngày học</label>
+                  <input
+                    type="text"
+                    name="date"
+                    defaultValue={editingAttendance.date}
+                    className="w-full p-2 border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold text-slate-700 block mb-1">Khung giờ</label>
+                  <input
+                    type="text"
+                    name="time"
+                    defaultValue={editingAttendance.time}
+                    className="w-full p-2 border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold text-slate-700 block mb-1">Trạng thái</label>
+                  <select
+                    name="status"
+                    defaultValue={editingAttendance.status}
+                    className="w-full p-2 border border-slate-200 rounded-xl text-xs"
+                  >
+                    <option value="Đã học">Đã học</option>
+                    <option value="Bảo lưu">Bảo lưu</option>
+                    <option value="Vắng">Vắng</option>
+                    <option value="Học bù">Học bù</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingAttendance(null)}
+                  className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-semibold hover:bg-slate-200 transition-colors"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#4A101D] text-white rounded-xl font-bold shadow hover:bg-[#681829] transition-colors"
+                >
+                  Lưu thay đổi
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL: SỬA LƯU Ý VỀ HỌC PHÍ & BẢO LƯU ================= */}
+      {showEditPolicyModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
+            <h3 className="text-base font-bold text-slate-900 mb-1 flex items-center gap-2">
+              <span className="text-amber-600">✏️</span>
+              <span>Chỉnh Sửa Lưu Ý Về Học Phí & Bảo Lưu</span>
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Nội dung này hiển thị ở chân trang theo dõi của tất cả học viên.
+            </p>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const form = e.target as any;
+                const newPolicy = form.policyNote.value.trim();
+                if (newPolicy) {
+                  setSettings({ ...settings, policyNote: newPolicy });
+                  setShowEditPolicyModal(false);
+                  showToast("✓ Đã cập nhật nội dung lưu ý học phí & bảo lưu!");
+                }
+              }}
+              className="space-y-4 text-xs"
+            >
+              <div>
+                <label className="font-semibold text-slate-700 block mb-1">
+                  Nội dung lưu ý *
+                </label>
+                <textarea
+                  name="policyNote"
+                  rows={4}
+                  required
+                  defaultValue={settings.policyNote}
+                  className="w-full p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#4A101D] text-xs leading-relaxed"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowEditPolicyModal(false)}
+                  className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-semibold hover:bg-slate-200 transition-colors"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#4A101D] text-white rounded-xl font-bold shadow hover:bg-[#681829] transition-colors"
+                >
                   Lưu thay đổi
                 </button>
               </div>
