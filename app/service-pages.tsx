@@ -188,13 +188,14 @@ function useServiceData() {
 // 01. LỚP HỌC CÁC BỘ MÔN
 export function ClassesPage() {
   const { t, translate } = useLanguage();
+  const { visibleCollection } = useServiceData();
 
-  const disciplines = [
+  const fallbackDisciplines = [
     {
       code: "BỘ MÔN 01",
       slug: "sao-truc-viet-nam",
       title: "Sáo trúc Việt Nam",
-      image: "/class-saotruc-vn.webp",
+      image: "/carousel-saotruc.webp",
       desc: "Khám phá vẻ đẹp của sáo trúc Việt qua những làn điệu dân tộc, từ cơ bản đến nâng cao.",
       href: "/bo-mon/sao-truc-viet-nam",
       suitable: "Người mới",
@@ -205,7 +206,7 @@ export function ClassesPage() {
       code: "BỘ MÔN 02",
       slug: "sao-dizi",
       title: "Sáo Dizi",
-      image: "/class-dizi.webp",
+      image: "/carousel-dizi.webp",
       desc: "Sáo ngang Trung Quốc với âm thanh đặc trưng, giàu biểu cảm và kỹ thuật đa dạng.",
       href: "/bo-mon/sao-dizi",
       suitable: "Người mới",
@@ -216,7 +217,7 @@ export function ClassesPage() {
       code: "BỘ MÔN 03",
       slug: "sao-recorder",
       title: "Sáo Recorder",
-      image: "/class-recorder.webp",
+      image: "/carousel-recorder.webp",
       desc: "Dễ tiếp cận, phù hợp cho trẻ em và người mới bắt đầu làm quen với âm nhạc.",
       href: "/bo-mon/sao-recorder",
       suitable: "Người mới",
@@ -227,7 +228,7 @@ export function ClassesPage() {
       code: "BỘ MÔN 04",
       slug: "dong-tieu-xiao",
       title: "Động tiêu & Xiao",
-      image: "/class-tieu-xiao.webp",
+      image: "/carousel-tieu.webp",
       desc: "Âm thanh trầm ấm, sâu lắng, mang đậm tinh thần phương Đông và giá trị thiền.",
       href: "/bo-mon/dong-tieu-xiao",
       suitable: "Người mới",
@@ -238,7 +239,7 @@ export function ClassesPage() {
       code: "BỘ MÔN 05",
       slug: "flute",
       title: "Flute",
-      image: "/class-flute.webp",
+      image: "/carousel-flute.webp",
       desc: "Kỹ thuật phương Tây bài bản, âm sắc trong trẻo, linh hoạt, phù hợp nhiều thể loại.",
       href: "/bo-mon/flute",
       suitable: "Người mới",
@@ -249,7 +250,7 @@ export function ClassesPage() {
       code: "BỘ MÔN 06",
       slug: "sao-hmong",
       title: "Sáo H'Mông",
-      image: "/class-hmong.webp",
+      image: "/carousel-saotruc.webp",
       desc: "Khám phá âm hưởng Tây Bắc mộc mạc, độc đáo qua tiếng sáo của núi rừng.",
       href: "/bo-mon/sao-hmong",
       suitable: "Người mới",
@@ -257,6 +258,19 @@ export function ClassesPage() {
       format: "Online / Trực tiếp",
     },
   ];
+
+  const cmsClassDetails = visibleCollection("class-details");
+
+  const disciplines = fallbackDisciplines.map((fb) => {
+    const cmsItem = cmsClassDetails.find((c) => c.slug === fb.slug);
+    if (!cmsItem) return fb;
+    return {
+      ...fb,
+      title: translate(cmsItem.title) || fb.title,
+      desc: translate(cmsItem.excerpt) || fb.desc,
+      image: cmsItem.imageUrl || fb.image,
+    };
+  });
 
   const whyUsPillars = [
     {
@@ -292,7 +306,7 @@ export function ClassesPage() {
         
         <div className="max-w-[1380px] mx-auto space-y-8 relative z-10">
           
-          {/* Header row with Title box & Oriental Art */}
+          {/* Header row with Title box & Authentic Photo */}
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div className="space-y-3.5 max-w-3xl">
               <span className="inline-block px-3.5 py-1 rounded-full bg-[#FAF5EE] text-[#70141D] text-xs font-bold uppercase tracking-wider shadow-sm">
@@ -314,24 +328,29 @@ export function ClassesPage() {
               </div>
             </div>
 
-            {/* Right Decorative Art (Sun, Mountains, Bamboo & Au Co Seal) */}
-            <div className="hidden lg:block shrink-0 relative w-80 h-44 pointer-events-none select-none">
+            {/* Right Photo using authentic high-res hero image */}
+            <div className="hidden lg:block shrink-0 relative w-80 h-44 rounded-2xl overflow-hidden border border-[#FAF5EE]/20 shadow-2xl">
               <img
-                src="/class-hero-art.webp"
-                alt="Minh họa nghệ thuật Sáo Trúc Âu Cơ"
-                className="w-full h-full object-contain drop-shadow-xl"
+                src="/hero-artist.jpg"
+                alt="Sáo Trúc Âu Cơ - Nghệ sĩ biểu diễn"
+                className="w-full h-full object-cover object-top"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end p-3">
+                <span className="text-[11px] font-medium text-amber-200">
+                  ✦ Sáo Trúc Âu Cơ · Đào Tạo Chuyên Nghiệp
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* 6 Disciplines Grid (3 columns x 2 rows) */}
+          {/* 6 Disciplines Grid (3 columns x 2 rows) using authentic images */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 pt-2">
             {disciplines.map((item) => (
               <div
                 key={item.slug}
                 className="bg-[#FAF5EE] rounded-2xl sm:rounded-3xl border border-[#E8DFD3] p-3 sm:p-3.5 flex gap-3.5 sm:gap-4 items-stretch hover:border-[#70141D] hover:shadow-xl transition-all duration-300 group"
               >
-                {/* Thumbnail Image */}
+                {/* Thumbnail Image using user's existing image */}
                 <div className="w-28 sm:w-32 aspect-square rounded-xl sm:rounded-2xl overflow-hidden shrink-0 shadow-xs relative bg-[#EDE4D8]">
                   <img
                     src={item.image}
@@ -385,14 +404,6 @@ export function ClassesPage() {
 
       {/* 2. VÌ SAO NÊN HỌC TẠI CHÚNG TÔI - HỌC TẠI SÁO TRÚC ÂU CƠ */}
       <section className="py-12 sm:py-16 bg-[#FAF5ED] border-b border-[#EADBCA] relative overflow-hidden">
-        {/* Subtle decorative corners */}
-        <div className="absolute left-0 top-0 w-24 sm:w-28 opacity-40 pointer-events-none select-none">
-          <img src="/why-us-bamboo.webp" alt="Minh họa trúc" className="w-full h-auto" />
-        </div>
-        <div className="absolute right-0 bottom-0 w-28 sm:w-32 opacity-40 pointer-events-none select-none">
-          <img src="/why-us-boat.webp" alt="Minh họa sông núi" className="w-full h-auto" />
-        </div>
-
         <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-10 relative z-10">
           
           {/* Header */}
