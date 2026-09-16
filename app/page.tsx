@@ -56,7 +56,7 @@ const defaultHomeIntro = {
   id: "home-intro-01",
   collection: "home-intro",
   title: "Người Sáng Lập Sáo Trúc Âu Cơ – Thầy Quách Hạ Văn",
-  excerpt: "Hơn 8 năm tâm huyết nghiên cứu, giảng dạy và lan tỏa nghệ thuật sáo trúc Việt Nam. Trung tâm Sáo Trúc Âu Cơ đào tạo sáo trúc từ cơ bản đến nâng cao, với hình thức học linh hoạt: học tại lớp Tân Phú (TP.HCM) và học online 1 kèm 1 toàn quốc.",
+  excerpt: "Hơn 8 năm tâm huyết nghiên cứu, giảng dạy và lan tỏa nghệ thuật sáo trúc Việt Nam. Nội dung giới thiệu chi tiết về Người sáng lập đang được cập nhật.",
   imageUrl: "/intro-portrait.jpg",
   price: "Giới thiệu nhà sáng lập",
   content: "/gioi-thieu-admin",
@@ -609,6 +609,11 @@ export default function HomePage() {
 
               {/* Middle: Studio Description & CTA Button */}
               <div className="lg:col-span-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-600/30 text-amber-900 text-xs font-semibold">
+                    <i className="fa-solid fa-clock-rotate-left"></i> Đang cập nhật nội dung
+                  </span>
+                </div>
                 <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#70141D] leading-tight">
                   {homeIntro.title}
                 </h2>

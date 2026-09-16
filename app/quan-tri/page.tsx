@@ -46,6 +46,7 @@ const collections = [
 ];
 
 const singletons = [
+  { key: "founder-intro", label: "Trang Nhà sáng lập", note: "Quản lý trang giới thiệu Người sáng lập (/gioi-thieu-admin) - Trạng thái (Đang cập nhật / Hiển thị), ảnh đại diện, thông tin giới thiệu, hotline" },
   { key: "home-map", label: "Địa chỉ & Bản đồ Google Maps", note: "Địa chỉ trung tâm, link Google Maps & ảnh bản đồ (đồng bộ toàn website)" },
   { key: "settings", label: "Cài đặt chung & VietQR", note: "Thương hiệu, liên hệ và thanh toán VietQR", contentLabel: "Địa chỉ các chi nhánh (Mỗi chi nhánh 1 dòng - CN1, CN2,...)", excerptLabel: "Khẩu hiệu (Tagline)", priceLabel: "Hotline / Zalo", tagLabel: "Email liên hệ" },
   { key: "tuition", label: "Bảng học phí & Ưu đãi", note: "Mức học phí các khóa 1, 2, 3 tháng và quà tặng ưu đãi" },
@@ -81,6 +82,7 @@ function slugify(value: string) {
 }
 
 function entryHref(entry: CmsEntry) {
+  if (entry.collection === "founder-intro") return "/gioi-thieu-admin";
   if (entry.collection === "page-contact") return "/dang-ky-hoc";
   if (entry.collection === "page-classes") return "/lop-hoc";
   if (entry.collection === "page-products") return "/sao-va-phu-kien";
@@ -1246,6 +1248,23 @@ export default function ContentAdmin() {
           sortOrder: 4,
         });
       }
+      return;
+    }
+    if (section === "founder-intro") {
+      setDraft({
+        id: "founder-intro-01",
+        collection: "founder-intro",
+        title: "Người Sáng Lập Sáo Trúc Âu Cơ – Thầy Quách Hạ Văn",
+        slug: "gioi-thieu-admin",
+        publishedAt: new Date().toISOString().slice(0, 10),
+        excerpt: "Hệ thống thông tin chi tiết về Người sáng lập Sáo Trúc Âu Cơ – Thầy Quách Hạ Văn đang được cập nhật.",
+        imageUrl: "/intro-portrait.jpg",
+        tag: "dang-cap-nhat",
+        price: "0374 261 368",
+        content: "Chức vụ: Chủ nhiệm & Người sáng lập Sáo Trúc Âu Cơ\nHotline: 0374 261 368\nEmail: saotrucauco@gmail.com\nĐịa chỉ: 106/72 Hoà Bình, P. Tân Phú, TP.HCM\nTrích dẫn: Mỗi người đều có thể thổi được những giai điệu đẹp chỉ cần bắt đầu đúng cách.",
+        visible: true,
+        sortOrder: 1,
+      });
       return;
     }
     if (section === "page-contact") {
@@ -2687,11 +2706,11 @@ export default function ContentAdmin() {
                 ))}
               </select>
             </label>
-          ) : draft.collection === "home-disciplines" ? null : (
+          ) : draft.collection === "home-disciplines" || draft.collection === "founder-intro" ? null : (
             <label>{isTuitionSettings ? "Tiêu đề bảng học phí" : (isPaymentSettings ? "Ngân hàng" : fieldMeta.tagLabel || "Phân loại / nhãn")}<input required={isPaymentSettings} value={draft.tag} onChange={(event) => setDraft({ ...draft, tag: event.target.value })} placeholder={isTuitionSettings ? "Ví dụ: Bảng mục học phí" : (isPaymentSettings ? "Ví dụ: STB · Sacombank" : fieldMeta.tagPlaceholder || "Ví dụ: Kỹ thuật")} /></label>
           )}
 
-          {!isPaymentSettings && !isTuitionSettings && !isRecommendLinks && draft.collection !== "page-contact" && draft.collection !== "class-details" && (
+          {!isPaymentSettings && !isTuitionSettings && !isRecommendLinks && draft.collection !== "page-contact" && draft.collection !== "class-details" && draft.collection !== "founder-intro" && (
             <label className="wide">
               <span>{fieldMeta.excerptLabel || (section === "sheets" ? "Mô tả ngắn / Tone, nhịp *" : "Mô tả ngắn")}</span>
               {draft.collection === "home-intro" ? (
@@ -2712,7 +2731,7 @@ export default function ContentAdmin() {
             </label>
           )}
 
-          {!isPaymentSettings && !isTuitionSettings && !isRecommendLinks && draft.collection !== "page-contact" && draft.collection !== "class-details" && draft.collection !== "home-disciplines" && draft.collection !== "classroom-photos" && draft.collection !== "social-links" && draft.collection !== "flute-tabs" && draft.collection !== "articles" && (
+          {!isPaymentSettings && !isTuitionSettings && !isRecommendLinks && draft.collection !== "page-contact" && draft.collection !== "class-details" && draft.collection !== "home-disciplines" && draft.collection !== "classroom-photos" && draft.collection !== "social-links" && draft.collection !== "flute-tabs" && draft.collection !== "articles" && draft.collection !== "founder-intro" && (
             <label>
               <span>{fieldMeta.priceLabel || (section === "sheets" ? "Giá sheet (VNĐ hoặc 'Liên hệ') *" : "Giá (VNĐ hoặc 'Liên hệ')")}</span>
               <input
@@ -2723,7 +2742,7 @@ export default function ContentAdmin() {
             </label>
           )}
 
-          {!isPaymentSettings && !isTuitionSettings && !isRecommendLinks && draft.collection !== "page-contact" && (
+          {!isPaymentSettings && !isTuitionSettings && !isRecommendLinks && draft.collection !== "page-contact" && draft.collection !== "founder-intro" && (
             <div className="wide" style={{ display: "grid", gap: 8 }}>
               <label>
                 <span>{section === "sheets" ? "Hình ảnh demo Sheet nhạc / Ảnh minh họa" : "Ảnh minh họa / Ảnh đại diện"}</span>
@@ -3354,6 +3373,146 @@ export default function ContentAdmin() {
                     <div style={{ padding: "7px 10px", background: "#8c1c38", borderRadius: 6, color: "#fff", textAlign: "center", fontWeight: 700, fontSize: 11, marginTop: 4 }}>
                       {contactForm.submitButtonText}
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : draft.collection === "founder-intro" ? (
+            <div className="wide" style={{ display: "grid", gap: 18, borderTop: "2px solid #e2e8f0", paddingTop: 20, marginTop: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+                <div>
+                  <h3 style={{ margin: 0, color: "#70141D", fontSize: 16, fontWeight: 800 }}>✦ QUẢN LÝ TRANG GIỚI THIỆU NHÀ SÁNG LẬP (/gioi-thieu-admin)</h3>
+                  <small style={{ color: "#64748b" }}>Cài đặt trạng thái hiển thị (Đang cập nhật / Hiển thị đầy đủ), thông tin giới thiệu, ảnh và liên hệ</small>
+                </div>
+                <a href="/gioi-thieu-admin" target="_blank" rel="noreferrer" style={{ fontSize: 12, fontWeight: 700, color: "#70141D", textDecoration: "underline" }}>
+                  Xem trang thực tế ↗
+                </a>
+              </div>
+
+              {/* Trạng thái hiển thị */}
+              <div style={{ padding: "16px", background: draft.tag === "dang-cap-nhat" ? "#fffbeb" : "#f0fdf4", border: `1px solid ${draft.tag === "dang-cap-nhat" ? "#fde68a" : "#bbf7d0"}`, borderRadius: 10, display: "grid", gap: 8 }}>
+                <b style={{ color: draft.tag === "dang-cap-nhat" ? "#92400e" : "#166534", fontSize: 14 }}>
+                  ✦ TRẠNG THÁI HIỂN THỊ TRÊN WEBSITE:
+                </b>
+                <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontWeight: 700, color: "#92400e" }}>
+                    <input
+                      type="radio"
+                      name="founder_status"
+                      checked={draft.tag === "dang-cap-nhat" || !draft.tag}
+                      onChange={() => setDraft({ ...draft, tag: "dang-cap-nhat" })}
+                    />
+                    <span>⏳ Đang cập nhật (Hiển thị trang thông báo Đang cập nhật)</span>
+                  </label>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontWeight: 700, color: "#166534" }}>
+                    <input
+                      type="radio"
+                      name="founder_status"
+                      checked={draft.tag === "hien-thi"}
+                      onChange={() => setDraft({ ...draft, tag: "hien-thi" })}
+                    />
+                    <span>✅ Hiển thị đầy đủ (Hiển thị toàn bộ tiểu sử & chỉ số)</span>
+                  </label>
+                </div>
+                <small style={{ color: "#64748b" }}>
+                  {draft.tag === "hien-thi"
+                    ? "Website đang hiển thị bài giới thiệu chi tiết, các chỉ số và 3 giá trị cốt lõi."
+                    : "Website đang ở chế độ ĐANG CẬP NHẬT theo yêu cầu của bạn, khách vào trang sẽ thấy thông báo đang hoàn thiện cùng hotline liên hệ."}
+                </small>
+              </div>
+
+              {/* Tên & Hotline */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                <label>
+                  <span>Tên người sáng lập / Tiêu đề chính *</span>
+                  <input
+                    required
+                    value={draft.title}
+                    onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+                    placeholder="Ví dụ: Người Sáng Lập Sáo Trúc Âu Cơ – Thầy Quách Hạ Văn"
+                    style={{ fontWeight: 700 }}
+                  />
+                </label>
+                <label>
+                  <span>Hotline / Zalo liên hệ *</span>
+                  <input
+                    required
+                    value={draft.price}
+                    onChange={(e) => setDraft({ ...draft, price: e.target.value })}
+                    placeholder="Ví dụ: 0374 261 368"
+                    style={{ fontWeight: 700 }}
+                  />
+                </label>
+              </div>
+
+              {/* Ảnh chân dung */}
+              <label className="wide">
+                <span>Ảnh đại diện người sáng lập (URL) *</span>
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <input
+                    value={draft.imageUrl}
+                    onChange={(e) => setDraft({ ...draft, imageUrl: e.target.value })}
+                    placeholder="Ví dụ: /intro-portrait.jpg"
+                    style={{ flex: 1 }}
+                  />
+                  {draft.imageUrl && (
+                    <img
+                      src={draft.imageUrl}
+                      alt="Xem trước"
+                      style={{ width: 44, height: 44, borderRadius: 8, objectFit: "cover", border: "1px solid #cbd5e1" }}
+                    />
+                  )}
+                </div>
+              </label>
+
+              {/* Lời ngỏ khi đang cập nhật */}
+              <label className="wide">
+                <span>Nội dung thông báo (hiển thị khi ở chế độ Đang cập nhật) *</span>
+                <textarea
+                  rows={3}
+                  value={draft.excerpt}
+                  onChange={(e) => setDraft({ ...draft, excerpt: e.target.value })}
+                  placeholder="Nhập thông báo khi đang cập nhật..."
+                  style={{ width: "100%", padding: "10px 12px", border: "1px solid #ccd2dc", borderRadius: 8, fontSize: 14, fontFamily: "inherit" }}
+                />
+              </label>
+
+              {/* Thông tin bổ sung */}
+              <label className="wide">
+                <span>Thông tin bổ sung / Tiểu sử tóm tắt (Mỗi dòng một ý)</span>
+                <textarea
+                  rows={4}
+                  value={draft.content}
+                  onChange={(e) => setDraft({ ...draft, content: e.target.value })}
+                  placeholder="Ví dụ: Chức vụ, địa chỉ, email, câu nói tâm đắc..."
+                  style={{ width: "100%", padding: "10px 12px", border: "1px solid #ccd2dc", borderRadius: 8, fontSize: 14, fontFamily: "inherit" }}
+                />
+              </label>
+
+              {/* Live Preview Card */}
+              <div style={{ padding: "16px 20px", background: "#FAF6F0", border: "1px solid #D9C4A6", borderRadius: 12 }}>
+                <small style={{ display: "block", color: "#70141D", fontWeight: 800, letterSpacing: "0.08em", marginBottom: 10 }}>
+                  ✦ XEM TRƯỚC GIAO DIỆN (LIVE PREVIEW):
+                </small>
+                <div style={{ display: "flex", gap: 16, alignItems: "center", background: "#fff", padding: 16, borderRadius: 10, border: "1px solid #EADBCA" }}>
+                  <img
+                    src={draft.imageUrl || "/intro-portrait.jpg"}
+                    alt="Chân dung"
+                    style={{ width: 64, height: 64, borderRadius: 12, objectFit: "cover", border: "2px solid #70141D" }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <strong style={{ fontSize: 15, color: "#2B2624" }}>{draft.title || "Thầy Quách Hạ Văn"}</strong>
+                      <span style={{ fontSize: 10.5, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: draft.tag === "hien-thi" ? "#dcfce7" : "#fef3c7", color: draft.tag === "hien-thi" ? "#166534" : "#92400e" }}>
+                        {draft.tag === "hien-thi" ? "Đang hiển thị" : "Đang cập nhật"}
+                      </span>
+                    </div>
+                    <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6B625B", lineHeight: 1.4 }}>
+                      {draft.excerpt || "Hệ thống thông tin chi tiết về Người sáng lập đang được cập nhật."}
+                    </p>
+                    <small style={{ color: "#70141D", fontWeight: 700, marginTop: 4, display: "inline-block" }}>
+                      Hotline / Zalo: {draft.price || "0374 261 368"}
+                    </small>
                   </div>
                 </div>
               </div>
