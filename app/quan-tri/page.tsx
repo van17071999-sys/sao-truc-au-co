@@ -323,6 +323,7 @@ type StudentFields = {
   status: string;
   phone: string;
   course: string;
+  teacherName?: string;
   packageSessions: number;
   attendedSessions: number;
   tuition: string;
@@ -333,7 +334,7 @@ type StudentFields = {
   paidAmount: string;
   debtAmount: string;
   paymentStatus: string;
-  attendanceList: Array<{ date: string; status: string; note: string }>;
+  attendanceList: Array<{ date: string; status: string; note: string; teacher?: string }>;
 };
 
 function parseStudentFields(content: string, fallbackPhone = "", fallbackPrice = ""): StudentFields {
@@ -343,6 +344,7 @@ function parseStudentFields(content: string, fallbackPhone = "", fallbackPrice =
       status: d.status || "Đang học",
       phone: d.phone || fallbackPhone || "09xxxxxxx",
       course: d.course || "Sáo trúc cơ bản",
+      teacherName: d.teacherName || "Quách Hạ Văn",
       packageSessions: Number(d.packageSessions || d.totalSessions || 12),
       attendedSessions: Number(d.attendedSessions || 0),
       tuition: d.tuition || fallbackPrice || "3.600.000đ",
@@ -360,6 +362,7 @@ function parseStudentFields(content: string, fallbackPhone = "", fallbackPrice =
       status: "Đang học",
       phone: fallbackPhone || "09xxxxxxx",
       course: "Sáo trúc cơ bản",
+      teacherName: "Quách Hạ Văn",
       packageSessions: 12,
       attendedSessions: 0,
       tuition: fallbackPrice || "3.600.000đ",
@@ -1427,6 +1430,7 @@ export default function ContentAdmin() {
           remainingSessions: Math.max(0, student.packageSessions - updatedAttended),
           date: formatted,
           note: "Điểm danh nhanh trong Quản trị CMS",
+          teacher: student.teacherName || "Quách Hạ Văn",
           telegramBotToken: clientToken,
           telegramChatId: clientChat,
         }),
@@ -2067,7 +2071,7 @@ export default function ContentAdmin() {
                     const st = parseStudentFields(entry.content, entry.excerpt, entry.price);
                     return (
                       <p style={{ margin: "4px 0 0", color: "#475569", fontSize: 13 }}>
-                        <span style={{ color: "#2563eb", fontWeight: 700 }}>Đã học {st.attendedSessions} / {st.packageSessions} buổi</span> · SĐT: {st.phone} · Khóa: {st.course} · HĐ: {st.invoiceCode} ({st.paymentStatus})
+                        <span style={{ color: "#2563eb", fontWeight: 700 }}>Đã học {st.attendedSessions} / {st.packageSessions} buổi</span> · SĐT: {st.phone} · Khóa: {st.course} · GV: <b style={{ color: "#70141D" }}>{st.teacherName || "Quách Hạ Văn"}</b> · HĐ: {st.invoiceCode} ({st.paymentStatus})
                       </p>
                     );
                   })() : (
@@ -2223,7 +2227,7 @@ export default function ContentAdmin() {
                           </span>
                         </div>
                         <p style={{ margin: "4px 0 0", color: "#64748b", fontSize: 13 }}>
-                          Mã HV: <b>{draft.slug || draft.tag || "HV-001"}</b> · SĐT: <b>{draft.excerpt || "Chưa có"}</b> · Khóa: <b>{s.course}</b>
+                          Mã HV: <b>{draft.slug || draft.tag || "HV-001"}</b> · SĐT: <b>{draft.excerpt || "Chưa có"}</b> · Khóa: <b>{s.course}</b> · GV phụ trách: <b style={{ color: "#70141D" }}>{s.teacherName || "Quách Hạ Văn"}</b>
                         </p>
                       </div>
 
@@ -2235,17 +2239,17 @@ export default function ContentAdmin() {
                         <div style={{ width: 1, height: 32, background: "#cbd5e1" }}></div>
                         <div style={{ textAlign: "right" }}>
                           <small style={{ display: "block", color: "#64748b", fontSize: 11, fontWeight: 600 }}>CÒN LẠI</small>
-                          <b style={{ fontSize: 22, color: "#16a34a" }}>{remaining} <span style={{ fontSize: 13, color: "#64748b" }}>buổi</span></b>
+                          <b style={{ fontSize: 22, color: remaining <= 2 ? "#dc2626" : "#16a34a" }}>{remaining} <span style={{ fontSize: 13, color: "#64748b" }}>buổi</span></b>
                         </div>
                       </div>
                     </div>
 
-                    {/* Quick Action Buttons */}
-                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                    {/* Action Bar */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                       <button
                         type="button"
                         onClick={doQuickCheckIn}
-                        style={{ padding: "8px 18px", background: "#2563eb", color: "#fff", border: 0, borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}
+                        style={{ padding: "8px 16px", background: "#16a34a", color: "#fff", border: 0, borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}
                       >
                         + Điểm danh buổi hôm nay
                       </button>
@@ -2315,13 +2319,21 @@ export default function ContentAdmin() {
                         </label>
                       </div>
 
-                      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", gap: 14 }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 14 }}>
                         <label>
                           <span>Khóa học đang học *</span>
                           <input
                             value={s.course}
                             onChange={(e) => updateStudent({ course: e.target.value })}
                             placeholder="Ví dụ: Sáo trúc cơ bản, Sáo Dizi..."
+                          />
+                        </label>
+                        <label>
+                          <span>Giáo viên phụ trách</span>
+                          <input
+                            value={s.teacherName || "Quách Hạ Văn"}
+                            onChange={(e) => updateStudent({ teacherName: e.target.value })}
+                            placeholder="Ví dụ: Quách Hạ Văn"
                           />
                         </label>
                         <label>

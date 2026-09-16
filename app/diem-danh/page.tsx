@@ -10,6 +10,7 @@ export interface AttendanceRecord {
   time?: string;
   status: string;
   note: string;
+  teacher?: string;
 }
 
 export interface StudentData {
@@ -151,7 +152,7 @@ const INITIAL_STUDENTS: StudentData[] = [
     tuition: "3.600.000đ",
     attendedSessions: 8,
     classId: "LOP-01",
-    teacherName: "Quách Hà Vân",
+    teacherName: "Quách Hạ Văn",
     invoiceCode: "HD-2026-00128",
     invoiceDate: "15/09/2026",
     unitPrice: "300.000đ",
@@ -160,14 +161,14 @@ const INITIAL_STUDENTS: StudentData[] = [
     debtAmount: "0đ",
     paymentStatus: "Đã thanh toán",
     attendanceList: [
-      { date: "15/09/2026", time: "19:00", status: "Đã học", note: "Luyện âm thanh & nhịp cơ bản" },
-      { date: "12/09/2026", time: "19:00", status: "Đã học", note: "Ngón bấm nốt Rê - Mi - Son" },
-      { date: "08/09/2026", time: "19:00", status: "Đã học", note: "Kiểm tra bài tập về nhà" },
-      { date: "05/09/2026", time: "19:00", status: "Đã học", note: "Thổi bài Bèo dạt mây trôi đoạn 1" },
-      { date: "01/09/2026", time: "19:00", status: "Đã học", note: "Thực hành lấy hơi bụng" },
-      { date: "28/08/2026", time: "19:00", status: "Đã học", note: "Kỹ thuật vuốt ngón cơ bản" },
-      { date: "25/08/2026", time: "19:00", status: "Đã học", note: "Luyện thang âm Đô trưởng" },
-      { date: "22/08/2026", time: "19:00", status: "Đã học", note: "Buổi đầu tiên: Làm quen cây sáo C5" },
+      { date: "15/09/2026", time: "19:00", status: "Đã học", note: "Luyện âm thanh & nhịp cơ bản", teacher: "Quách Hạ Văn" },
+      { date: "12/09/2026", time: "19:00", status: "Đã học", note: "Ngón bấm nốt Rê - Mi - Son", teacher: "Quách Hạ Văn" },
+      { date: "08/09/2026", time: "19:00", status: "Đã học", note: "Kiểm tra bài tập về nhà", teacher: "Quách Hạ Văn" },
+      { date: "05/09/2026", time: "19:00", status: "Đã học", note: "Thổi bài Bèo dạt mây trôi đoạn 1", teacher: "Quách Hạ Văn" },
+      { date: "01/09/2026", time: "19:00", status: "Đã học", note: "Thực hành lấy hơi bụng", teacher: "Quách Hạ Văn" },
+      { date: "28/08/2026", time: "19:00", status: "Đã học", note: "Kỹ thuật vuốt ngón cơ bản", teacher: "Quách Hạ Văn" },
+      { date: "25/08/2026", time: "19:00", status: "Đã học", note: "Luyện thang âm Đô trưởng", teacher: "Quách Hạ Văn" },
+      { date: "22/08/2026", time: "19:00", status: "Đã học", note: "Buổi đầu tiên: Làm quen cây sáo C5", teacher: "Quách Hạ Văn" },
     ],
   },
   {
@@ -189,8 +190,8 @@ const INITIAL_STUDENTS: StudentData[] = [
     debtAmount: "0đ",
     paymentStatus: "Đã thanh toán",
     attendanceList: [
-      { date: "14/09/2026", time: "19:30", status: "Đã học", note: "Kỹ thuật phi ngón & láy rền" },
-      { date: "10/09/2026", time: "19:30", status: "Đã học", note: "Thực hành bài Thần thoại" },
+      { date: "14/09/2026", time: "19:30", status: "Đã học", note: "Kỹ thuật phi ngón & láy rền", teacher: "Thầy Minh" },
+      { date: "10/09/2026", time: "19:30", status: "Đã học", note: "Thực hành bài Thần thoại", teacher: "Thầy Minh" },
     ],
   },
   {
@@ -212,7 +213,7 @@ const INITIAL_STUDENTS: StudentData[] = [
     debtAmount: "0đ",
     paymentStatus: "Đã thanh toán",
     attendanceList: [
-      { date: "15/08/2026", time: "18:00", status: "Đã học", note: "Bảo lưu từ ngày 20/08" },
+      { date: "15/08/2026", time: "18:00", status: "Đã học", note: "Bảo lưu từ ngày 20/08", teacher: "Cô Lan" },
     ],
   },
   {
@@ -225,7 +226,7 @@ const INITIAL_STUDENTS: StudentData[] = [
     tuition: "3.600.000đ",
     attendedSessions: 12,
     classId: "LOP-01",
-    teacherName: "Quách Hà Vân",
+    teacherName: "Quách Hạ Văn",
     invoiceCode: "HD-2026-00131",
     invoiceDate: "01/07/2026",
     unitPrice: "300.000đ",
@@ -245,7 +246,7 @@ const INITIAL_STUDENTS: StudentData[] = [
     tuition: "3.600.000đ",
     attendedSessions: 10,
     classId: "LOP-01",
-    teacherName: "Quách Hà Vân",
+    teacherName: "Quách Hạ Văn",
     invoiceCode: "HD-2026-00132",
     invoiceDate: "05/08/2026",
     unitPrice: "300.000đ",
@@ -499,6 +500,7 @@ function StudentPortalContent() {
     time: string;
     status: string;
     note: string;
+    teacher?: string;
   } | null>(null);
 
   const [showEditPolicyModal, setShowEditPolicyModal] = useState(false);
@@ -598,6 +600,7 @@ function StudentPortalContent() {
       time: formattedTime,
       status: "Đã học",
       note: customNote || "Điểm danh tại trung tâm",
+      teacher: targetStudent.teacherName || "Quách Hạ Văn",
     };
     const newStatus = newAttended >= targetStudent.packageSessions ? "Hết buổi" : targetStudent.status;
 
@@ -631,7 +634,7 @@ function StudentPortalContent() {
           date: formattedDate,
           time: formattedTime,
           note: customNote || "Điểm danh tại trung tâm",
-          teacher: targetStudent.teacherName || "",
+          teacher: targetStudent.teacherName || "Quách Hạ Văn",
           telegramBotToken: settings.telegramBotToken || "",
           telegramChatId: settings.telegramChatId || "",
         }),
@@ -667,7 +670,7 @@ function StudentPortalContent() {
         return {
           ...s,
           attendedSessions: s.attendedSessions + 1,
-          attendanceList: [{ date: formattedDate, time: formattedTime, status: "Đã học", note: `Điểm danh lớp ${targetClass.name}` }, ...s.attendanceList],
+          attendanceList: [{ date: formattedDate, time: formattedTime, status: "Đã học", note: `Điểm danh lớp ${targetClass.name}`, teacher: targetClass.teacher || "Quách Hạ Văn" }, ...s.attendanceList],
         };
       })
     );
@@ -905,7 +908,11 @@ function StudentPortalContent() {
                 <div>
                   <h2 className="text-xl font-bold text-slate-900">{student.name}</h2>
                   <p className="text-sm text-slate-500">Khóa học: <b className="text-slate-800">{student.course}</b></p>
-                  <p className="text-xs text-slate-400">Giảng viên: {student.teacherName || "Quách Hà Vân"} · SĐT: {student.phone}</p>
+                  <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5 flex-wrap">
+                    <span>GV phụ trách: <b className="text-[#4A101D] font-bold">{student.teacherName || "Quách Hạ Văn"}</b></span>
+                    <span>·</span>
+                    <span>SĐT: {student.phone}</span>
+                  </p>
                 </div>
               </div>
             </div>
@@ -958,6 +965,7 @@ function StudentPortalContent() {
                       <th className="py-2.5 px-3">Buổi</th>
                       <th className="py-2.5 px-3">Ngày học</th>
                       <th className="py-2.5 px-3">Khung giờ</th>
+                      <th className="py-2.5 px-3">GV phụ trách</th>
                       <th className="py-2.5 px-3">Trạng thái</th>
                       <th className="py-2.5 px-3">Nội dung / Ghi chú</th>
                     </tr>
@@ -968,6 +976,12 @@ function StudentPortalContent() {
                         <td className="py-2.5 px-3 font-semibold text-slate-700">#{student.attendanceList.length - idx}</td>
                         <td className="py-2.5 px-3 font-medium text-slate-900">{att.date}</td>
                         <td className="py-2.5 px-3 text-slate-500">{att.time || "19:00"}</td>
+                        <td className="py-2.5 px-3 font-medium text-slate-800">
+                          <span className="inline-flex items-center gap-1 font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded text-xs">
+                            <span>👨‍🏫</span>
+                            <span>{att.teacher || student.teacherName || "Quách Hạ Văn"}</span>
+                          </span>
+                        </td>
                         <td className="py-2.5 px-3">
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                             ✓ {att.status}
@@ -1388,8 +1402,17 @@ function StudentPortalContent() {
                         {currentStudent.status}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Mã: <b>{currentStudent.id}</b> · SĐT: <b>{currentStudent.phone}</b> · Lớp: <b>{currentStudent.course}</b>
+                    <p className="text-xs text-slate-500 mt-1 flex items-center gap-2 flex-wrap">
+                      <span>Mã: <b>{currentStudent.id}</b></span>
+                      <span>·</span>
+                      <span>SĐT: <b>{currentStudent.phone}</b></span>
+                      <span>·</span>
+                      <span>Lớp: <b>{currentStudent.course}</b></span>
+                      <span>·</span>
+                      <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-900 border border-amber-200/80 px-2 py-0.5 rounded-md font-semibold text-[11px]">
+                        <span>👨‍🏫 GV phụ trách:</span>
+                        <b className="text-[#4A101D] font-bold">{currentStudent.teacherName || "Quách Hạ Văn"}</b>
+                      </span>
                     </p>
                   </div>
                 </div>
@@ -1491,6 +1514,7 @@ function StudentPortalContent() {
                         <th className="py-2.5 px-3">STT</th>
                         <th className="py-2.5 px-3">Ngày học</th>
                         <th className="py-2.5 px-3">Khung giờ</th>
+                        <th className="py-2.5 px-3">GV phụ trách</th>
                         <th className="py-2.5 px-3">Trạng thái</th>
                         <th className="py-2.5 px-3">Nội dung / Ghi chú</th>
                         <th className="py-2.5 px-3 text-right">Thao tác</th>
@@ -1502,6 +1526,12 @@ function StudentPortalContent() {
                           <td className="py-2.5 px-3 font-semibold text-slate-500">#{currentStudent.attendanceList.length - idx}</td>
                           <td className="py-2.5 px-3 font-medium text-slate-800">{item.date}</td>
                           <td className="py-2.5 px-3 text-slate-500">{item.time || "19:00"}</td>
+                          <td className="py-2.5 px-3">
+                            <span className="inline-flex items-center gap-1 font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded text-xs">
+                              <span>👨‍🏫</span>
+                              <span>{item.teacher || currentStudent.teacherName || "Quách Hạ Văn"}</span>
+                            </span>
+                          </td>
                           <td className="py-2.5 px-3">
                             <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200 text-[11px]">
                               ✓ {item.status}
@@ -1517,6 +1547,7 @@ function StudentPortalContent() {
                                   time: item.time || "19:00",
                                   status: item.status,
                                   note: item.note,
+                                  teacher: item.teacher || currentStudent.teacherName || "Quách Hạ Văn",
                                 })
                               }
                               className="group flex items-center justify-between gap-2 p-1.5 -m-1.5 rounded-lg hover:bg-amber-50/80 transition-colors cursor-pointer"
@@ -1542,6 +1573,7 @@ function StudentPortalContent() {
                                     time: item.time || "19:00",
                                     status: item.status,
                                     note: item.note,
+                                    teacher: item.teacher || currentStudent.teacherName || "Quách Hạ Văn",
                                   })
                                 }
                                 className="text-blue-600 hover:text-blue-800 font-semibold cursor-pointer text-xs flex items-center gap-0.5"
@@ -2193,7 +2225,7 @@ function StudentPortalContent() {
                   tuition,
                   attendedSessions: 0,
                   classId: "LOP-01",
-                  teacherName: "Quách Hà Vân",
+                  teacherName: form.teacherName?.value?.trim() || "Quách Hạ Văn",
                   invoiceCode: newInvoice,
                   invoiceDate: new Date().toLocaleDateString("vi-VN"),
                   unitPrice: "300.000đ",
@@ -2218,6 +2250,10 @@ function StudentPortalContent() {
               <div>
                 <label className="font-semibold text-slate-700 block mb-1">Số điện thoại *</label>
                 <input required name="studentPhone" type="text" placeholder="0901 234 567" className="w-full p-2.5 border border-slate-200 rounded-xl" />
+              </div>
+              <div>
+                <label className="font-semibold text-slate-700 block mb-1">Giáo viên phụ trách</label>
+                <input name="teacherName" type="text" defaultValue="Quách Hạ Văn" placeholder="Ví dụ: Quách Hạ Văn" className="w-full p-2.5 border border-slate-200 rounded-xl" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -2262,6 +2298,7 @@ function StudentPortalContent() {
                 const form = e.target as any;
                 const name = form.name.value.trim();
                 const phone = form.phone.value.trim();
+                const teacherName = form.teacherName?.value?.trim() || "Quách Hạ Văn";
                 const course = form.course.value;
                 const packageSessions = Number(form.packageSessions.value) || 12;
                 const attendedSessions = Number(form.attendedSessions.value) || 0;
@@ -2274,6 +2311,7 @@ function StudentPortalContent() {
                     ...s,
                     name,
                     phone,
+                    teacherName,
                     course,
                     packageSessions,
                     attendedSessions,
@@ -2294,6 +2332,10 @@ function StudentPortalContent() {
               <div>
                 <label className="font-semibold text-slate-700 block mb-1">Số điện thoại</label>
                 <input required name="phone" defaultValue={editingStudent.phone} className="w-full p-2.5 border border-slate-200 rounded-xl" />
+              </div>
+              <div>
+                <label className="font-semibold text-slate-700 block mb-1">Giáo viên phụ trách</label>
+                <input name="teacherName" defaultValue={editingStudent.teacherName || "Quách Hạ Văn"} placeholder="Ví dụ: Quách Hạ Văn" className="w-full p-2.5 border border-slate-200 rounded-xl" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -2365,6 +2407,7 @@ function StudentPortalContent() {
                 const newNote = form.note.value.trim();
                 const newDate = form.date.value.trim();
                 const newTime = form.time.value.trim();
+                const newTeacher = form.teacher?.value?.trim() || "Quách Hạ Văn";
                 const newStatus = form.status.value;
 
                 setStudents((prev) =>
@@ -2377,6 +2420,7 @@ function StudentPortalContent() {
                         time: newTime || editingAttendance.time,
                         status: newStatus,
                         note: newNote,
+                        teacher: newTeacher,
                       };
                     }
                     return {
@@ -2390,6 +2434,19 @@ function StudentPortalContent() {
               }}
               className="space-y-4 text-xs"
             >
+              <div>
+                <label className="font-semibold text-slate-700 block mb-1">
+                  Giáo viên phụ trách buổi học
+                </label>
+                <input
+                  type="text"
+                  name="teacher"
+                  defaultValue={editingAttendance.teacher || currentStudent?.teacherName || "Quách Hạ Văn"}
+                  placeholder="Ví dụ: Quách Hạ Văn"
+                  className="w-full p-2 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-[#4A101D]"
+                />
+              </div>
+
               <div>
                 <label className="font-semibold text-slate-700 block mb-1">
                   Nội dung / Ghi chú buổi học *
