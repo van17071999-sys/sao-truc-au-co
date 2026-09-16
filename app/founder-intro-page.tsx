@@ -16,7 +16,7 @@ interface FounderData {
 const defaultFounderData: FounderData = {
   title: "Người Sáng Lập Sáo Trúc Âu Cơ – Thầy Quách Hạ Văn",
   excerpt: "Hệ thống thông tin chi tiết về Người sáng lập Sáo Trúc Âu Cơ – Thầy Quách Hạ Văn đang trong quá trình hoàn thiện và cập nhật nội dung.",
-  imageUrl: "/intro-portrait.jpg",
+  imageUrl: "/intro-portrait.jpg|/hero-artist.jpg",
   price: "0374 261 368",
   tag: "dang-cap-nhat", // "dang-cap-nhat" | "hien-thi"
   content: "Chủ nhiệm & Người sáng lập Sáo Trúc Âu Cơ\n106/72 Hoà Bình, P. Tân Phú, TP.HCM\nHotline/Zalo: 0374 261 368\nEmail: saotrucauco@gmail.com\n“Mỗi người đều có thể thổi được những giai điệu đẹp chỉ cần bắt đầu đúng cách.”",
@@ -24,6 +24,7 @@ const defaultFounderData: FounderData = {
 
 export function FounderIntroPage() {
   const [data, setData] = useState<FounderData>(defaultFounderData);
+  const [activeImgIndex, setActiveImgIndex] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -49,6 +50,11 @@ export function FounderIntroPage() {
       active = false;
     };
   }, []);
+
+  const rawImages = (data.imageUrl || "").split("|").map((s) => s.trim()).filter(Boolean);
+  const image1 = rawImages[0] || "/intro-portrait.jpg";
+  const image2 = rawImages[1] || "/hero-artist.jpg";
+  const currentImage = activeImgIndex === 0 ? image1 : (image2 || image1);
 
   const isUpdating = data.tag !== "hien-thi";
 
@@ -123,20 +129,68 @@ export function FounderIntroPage() {
 
               {/* Main Content Grid */}
               <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-                {/* Left: Avatar */}
+                {/* Left: Dual Avatar & Interactive Selector */}
                 <div className="md:col-span-4 flex flex-col items-center text-center space-y-3">
-                  <div className="relative">
-                    <div className="w-40 h-40 rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-[#EDE4D8]">
+                  {/* Spotlight Frame */}
+                  <div className="relative group">
+                    <div className="w-40 h-40 sm:w-44 sm:h-44 rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-[#EDE4D8] transition-all duration-300">
                       <img
-                        src={data.imageUrl || "/intro-portrait.jpg"}
-                        alt="Thầy Quách Hạ Văn - Người sáng lập Sáo Trúc Âu Cơ"
-                        className="w-full h-full object-cover object-center"
+                        src={currentImage}
+                        alt={`Thầy Quách Hạ Văn - ${activeImgIndex === 0 ? "Ảnh chân dung" : "Ảnh biểu diễn"}`}
+                        className="w-full h-full object-cover object-center transition-all duration-500 hover:scale-105"
                       />
                     </div>
+                    {/* Badge nốt nhạc */}
                     <span className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-[#70141D] text-white text-base flex items-center justify-center font-bold shadow-lg border-2 border-white">
                       <i className="fa-solid fa-music"></i>
                     </span>
+                    {/* Nhãn loại ảnh */}
+                    <span className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-xs text-white text-[10px] font-semibold">
+                      {activeImgIndex === 0 ? "Ảnh 1 · Chân dung" : "Ảnh 2 · Biểu diễn"}
+                    </span>
                   </div>
+
+                  {/* Nút chuyển đổi ảnh khi có 2 ảnh */}
+                  {image2 && (
+                    <div className="flex items-center justify-center gap-2 pt-0.5">
+                      <button
+                        type="button"
+                        onClick={() => setActiveImgIndex(0)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                          activeImgIndex === 0
+                            ? "bg-[#70141D] text-white border-[#70141D] shadow-xs scale-102"
+                            : "bg-white/90 hover:bg-white text-[#5C4D47] border-[#D9CDBB]"
+                        }`}
+                        title="Bấm để xem Ảnh chân dung"
+                      >
+                        <img
+                          src={image1}
+                          alt="Ảnh 1"
+                          className="w-4 h-4 rounded-md object-cover"
+                        />
+                        <span>Ảnh 1</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setActiveImgIndex(1)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                          activeImgIndex === 1
+                            ? "bg-[#70141D] text-white border-[#70141D] shadow-xs scale-102"
+                            : "bg-white/90 hover:bg-white text-[#5C4D47] border-[#D9CDBB]"
+                        }`}
+                        title="Bấm để xem Ảnh biểu diễn / hoạt động"
+                      >
+                        <img
+                          src={image2}
+                          alt="Ảnh 2"
+                          className="w-4 h-4 rounded-md object-cover"
+                        />
+                        <span>Ảnh 2</span>
+                      </button>
+                    </div>
+                  )}
+
                   <div>
                     <h2 className="font-serif text-2xl font-bold text-[#292421]">
                       Thầy Quách Hạ Văn
@@ -214,20 +268,65 @@ export function FounderIntroPage() {
 
                   {/* Profile Main Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-                    {/* Left: Avatar & Title */}
+                    {/* Left: Dual Avatar & Interactive Selector */}
                     <div className="md:col-span-4 flex flex-col items-center text-center space-y-3">
-                      <div className="relative">
-                        <div className="w-36 h-36 sm:w-40 sm:h-40 rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-[#EDE4D8]">
+                      <div className="relative group">
+                        <div className="w-40 h-40 rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-[#EDE4D8] transition-all duration-300">
                           <img
-                            src={data.imageUrl || "/intro-portrait.jpg"}
-                            alt="Thầy Quách Hạ Văn - Người sáng lập Sáo Trúc Âu Cơ"
-                            className="w-full h-full object-cover object-center"
+                            src={currentImage}
+                            alt={`Thầy Quách Hạ Văn - ${activeImgIndex === 0 ? "Ảnh chân dung" : "Ảnh biểu diễn"}`}
+                            className="w-full h-full object-cover object-center transition-all duration-500 hover:scale-105"
                           />
                         </div>
                         <span className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-[#70141D] text-white text-base flex items-center justify-center font-bold shadow-lg border-2 border-white">
                           <i className="fa-solid fa-music"></i>
                         </span>
+                        <span className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-xs text-white text-[10px] font-semibold">
+                          {activeImgIndex === 0 ? "Ảnh 1 · Chân dung" : "Ảnh 2 · Biểu diễn"}
+                        </span>
                       </div>
+
+                      {/* 2 Buttons / Thumbnails */}
+                      {image2 && (
+                        <div className="flex items-center justify-center gap-2 pt-0.5">
+                          <button
+                            type="button"
+                            onClick={() => setActiveImgIndex(0)}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                              activeImgIndex === 0
+                                ? "bg-[#70141D] text-white border-[#70141D] shadow-xs scale-102"
+                                : "bg-white/90 hover:bg-white text-[#5C4D47] border-[#D9CDBB]"
+                            }`}
+                            title="Bấm để xem Ảnh chân dung"
+                          >
+                            <img
+                              src={image1}
+                              alt="Ảnh 1"
+                              className="w-4 h-4 rounded-md object-cover"
+                            />
+                            <span>Ảnh 1</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setActiveImgIndex(1)}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                              activeImgIndex === 1
+                                ? "bg-[#70141D] text-white border-[#70141D] shadow-xs scale-102"
+                                : "bg-white/90 hover:bg-white text-[#5C4D47] border-[#D9CDBB]"
+                            }`}
+                            title="Bấm để xem Ảnh biểu diễn / hoạt động"
+                          >
+                            <img
+                              src={image2}
+                              alt="Ảnh 2"
+                              className="w-4 h-4 rounded-md object-cover"
+                            />
+                            <span>Ảnh 2</span>
+                          </button>
+                        </div>
+                      )}
+
                       <div>
                         <h2 className="font-serif text-2xl font-bold text-[#292421]">
                           Thầy Quách Hạ Văn
