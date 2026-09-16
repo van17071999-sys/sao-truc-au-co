@@ -299,29 +299,26 @@ export function ClassesPage() {
     <main className="min-h-screen bg-[#FAF6F0] text-[#2B2624] selection:bg-[#70141D] selection:text-white">
       <ServicePageHeader />
 
-      {/* 1. HERO & 6 BỘ MÔN SECTION - DARK ORIENTAL BACKDROP CHUẨN MÔ TẢ HÌNH ẢNH */}
-      <section className="bg-[#0A0706] text-white pt-8 pb-16 px-4 sm:px-6 lg:px-8 border-b border-[#291816] relative overflow-hidden">
-        {/* Subtle background ambiance glow */}
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#70141D]/20 rounded-full blur-3xl pointer-events-none -translate-y-1/2"></div>
-        
+      {/* 1. HERO & 6 BỘ MÔN SECTION - ĐỒNG BỘ NỀN KEM SÁNG VỚI TOÀN TRANG WEB */}
+      <section className="bg-[#FAF6F0] text-[#2B2624] pt-8 pb-14 px-4 sm:px-6 lg:px-8 border-b border-[#EADBCA] relative">
         <div className="max-w-[1380px] mx-auto space-y-8 relative z-10">
           
           {/* Header row with Title box & Authentic Photo */}
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div className="space-y-3.5 max-w-3xl">
-              <span className="inline-block px-3.5 py-1 rounded-full bg-[#FAF5EE] text-[#70141D] text-xs font-bold uppercase tracking-wider shadow-sm">
+              <span className="inline-block px-3.5 py-1 rounded-full bg-white text-[#70141D] text-xs font-bold uppercase tracking-wider shadow-2xs border border-[#EADBCA]">
                 Lớp học
               </span>
 
               {/* Title Pill Frame */}
               <div>
-                <h1 className="inline-block px-6 sm:px-8 py-3 rounded-2xl sm:rounded-full bg-[#FAF5EE] text-[#70141D] font-serif font-bold text-2xl sm:text-3xl lg:text-4xl shadow-md border border-[#EADBCA] leading-tight">
+                <h1 className="inline-block px-6 sm:px-8 py-3 rounded-2xl sm:rounded-full bg-white text-[#70141D] font-serif font-bold text-2xl sm:text-3xl lg:text-4xl shadow-xs border border-[#EADBCA] leading-tight">
                   Các Bộ Môn Sáo Giảng Dạy Tại TP.HCM & Online
                 </h1>
               </div>
 
               {/* Description Card */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#FAF5EE]/95 text-[#4D3F3A] border border-[#EADBCA] shadow-sm max-w-2xl">
+              <div className="p-4 sm:p-5 rounded-2xl bg-white text-[#5C4D47] border border-[#EADBCA] shadow-xs max-w-2xl">
                 <p className="text-xs sm:text-sm leading-relaxed">
                   Khám phá thế giới âm nhạc qua những nhạc cụ đặc sắc từ Việt Nam và các nền văn hóa khác. Mỗi khóa học được thiết kế bài bản, phù hợp với mọi lứa tuổi và trình độ, cùng bạn trên hành trình nuôi dưỡng đam mê âm nhạc.
                 </p>
@@ -329,7 +326,7 @@ export function ClassesPage() {
             </div>
 
             {/* Right Photo using authentic high-res hero image */}
-            <div className="hidden lg:block shrink-0 relative w-80 h-44 rounded-2xl overflow-hidden border border-[#FAF5EE]/20 shadow-2xl">
+            <div className="hidden lg:block shrink-0 relative w-80 h-44 rounded-2xl overflow-hidden border border-[#E0D5C3] shadow-md">
               <img
                 src="/hero-artist.jpg"
                 alt="Sáo Trúc Âu Cơ - Nghệ sĩ biểu diễn"
@@ -348,10 +345,10 @@ export function ClassesPage() {
             {disciplines.map((item) => (
               <div
                 key={item.slug}
-                className="bg-[#FAF5EE] rounded-2xl sm:rounded-3xl border border-[#E8DFD3] p-3 sm:p-3.5 flex gap-3.5 sm:gap-4 items-stretch hover:border-[#70141D] hover:shadow-xl transition-all duration-300 group"
+                className="bg-white rounded-2xl sm:rounded-3xl border border-[#E5DDD0] p-3.5 sm:p-4 flex gap-3.5 sm:gap-4 items-stretch hover:border-[#70141D] hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group shadow-xs"
               >
                 {/* Thumbnail Image using user's existing image */}
-                <div className="w-28 sm:w-32 aspect-square rounded-xl sm:rounded-2xl overflow-hidden shrink-0 shadow-xs relative bg-[#EDE4D8]">
+                <div className="w-28 sm:w-32 aspect-square rounded-xl sm:rounded-2xl overflow-hidden shrink-0 shadow-2xs relative bg-[#F5EFE6]">
                   <img
                     src={item.image}
                     alt={item.title}
