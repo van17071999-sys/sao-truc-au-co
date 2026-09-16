@@ -5,6 +5,7 @@ import BrandLogo from "../brand-logo";
 import { parseFluteTab, renderArticleFormatting } from "../cms-content-pages";
 import { buildVietQrUrl } from "../vietqr-helper";
 import { parsePrice } from "../price-helper";
+import { generateRandomStudentId } from "../diem-danh/page";
 
 type CmsEntry = {
   id: string;
@@ -1149,7 +1150,7 @@ export default function ContentAdmin() {
       return;
     }
     if (section === "students") {
-      const code = `HV-2026-${Math.floor(100 + Math.random() * 900)}`;
+      const code = generateRandomStudentId();
       setDraft({
         id: `student-${Date.now()}`,
         collection: "students",
@@ -2251,7 +2252,7 @@ export default function ContentAdmin() {
                             required
                             value={draft.slug}
                             onChange={(e) => setDraft({ ...draft, slug: e.target.value, tag: e.target.value })}
-                            placeholder="Ví dụ: HV-2026-00128"
+                            placeholder="Ví dụ: k9$X_mQ2~P"
                             style={{ fontWeight: 600 }}
                           />
                         </label>

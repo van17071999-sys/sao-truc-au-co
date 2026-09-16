@@ -86,9 +86,57 @@ const DEFAULT_SETTINGS: CenterSettings = {
   policyNote: "Học phí đã đăng ký không hoàn lại dưới mọi hình thức; số buổi còn lại được bảo lưu; thời hạn bảo lưu tùy từng trường hợp nghỉ học và giáo viên sẽ thông báo cụ thể.",
 };
 
+// ================= SECURE RANDOM STUDENT CODE GENERATOR =================
+// Sinh mã học viên 10 ký tự lộn xộn ngẫu nhiên gồm chữ cái hoa, thường, số và ký tự đặc biệt (_-$~*)
+export function generateRandomStudentId(): string {
+  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const lower = "abcdefghijkmnopqrstuvwxyz";
+  const numbers = "23456789";
+  const specials = "_-$~*";
+  const allChars = upper + lower + numbers + specials;
+
+  // Đảm bảo có ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt
+  const code: string[] = [
+    upper[Math.floor(Math.random() * upper.length)],
+    lower[Math.floor(Math.random() * lower.length)],
+    numbers[Math.floor(Math.random() * numbers.length)],
+    specials[Math.floor(Math.random() * specials.length)],
+  ];
+
+  while (code.length < 10) {
+    code.push(allChars[Math.floor(Math.random() * allChars.length)]);
+  }
+
+  // Thuật toán Fisher-Yates để xáo trộn hoàn toàn ngẫu nhiên
+  for (let i = code.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [code[i], code[j]] = [code[j], code[i]];
+  }
+
+  return code.join("");
+}
+
+// Bảng ánh xạ mã học viên cũ sang mã bảo mật 10 ký tự ngẫu nhiên
+export const ID_MIGRATION_MAP: Record<string, string> = {
+  "HV-2026-00128": "k9$X_mQ2~P",
+  "HV-2026-00129": "W7-pL9$zK2",
+  "HV-2026-00130": "m4_Tk8$Ny~",
+  "HV-2026-00131": "X2~qM9-pB$",
+  "HV-2026-00132": "r8$Vn2-kQ~",
+};
+
+export function migrateStudentId(oldId: string): string {
+  if (!oldId) return generateRandomStudentId();
+  if (ID_MIGRATION_MAP[oldId]) return ID_MIGRATION_MAP[oldId];
+  if (oldId.startsWith("HV-2026-") || oldId.length < 10) {
+    return generateRandomStudentId();
+  }
+  return oldId;
+}
+
 const INITIAL_STUDENTS: StudentData[] = [
   {
-    id: "HV-2026-00128",
+    id: "k9$X_mQ2~P",
     name: "Nguyễn Văn An",
     status: "Đang học",
     phone: "0934 567 890",
@@ -117,7 +165,7 @@ const INITIAL_STUDENTS: StudentData[] = [
     ],
   },
   {
-    id: "HV-2026-00129",
+    id: "W7-pL9$zK2",
     name: "Trần Minh Đức",
     status: "Đang học",
     phone: "0912 345 678",
@@ -140,7 +188,7 @@ const INITIAL_STUDENTS: StudentData[] = [
     ],
   },
   {
-    id: "HV-2026-00130",
+    id: "m4_Tk8$Ny~",
     name: "Lê Hoàng Yến",
     status: "Bảo lưu",
     phone: "0988 765 432",
@@ -162,7 +210,7 @@ const INITIAL_STUDENTS: StudentData[] = [
     ],
   },
   {
-    id: "HV-2026-00131",
+    id: "X2~qM9-pB$",
     name: "Phạm Quốc Tuấn",
     status: "Hết buổi",
     phone: "0909 888 777",
@@ -182,7 +230,7 @@ const INITIAL_STUDENTS: StudentData[] = [
     attendanceList: [],
   },
   {
-    id: "HV-2026-00132",
+    id: "r8$Vn2-kQ~",
     name: "Vũ Bảo Ngọc",
     status: "Đang học",
     phone: "0977 123 456",
@@ -212,7 +260,7 @@ const INITIAL_CLASSES: ClassData[] = [
     teacher: "Quách Hà Vân",
     scheduleTime: "Thứ 3 & Thứ 6 (19:00 - 20:30)",
     status: "Đang mở",
-    studentIds: ["HV-2026-00128", "HV-2026-00131", "HV-2026-00132"],
+    studentIds: ["k9$X_mQ2~P", "X2~qM9-pB$", "r8$Vn2-kQ~"],
   },
   {
     id: "LOP-02",
@@ -220,7 +268,7 @@ const INITIAL_CLASSES: ClassData[] = [
     teacher: "Thầy Minh",
     scheduleTime: "Thứ 2 & Thứ 5 (19:30 - 21:00)",
     status: "Đang mở",
-    studentIds: ["HV-2026-00129"],
+    studentIds: ["W7-pL9$zK2"],
   },
   {
     id: "LOP-03",
@@ -228,7 +276,7 @@ const INITIAL_CLASSES: ClassData[] = [
     teacher: "Cô Lan",
     scheduleTime: "Thứ 7 & Chủ Nhật (09:00 - 10:30)",
     status: "Đang mở",
-    studentIds: ["HV-2026-00130"],
+    studentIds: ["m4_Tk8$Ny~"],
   },
 ];
 
@@ -237,7 +285,7 @@ const INITIAL_SCHEDULES: ScheduleItem[] = [
     id: "SCH-001",
     date: "16/09/2026",
     time: "19:00 - 20:30",
-    studentId: "HV-2026-00128",
+    studentId: "k9$X_mQ2~P",
     studentName: "Nguyễn Văn An",
     course: "Sáo trúc cơ bản",
     teacher: "Quách Hà Vân",
@@ -247,7 +295,7 @@ const INITIAL_SCHEDULES: ScheduleItem[] = [
     id: "SCH-002",
     date: "16/09/2026",
     time: "19:30 - 21:00",
-    studentId: "HV-2026-00129",
+    studentId: "W7-pL9$zK2",
     studentName: "Trần Minh Đức",
     course: "Sáo Dizi nâng cao",
     teacher: "Thầy Minh",
@@ -257,7 +305,7 @@ const INITIAL_SCHEDULES: ScheduleItem[] = [
     id: "SCH-003",
     date: "15/09/2026",
     time: "19:00 - 20:30",
-    studentId: "HV-2026-00128",
+    studentId: "k9$X_mQ2~P",
     studentName: "Nguyễn Văn An",
     course: "Sáo trúc cơ bản",
     teacher: "Quách Hà Vân",
@@ -293,15 +341,24 @@ type ActiveTab = "hoc-vien" | "lop-hoc" | "lich-day" | "hoa-don" | "giao-vien" |
 
 function StudentPortalContent() {
   const searchParams = useSearchParams();
-  const studentId = searchParams.get("id") || "";
+  const rawId = searchParams.get("id") || "";
+  const studentId = rawId ? decodeURIComponent(rawId) : "";
   const isAdminParam = searchParams.get("admin") === "1";
 
-  // Data States (synced with localStorage)
+  // Data States (synced with localStorage & auto migrated)
   const [students, setStudents] = useState<StudentData[]>(() => {
     if (typeof window !== "undefined") {
       try {
         const local = localStorage.getItem("auco_students_data");
-        if (local) return JSON.parse(local);
+        if (local) {
+          const parsed = JSON.parse(local);
+          if (Array.isArray(parsed)) {
+            return parsed.map((s: StudentData) => ({
+              ...s,
+              id: migrateStudentId(s.id),
+            }));
+          }
+        }
       } catch (e) {}
     }
     return INITIAL_STUDENTS;
@@ -311,7 +368,15 @@ function StudentPortalContent() {
     if (typeof window !== "undefined") {
       try {
         const local = localStorage.getItem("auco_classes_data");
-        if (local) return JSON.parse(local);
+        if (local) {
+          const parsed = JSON.parse(local);
+          if (Array.isArray(parsed)) {
+            return parsed.map((c: ClassData) => ({
+              ...c,
+              studentIds: (c.studentIds || []).map(migrateStudentId),
+            }));
+          }
+        }
       } catch (e) {}
     }
     return INITIAL_CLASSES;
@@ -321,7 +386,15 @@ function StudentPortalContent() {
     if (typeof window !== "undefined") {
       try {
         const local = localStorage.getItem("auco_schedules_data");
-        if (local) return JSON.parse(local);
+        if (local) {
+          const parsed = JSON.parse(local);
+          if (Array.isArray(parsed)) {
+            return parsed.map((sch: ScheduleItem) => ({
+              ...sch,
+              studentId: migrateStudentId(sch.studentId),
+            }));
+          }
+        }
       } catch (e) {}
     }
     return INITIAL_SCHEDULES;
@@ -385,7 +458,16 @@ function StudentPortalContent() {
 
   // UI States
   const [activeTab, setActiveTab] = useState<ActiveTab>("hoc-vien");
-  const [selectedStudentId, setSelectedStudentId] = useState<string>(studentId || (students[0]?.id ?? "HV-2026-00128"));
+  const [selectedStudentId, setSelectedStudentId] = useState<string>(studentId || (students[0]?.id ?? "k9$X_mQ2~P"));
+  const [collapsedCourses, setCollapsedCourses] = useState<Record<string, boolean>>({});
+
+  const toggleCourse = (courseName: string) => {
+    setCollapsedCourses((prev) => ({
+      ...prev,
+      [courseName]: !prev[courseName],
+    }));
+  };
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [toastMessage, setToastMessage] = useState("");
@@ -414,10 +496,16 @@ function StudentPortalContent() {
     setTimeout(() => setToastMessage(""), 3500);
   };
 
-  // Currently active student
+  // Học viên xem qua link tra cứu riêng (?id=...)
+  const portalStudent = useMemo(() => {
+    if (!studentId) return null;
+    return students.find((s) => s.id === studentId || s.id === ID_MIGRATION_MAP[studentId]) || null;
+  }, [students, studentId]);
+
+  // Học viên đang chọn trong trang quản trị (Admin)
   const currentStudent = useMemo(() => {
-    return students.find((s) => s.id === (studentId || selectedStudentId)) || students[0];
-  }, [students, studentId, selectedStudentId]);
+    return students.find((s) => s.id === selectedStudentId) || students[0] || INITIAL_STUDENTS[0];
+  }, [students, selectedStudentId]);
 
   // Attendance +1
   const handleCheckIn = (stId: string, customNote?: string) => {
@@ -537,20 +625,28 @@ function StudentPortalContent() {
   const isStudentOnlyView = !isAdmin;
 
   if (isStudentOnlyView) {
-    const student = currentStudent;
+    const student = portalStudent;
 
-    if (!student) {
+    if (!studentId || !student) {
       return (
-        <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4">
-          <div className="bg-white max-w-md w-full p-6 rounded-2xl shadow-xl border border-slate-200 text-center">
-            <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto text-2xl mb-4">
-              🎓
+        <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 font-sans">
+          <div className="bg-white max-w-md w-full p-6 sm:p-8 rounded-2xl shadow-xl border border-slate-200 text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto text-2xl border border-rose-100">
+              🔒
             </div>
-            <h1 className="text-xl font-bold text-slate-800 mb-2">Tra Cứu Tiến Độ Học Tập</h1>
-            <p className="text-sm text-slate-500 mb-6">Vui lòng sử dụng đường link do giáo viên Sáo Trúc Âu Cơ cung cấp để xem hồ sơ của bạn.</p>
-            <Link href="/" className="inline-block px-5 py-2.5 bg-[#4A101D] text-white text-sm font-semibold rounded-xl hover:bg-[#681829] transition-colors">
-              ← Về Trang Chủ Sáo Trúc Âu Cơ
-            </Link>
+            <h1 className="text-xl font-bold text-slate-900">
+              {!studentId ? "Tra Cứu Tiến Độ Học Tập" : "Mã Học Viên Không Chính Xác"}
+            </h1>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              {!studentId
+                ? "Hồ sơ điểm danh & lịch sử học tập được bảo mật riêng tư. Vui lòng truy cập theo đường link cá nhân có mã bảo mật 10 ký tự do Sáo Trúc Âu Cơ cung cấp."
+                : "Không tìm thấy dữ liệu học viên với mã đã nhập. Mã bảo mật gồm 10 ký tự ngẫu nhiên kết hợp chữ cái và ký tự đặc biệt để đảm bảo không ai có thể đoán hay truy cập trái phép."}
+            </p>
+            <div className="pt-2">
+              <Link href="/" className="inline-block px-5 py-2.5 bg-[#4A101D] text-white text-xs font-semibold rounded-xl hover:bg-[#681829] transition-colors shadow">
+                ← Về Trang Chủ Sáo Trúc Âu Cơ
+              </Link>
+            </div>
           </div>
         </div>
       );
@@ -960,67 +1056,107 @@ function StudentPortalContent() {
                 </select>
               </div>
 
-              {/* DANH SÁCH THEO CHIỀU DỌC - CHIA THEO BỘ MÔN */}
-              <div className="space-y-4 max-h-[calc(100vh-270px)] overflow-y-auto pr-1">
-                {Object.entries(groupedStudents).map(([courseName, stList]) => (
-                  <div key={courseName} className="space-y-1.5">
-                    {/* Header Nhóm Bộ Môn */}
-                    <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-800 font-bold text-xs border border-slate-200/60">
-                      <span className="flex items-center gap-1.5 truncate">
-                        <span className="text-[#4A101D]">🎼</span>
-                        <span className="truncate">{courseName}</span>
-                      </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white text-slate-700 font-bold shadow-xs">
-                        {stList.length}
-                      </span>
-                    </div>
+              {/* DANH SÁCH THEO CHIỀU DỌC - CHIA THEO BỘ MÔN CÓ THANH SỔ XUỐNG */}
+              <div className="flex items-center justify-between px-1 text-[11px] text-slate-500 font-medium">
+                <span>Bộ môn ({Object.keys(groupedStudents).length})</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCollapsedCourses({})}
+                    className="hover:text-[#4A101D] hover:underline cursor-pointer"
+                  >
+                    Mở tất cả
+                  </button>
+                  <span>·</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const all: Record<string, boolean> = {};
+                      Object.keys(groupedStudents).forEach((k) => (all[k] = true));
+                      setCollapsedCourses(all);
+                    }}
+                    className="hover:text-[#4A101D] hover:underline cursor-pointer"
+                  >
+                    Thu gọn
+                  </button>
+                </div>
+              </div>
 
-                    {/* Danh sách học viên dọc trong bộ môn */}
-                    <div className="space-y-1 pl-0.5">
-                      {stList.map((s) => {
-                        const isSelected = currentStudent.id === s.id;
-                        return (
-                          <button
-                            key={s.id}
-                            onClick={() => setSelectedStudentId(s.id)}
-                            className={`w-full p-2.5 rounded-xl text-left transition-all flex items-center justify-between gap-2 border cursor-pointer ${
-                              isSelected
-                                ? "bg-[#4A101D] text-white border-[#4A101D] shadow-md ring-2 ring-[#4A101D]/20"
-                                : "bg-white hover:bg-slate-50 text-slate-800 border-slate-200/80"
-                            }`}
-                          >
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-1.5">
-                                <span className={`w-2 h-2 rounded-full shrink-0 ${
-                                  s.status === "Đang học" ? "bg-emerald-500" :
-                                  s.status === "Bảo lưu" ? "bg-amber-500" : "bg-rose-500"
-                                }`} />
-                                <span className="font-bold text-xs truncate">{s.name}</span>
-                              </div>
-                              <div className={`text-[10px] truncate mt-0.5 ${isSelected ? "text-slate-200" : "text-slate-400"}`}>
-                                {s.phone} · {s.id}
-                              </div>
-                            </div>
+              <div className="space-y-2.5 max-h-[calc(100vh-300px)] overflow-y-auto pr-1">
+                {Object.entries(groupedStudents).map(([courseName, stList]) => {
+                  const isCollapsed = !!collapsedCourses[courseName];
+                  return (
+                    <div key={courseName} className="rounded-xl border border-slate-200/80 bg-white overflow-hidden shadow-2xs">
+                      {/* Header Nhóm Bộ Môn - Thanh Sổ Xuống Bấm Được */}
+                      <button
+                        type="button"
+                        onClick={() => toggleCourse(courseName)}
+                        className="w-full flex items-center justify-between px-3 py-2 bg-slate-100 hover:bg-slate-200/80 text-slate-800 font-bold text-xs transition-colors cursor-pointer select-none group"
+                      >
+                        <span className="flex items-center gap-2 truncate">
+                          <span className="text-[#4A101D] group-hover:scale-110 transition-transform">🎼</span>
+                          <span className="truncate">{courseName}</span>
+                        </span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-white text-slate-700 font-bold shadow-xs border border-slate-200/60">
+                            {stList.length}
+                          </span>
+                          <span className={`text-[10px] text-slate-500 font-bold transition-transform duration-200 ${isCollapsed ? "-rotate-90" : "rotate-0"}`}>
+                            ▼
+                          </span>
+                        </div>
+                      </button>
 
-                            <div className="text-right shrink-0">
-                              <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                                isSelected
-                                  ? "bg-white/20 text-white"
-                                  : s.status === "Đang học"
-                                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                  : s.status === "Bảo lưu"
-                                  ? "bg-amber-50 text-amber-700 border border-amber-200"
-                                  : "bg-rose-50 text-rose-700 border border-rose-200"
-                              }`}>
-                                {s.attendedSessions}/{s.packageSessions}
-                              </span>
-                            </div>
-                          </button>
-                        );
-                      })}
+                      {/* Danh sách học viên dọc trong bộ môn (khi mở sổ xuống) */}
+                      {!isCollapsed && (
+                        <div className="p-1 space-y-1 bg-slate-50/50 border-t border-slate-200/60">
+                          {stList.map((s) => {
+                            const isSelected = currentStudent?.id === s.id;
+                            return (
+                              <button
+                                key={s.id}
+                                type="button"
+                                onClick={() => setSelectedStudentId(s.id)}
+                                className={`w-full p-2.5 rounded-xl text-left transition-all flex items-center justify-between gap-2 border cursor-pointer ${
+                                  isSelected
+                                    ? "bg-[#4A101D] text-white border-[#4A101D] shadow-md ring-2 ring-[#4A101D]/20"
+                                    : "bg-white hover:bg-slate-50 text-slate-800 border-slate-200/80"
+                                }`}
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className={`w-2 h-2 rounded-full shrink-0 ${
+                                      s.status === "Đang học" ? "bg-emerald-500" :
+                                      s.status === "Bảo lưu" ? "bg-amber-500" : "bg-rose-500"
+                                    }`} />
+                                    <span className="font-bold text-xs truncate">{s.name}</span>
+                                  </div>
+                                  <div className={`text-[10px] truncate mt-0.5 font-mono ${isSelected ? "text-slate-200" : "text-slate-400"}`}>
+                                    {s.phone} · {s.id}
+                                  </div>
+                                </div>
+
+                                <div className="text-right shrink-0">
+                                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                                    isSelected
+                                      ? "bg-white/20 text-white"
+                                      : s.status === "Đang học"
+                                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                      : s.status === "Bảo lưu"
+                                      ? "bg-amber-50 text-amber-700 border border-amber-200"
+                                      : "bg-rose-50 text-rose-700 border border-rose-200"
+                                  }`}>
+                                    {s.attendedSessions}/{s.packageSessions}
+                                  </span>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {Object.keys(groupedStudents).length === 0 && (
                   <p className="text-xs text-slate-400 italic text-center py-6">Không tìm thấy học viên nào phù hợp.</p>
@@ -1697,7 +1833,7 @@ function StudentPortalContent() {
                 const tuition = form.studentTuition.value;
 
                 if (!name) return;
-                const newId = `HV-2026-${Math.floor(100 + Math.random() * 900)}`;
+                const newId = generateRandomStudentId();
                 const newInvoice = `${settings.invoicePrefix}${Math.floor(10000 + Math.random() * 90000)}`;
 
                 const created: StudentData = {
