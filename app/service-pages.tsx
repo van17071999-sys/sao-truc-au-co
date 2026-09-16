@@ -325,17 +325,72 @@ export function ClassesPage() {
               </div>
             </div>
 
-            {/* Right Photo using authentic high-res hero image */}
-            <div className="hidden lg:block shrink-0 relative w-80 h-44 rounded-2xl overflow-hidden border border-[#E0D5C3] shadow-md">
-              <img
-                src="/hero-artist.jpg"
-                alt="Sáo Trúc Âu Cơ - Nghệ sĩ biểu diễn"
-                className="w-full h-full object-cover object-top"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end p-3">
-                <span className="text-[11px] font-medium text-amber-200">
-                  ✦ Sáo Trúc Âu Cơ · Đào Tạo Chuyên Nghiệp
-                </span>
+            {/* Khối hình ảnh thực tế học viên & lớp học */}
+            <div className="hidden lg:flex items-center gap-3 shrink-0">
+              <div className="space-y-3">
+                <div className="relative w-44 h-32 rounded-2xl overflow-hidden border border-[#E0D5C3] shadow-md group">
+                  <img
+                    src="/class-lesson.jpg"
+                    alt="Giờ học kèm trực tiếp tại trung tâm"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end p-2.5">
+                    <span className="text-[10.5px] font-semibold text-amber-100">
+                      Giờ học kèm 1:1
+                    </span>
+                  </div>
+                </div>
+
+                <div className="relative w-44 h-32 rounded-2xl overflow-hidden border border-[#E0D5C3] shadow-md group">
+                  <img
+                    src="/class-student.jpg"
+                    alt="Học viên luyện tập sáo"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end p-2.5">
+                    <span className="text-[10.5px] font-semibold text-amber-100">
+                      Luyện tập bài bản
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative w-56 h-[268px] rounded-2xl overflow-hidden border border-[#E0D5C3] shadow-lg group">
+                <img
+                  src="/class-group.jpg"
+                  alt="Tập thể học viên Sáo Trúc Âu Cơ"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-3.5">
+                  <span className="text-xs font-bold text-white leading-tight">
+                    Học viên Sáo Trúc Âu Cơ
+                  </span>
+                  <span className="text-[10.5px] text-amber-200 mt-1">
+                    ✦ Lớp học trực tiếp & online
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Khối ảnh học viên trên màn hình di động/tablet */}
+            <div className="flex lg:hidden items-center gap-2.5 overflow-x-auto pb-2 pt-1 w-full">
+              <div className="relative w-36 h-24 rounded-xl overflow-hidden border border-[#E0D5C3] shrink-0 shadow-2xs">
+                <img src="/class-lesson.jpg" alt="Giờ học kèm" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/65 to-transparent flex items-end p-1.5">
+                  <span className="text-[9.5px] font-semibold text-white">Giờ học kèm 1:1</span>
+                </div>
+              </div>
+              <div className="relative w-36 h-24 rounded-xl overflow-hidden border border-[#E0D5C3] shrink-0 shadow-2xs">
+                <img src="/class-student.jpg" alt="Học viên luyện tập" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/65 to-transparent flex items-end p-1.5">
+                  <span className="text-[9.5px] font-semibold text-white">Luyện tập sáo</span>
+                </div>
+              </div>
+              <div className="relative w-44 h-24 rounded-xl overflow-hidden border border-[#E0D5C3] shrink-0 shadow-2xs">
+                <img src="/class-group.jpg" alt="Học viên Âu Cơ" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/65 to-transparent flex items-end p-1.5">
+                  <span className="text-[9.5px] font-semibold text-white">Tập thể học viên</span>
+                </div>
               </div>
             </div>
           </div>
