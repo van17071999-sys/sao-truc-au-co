@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import BrandLogo from "./brand-logo";
 
@@ -251,6 +252,7 @@ const searchIndexItems = [
 ];
 
 export default function HomePage() {
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -1076,52 +1078,56 @@ export default function HomePage() {
                 Không gian học tập và thực hành nhạc cụ dân tộc truyền thống uy tín tại TP.HCM. Đào tạo từ căn bản đến nâng cao cho mọi lứa tuổi, dạy trực tiếp và online.
               </p>
 
-              {/* Social Channels */}
-              <div className="pt-1">
-                <span className="block text-xs font-semibold text-[#8C6E66] uppercase tracking-wider mb-2.5">
-                  Kết nối cùng Âu Cơ:
-                </span>
-                <div className="flex items-center gap-2.5">
-                  <a
-                    href="https://www.youtube.com/@saotrucauco"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-full bg-[#70141D] text-white hover:bg-[#8e1d28] hover:scale-108 flex items-center justify-center transition-all shadow-xs"
-                    aria-label="YouTube"
-                    title="Kênh YouTube Sáo Trúc Âu Cơ"
+              {/* Tra cứu điểm danh học viên */}
+              <div className="pt-2">
+                <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#E0D5C3] shadow-xs space-y-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-[#70141D]/10 text-[#70141D] flex items-center justify-center text-sm font-bold border border-[#70141D]/20 shrink-0">
+                      🎓
+                    </div>
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-bold text-[#70141D] uppercase tracking-wide leading-tight">
+                        Tra Cứu Điểm Danh Học Viên
+                      </h4>
+                      <p className="text-[11px] text-[#8C6E66] mt-0.5">
+                        Xem lịch sử buổi học, học phí & hóa đơn điện tử
+                      </p>
+                    </div>
+                  </div>
+
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const form = e.currentTarget;
+                      const input = (form.elements.namedItem("studentLookup") as HTMLInputElement)?.value.trim();
+                      if (!input) return;
+                      router.push(`/diem-danh?search=${encodeURIComponent(input)}`);
+                    }}
+                    className="space-y-2"
                   >
-                    <i className="fa-brands fa-youtube text-sm"></i>
-                  </a>
-                  <a
-                    href="https://www.facebook.com/saotrucauco"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-full bg-[#70141D] text-white hover:bg-[#8e1d28] hover:scale-108 flex items-center justify-center transition-all shadow-xs"
-                    aria-label="Facebook"
-                    title="Trang Facebook Sáo Trúc Âu Cơ"
-                  >
-                    <i className="fa-brands fa-facebook text-sm"></i>
-                  </a>
-                  <a
-                    href="https://www.tiktok.com/@saotrucauco"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-full bg-[#70141D] text-white hover:bg-[#8e1d28] hover:scale-108 flex items-center justify-center transition-all shadow-xs"
-                    aria-label="TikTok"
-                    title="Kênh TikTok Sáo Trúc Âu Cơ"
-                  >
-                    <i className="fa-brands fa-tiktok text-sm"></i>
-                  </a>
-                  <a
-                    href="https://www.instagram.com/saotrucauco"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-full bg-[#70141D] text-white hover:bg-[#8e1d28] hover:scale-108 flex items-center justify-center transition-all shadow-xs"
-                    aria-label="Instagram"
-                    title="Instagram Sáo Trúc Âu Cơ"
-                  >
-                    <i className="fa-brands fa-instagram text-sm"></i>
-                  </a>
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          name="studentLookup"
+                          required
+                          placeholder="Nhập SĐT hoặc Mã học viên..."
+                          className="w-full pl-8 pr-3 py-2 bg-[#FAF7F2] border border-[#E0D5C3] rounded-xl text-xs text-[#4A3834] placeholder:text-[#A89890] focus:outline-none focus:ring-2 focus:ring-[#70141D] font-medium"
+                        />
+                        <span className="absolute left-2.5 top-2 text-[#A89890] text-xs">🔍</span>
+                      </div>
+                      <button
+                        type="submit"
+                        className="px-4 py-2 bg-[#70141D] hover:bg-[#8e1d28] text-white text-xs font-bold rounded-xl transition-colors shadow-xs shrink-0 cursor-pointer flex items-center gap-1"
+                      >
+                        <span>Tra cứu</span>
+                        <span>→</span>
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-[#8C6E66] italic">
+                      * Nhập đúng số điện thoại đã đăng ký hoặc mã HV để tra cứu nhanh.
+                    </p>
+                  </form>
                 </div>
               </div>
             </div>

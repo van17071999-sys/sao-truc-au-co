@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 // ================= TYPES =================
 export interface AttendanceRecord {
@@ -340,10 +340,17 @@ const INITIAL_TEACHERS: TeacherData[] = [
 type ActiveTab = "hoc-vien" | "lop-hoc" | "lich-day" | "hoa-don" | "giao-vien" | "bao-cao" | "cai-dat";
 
 function StudentPortalContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const rawId = searchParams.get("id") || "";
-  const studentId = rawId ? decodeURIComponent(rawId) : "";
+  const rawSearch = searchParams.get("search") || searchParams.get("phone") || searchParams.get("sdt") || searchParams.get("q") || "";
+  const studentId = rawId ? decodeURIComponent(rawId).trim() : "";
+  const initialSearch = rawSearch ? decodeURIComponent(rawSearch).trim() : "";
   const isAdminParam = searchParams.get("admin") === "1";
+
+  // State cho việc tra cứu học viên linh hoạt theo SĐT hoặc Mã
+  const [lookupInput, setLookupInput] = useState(initialSearch);
+  const [activeLookupQuery, setActiveLookupQuery] = useState(initialSearch);
 
   // Data States (synced with localStorage & auto migrated)
   const [students, setStudents] = useState<StudentData[]>(() => {
@@ -507,11 +514,28 @@ function StudentPortalContent() {
     setTimeout(() => setToastMessage(""), 3500);
   };
 
-  // Học viên xem qua link tra cứu riêng (?id=...)
+  // Học viên xem qua link tra cứu riêng (?id=...) hoặc tra cứu theo SĐT / Mã (?search=...)
   const portalStudent = useMemo(() => {
-    if (!studentId) return null;
-    return students.find((s) => s.id === studentId || s.id === ID_MIGRATION_MAP[studentId]) || null;
-  }, [students, studentId]);
+    // 1. Tìm theo studentId nếu có
+    if (studentId) {
+      const found = students.find((s) => s.id === studentId || s.id === ID_MIGRATION_MAP[studentId]);
+      if (found) return found;
+    }
+
+    // 2. Tìm theo SĐT hoặc Mã học viên người dùng nhập
+    const query = (activeLookupQuery || initialSearch).trim();
+    if (query) {
+      const cleanQ = query.replace(/[\s.-]/g, "").toLowerCase();
+      const found = students.find((s) => {
+        const cleanPhone = s.phone.replace(/[\s.-]/g, "").toLowerCase();
+        const cleanId = s.id.toLowerCase();
+        return cleanPhone === cleanQ || cleanId === cleanQ || s.id === query || ID_MIGRATION_MAP[query] === s.id;
+      });
+      if (found) return found;
+    }
+
+    return null;
+  }, [students, studentId, activeLookupQuery, initialSearch]);
 
   // Học viên đang chọn trong trang quản trị (Admin)
   const currentStudent = useMemo(() => {
@@ -638,25 +662,74 @@ function StudentPortalContent() {
   if (isStudentOnlyView) {
     const student = portalStudent;
 
-    if (!studentId || !student) {
+    if (!student) {
+      const attemptedQuery = (activeLookupQuery || initialSearch || studentId).trim();
       return (
         <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 font-sans">
-          <div className="bg-white max-w-md w-full p-6 sm:p-8 rounded-2xl shadow-xl border border-slate-200 text-center space-y-4">
-            <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto text-2xl border border-rose-100">
-              🔒
+          <div className="bg-white max-w-md w-full p-6 sm:p-8 rounded-2xl shadow-xl border border-slate-200 text-center space-y-5">
+            <div className="w-16 h-16 rounded-full bg-[#4A101D]/10 text-[#4A101D] flex items-center justify-center mx-auto text-2xl border border-[#4A101D]/20">
+              🎓
             </div>
-            <h1 className="text-xl font-bold text-slate-900">
-              {!studentId ? "Tra Cứu Tiến Độ Học Tập" : "Mã Học Viên Không Chính Xác"}
-            </h1>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              {!studentId
-                ? "Hồ sơ điểm danh & lịch sử học tập được bảo mật riêng tư. Vui lòng truy cập theo đường link cá nhân có mã bảo mật 10 ký tự do Sáo Trúc Âu Cơ cung cấp."
-                : "Không tìm thấy dữ liệu học viên với mã đã nhập. Mã bảo mật gồm 10 ký tự ngẫu nhiên kết hợp chữ cái và ký tự đặc biệt để đảm bảo không ai có thể đoán hay truy cập trái phép."}
-            </p>
-            <div className="pt-2">
-              <Link href="/" className="inline-block px-5 py-2.5 bg-[#4A101D] text-white text-xs font-semibold rounded-xl hover:bg-[#681829] transition-colors shadow">
-                ← Về Trang Chủ Sáo Trúc Âu Cơ
+            <div>
+              <h1 className="text-xl font-bold text-slate-900">Tra Cứu Điểm Danh & Học Viên</h1>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                Nhập số điện thoại đã đăng ký học hoặc mã học viên để xem lịch sử buổi học, học phí & hóa đơn.
+              </p>
+            </div>
+
+            {attemptedQuery && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-medium text-left flex items-start gap-2">
+                <span className="shrink-0 text-base">⚠️</span>
+                <span>
+                  Không tìm thấy dữ liệu học viên với thông tin <b>"{attemptedQuery}"</b>. Vui lòng kiểm tra lại số điện thoại đã đăng ký hoặc liên hệ giáo viên để nhận mã chính xác.
+                </span>
+              </div>
+            )}
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const form = e.currentTarget;
+                const val = (form.elements.namedItem("lookup") as HTMLInputElement)?.value.trim();
+                if (!val) return;
+                setActiveLookupQuery(val);
+                router.push(`/diem-danh?search=${encodeURIComponent(val)}`);
+              }}
+              className="space-y-3"
+            >
+              <div className="text-left">
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                  Số điện thoại hoặc Mã học viên *
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="lookup"
+                    required
+                    value={lookupInput}
+                    onChange={(e) => setLookupInput(e.target.value)}
+                    placeholder="Ví dụ: 0934567890 hoặc k9$X_mQ2~P"
+                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-[#4A101D]"
+                  />
+                  <span className="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-[#4A101D] hover:bg-[#681829] text-white text-xs font-bold rounded-xl transition-colors shadow cursor-pointer"
+              >
+                Tra Cứu Thông Tin Học Tập →
+              </button>
+            </form>
+
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <Link href="/" className="hover:text-[#4A101D] transition-colors font-semibold">
+                ← Về Trang Chủ
               </Link>
+              <a href="tel:0374261368" className="hover:text-[#4A101D] transition-colors font-medium">
+                Hotline: 0374 261 368
+              </a>
             </div>
           </div>
         </div>
@@ -689,7 +762,7 @@ function StudentPortalContent() {
                 <p className="text-xs text-white/80 mt-0.5">Sổ Theo Dõi Học Tập & Điểm Danh Điện Tử</p>
               </div>
             </div>
-            <div className="text-center sm:text-right shrink-0">
+            <div className="text-center sm:text-right shrink-0 space-y-1">
               <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
                 student.status === "Đang học" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/30" :
                 student.status === "Bảo lưu" ? "bg-amber-500/20 text-amber-300 border border-amber-400/30" :
@@ -697,7 +770,20 @@ function StudentPortalContent() {
               }`}>
                 ● {student.status}
               </span>
-              <div className="text-[11px] text-white/70 mt-1">Mã HV: <b className="text-white">{student.id}</b></div>
+              <div className="text-[11px] text-white/70">Mã HV: <b className="text-white font-mono">{student.id}</b></div>
+              <div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveLookupQuery("");
+                    setLookupInput("");
+                    router.push("/diem-danh");
+                  }}
+                  className="text-[11px] text-amber-200 hover:text-white underline cursor-pointer inline-block"
+                >
+                  🔍 Tra cứu SĐT/Mã khác
+                </button>
+              </div>
             </div>
           </div>
 
