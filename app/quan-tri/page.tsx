@@ -1258,7 +1258,7 @@ export default function ContentAdmin() {
         slug: "gioi-thieu-admin",
         publishedAt: new Date().toISOString().slice(0, 10),
         excerpt: "Hệ thống thông tin chi tiết về Người sáng lập Sáo Trúc Âu Cơ – Thầy Quách Hạ Văn đang được cập nhật.",
-        imageUrl: "/intro-portrait.jpg|/hero-artist.jpg",
+        imageUrl: "/founder-portrait.jpg",
         tag: "dang-cap-nhat",
         price: "0374 261 368",
         content: "Chức vụ: Chủ nhiệm & Người sáng lập Sáo Trúc Âu Cơ\nHotline: 0374 261 368\nEmail: saotrucauco@gmail.com\nĐịa chỉ: 106/72 Hoà Bình, P. Tân Phú, TP.HCM\nTrích dẫn: Mỗi người đều có thể thổi được những giai điệu đẹp chỉ cần bắt đầu đúng cách.",
@@ -3445,87 +3445,42 @@ export default function ContentAdmin() {
                 </label>
               </div>
 
-              {/* 2 Ảnh: Ảnh 1 (Chân dung chính) & Ảnh 2 (Biểu diễn / Hoạt động) */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                <label>
-                  <span>Ảnh 1: Chân dung chính (URL) *</span>
-                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                    <input
-                      value={(draft.imageUrl || "").split("|")[0] || ""}
-                      onChange={(e) => {
-                        const img2 = (draft.imageUrl || "").split("|")[1] || "";
-                        const newImg1 = e.target.value;
-                        setDraft({ ...draft, imageUrl: img2 ? `${newImg1}|${img2}` : newImg1 });
-                      }}
-                      placeholder="Ví dụ: /intro-portrait.jpg"
-                      style={{ flex: 1 }}
+              {/* Ảnh chân dung duy nhất trên trang này */}
+              <label className="wide">
+                <span>Ảnh đại diện người sáng lập trên trang /gioi-thieu-admin (URL) *</span>
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <input
+                    value={draft.imageUrl || "/founder-portrait.jpg"}
+                    onChange={(e) => setDraft({ ...draft, imageUrl: e.target.value })}
+                    placeholder="Ví dụ: /founder-portrait.jpg"
+                    style={{ flex: 1 }}
+                  />
+                  {(draft.imageUrl || "/founder-portrait.jpg") && (
+                    <img
+                      src={draft.imageUrl || "/founder-portrait.jpg"}
+                      alt="Xem trước"
+                      style={{ width: 44, height: 44, borderRadius: 8, objectFit: "cover", border: "1px solid #cbd5e1" }}
                     />
-                    {((draft.imageUrl || "").split("|")[0] || "/intro-portrait.jpg") && (
-                      <img
-                        src={(draft.imageUrl || "").split("|")[0] || "/intro-portrait.jpg"}
-                        alt="Xem trước Ảnh 1"
-                        style={{ width: 44, height: 44, borderRadius: 8, objectFit: "cover", border: "1px solid #cbd5e1" }}
-                      />
-                    )}
-                  </div>
-                </label>
-
-                <label>
-                  <span>Ảnh 2: Biểu diễn / Hoạt động (URL) *</span>
-                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                    <input
-                      value={(draft.imageUrl || "").split("|")[1] || ""}
-                      onChange={(e) => {
-                        const img1 = (draft.imageUrl || "").split("|")[0] || "/intro-portrait.jpg";
-                        const newImg2 = e.target.value;
-                        setDraft({ ...draft, imageUrl: `${img1}|${newImg2}` });
-                      }}
-                      placeholder="Ví dụ: /hero-artist.jpg hoặc /class-lesson.jpg"
-                      style={{ flex: 1 }}
-                    />
-                    {((draft.imageUrl || "").split("|")[1] || "/hero-artist.jpg") && (
-                      <img
-                        src={(draft.imageUrl || "").split("|")[1] || "/hero-artist.jpg"}
-                        alt="Xem trước Ảnh 2"
-                        style={{ width: 44, height: 44, borderRadius: 8, objectFit: "cover", border: "1px solid #cbd5e1" }}
-                      />
-                    )}
-                  </div>
-                </label>
-              </div>
+                  )}
+                </div>
+              </label>
 
               {/* Gợi ý ảnh nhanh */}
               <div style={{ padding: "10px 14px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 12, color: "#475569", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                <span>💡 <b>Chọn nhanh ảnh có sẵn:</b></span>
+                <span>💡 <b>Gợi ý ảnh:</b></span>
                 <button
                   type="button"
-                  onClick={() => {
-                    const img2 = (draft.imageUrl || "").split("|")[1] || "/hero-artist.jpg";
-                    setDraft({ ...draft, imageUrl: `/intro-portrait.jpg|${img2}` });
-                  }}
+                  onClick={() => setDraft({ ...draft, imageUrl: "/founder-portrait.jpg" })}
                   style={{ padding: "3px 8px", background: "#fff", border: "1px solid #cbd5e1", borderRadius: 4, cursor: "pointer", fontSize: 11 }}
                 >
-                  Ảnh 1: Chân dung THVL (/intro-portrait.jpg)
+                  Ảnh chân dung áo trắng mới (/founder-portrait.jpg)
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    const img1 = (draft.imageUrl || "").split("|")[0] || "/intro-portrait.jpg";
-                    setDraft({ ...draft, imageUrl: `${img1}|/hero-artist.jpg` });
-                  }}
+                  onClick={() => setDraft({ ...draft, imageUrl: "/intro-portrait.jpg" })}
                   style={{ padding: "3px 8px", background: "#fff", border: "1px solid #cbd5e1", borderRadius: 4, cursor: "pointer", fontSize: 11 }}
                 >
-                  Ảnh 2: Biểu diễn sáo (/hero-artist.jpg)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const img1 = (draft.imageUrl || "").split("|")[0] || "/intro-portrait.jpg";
-                    setDraft({ ...draft, imageUrl: `${img1}|/class-lesson.jpg` });
-                  }}
-                  style={{ padding: "3px 8px", background: "#fff", border: "1px solid #cbd5e1", borderRadius: 4, cursor: "pointer", fontSize: 11 }}
-                >
-                  Ảnh 2: Giờ học lớp sáo (/class-lesson.jpg)
+                  Ảnh biểu diễn THVL (/intro-portrait.jpg)
                 </button>
               </div>
 
@@ -3556,28 +3511,15 @@ export default function ContentAdmin() {
               {/* Live Preview Card */}
               <div style={{ padding: "16px 20px", background: "#FAF6F0", border: "1px solid #D9C4A6", borderRadius: 12 }}>
                 <small style={{ display: "block", color: "#70141D", fontWeight: 800, letterSpacing: "0.08em", marginBottom: 10 }}>
-                  ✦ XEM TRƯỚC GIAO DIỆN (LIVE PREVIEW - HIỂN THỊ CẢ 2 ẢNH):
+                  ✦ XEM TRƯỚC GIAO DIỆN (LIVE PREVIEW):
                 </small>
-                <div style={{ display: "flex", gap: 16, alignItems: "center", background: "#fff", padding: 16, borderRadius: 10, border: "1px solid #EADBCA", flexWrap: "wrap" }}>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <div style={{ textAlign: "center" }}>
-                      <img
-                        src={(draft.imageUrl || "").split("|")[0] || "/intro-portrait.jpg"}
-                        alt="Ảnh 1"
-                        style={{ width: 64, height: 64, borderRadius: 12, objectFit: "cover", border: "2px solid #70141D" }}
-                      />
-                      <span style={{ fontSize: 9.5, color: "#70141D", fontWeight: 700, display: "block", marginTop: 2 }}>Ảnh 1</span>
-                    </div>
-                    <div style={{ textAlign: "center" }}>
-                      <img
-                        src={(draft.imageUrl || "").split("|")[1] || "/hero-artist.jpg"}
-                        alt="Ảnh 2"
-                        style={{ width: 64, height: 64, borderRadius: 12, objectFit: "cover", border: "2px solid #166534" }}
-                      />
-                      <span style={{ fontSize: 9.5, color: "#166534", fontWeight: 700, display: "block", marginTop: 2 }}>Ảnh 2</span>
-                    </div>
-                  </div>
-                  <div style={{ flex: 1, minWidth: 200 }}>
+                <div style={{ display: "flex", gap: 16, alignItems: "center", background: "#fff", padding: 16, borderRadius: 10, border: "1px solid #EADBCA" }}>
+                  <img
+                    src={draft.imageUrl || "/founder-portrait.jpg"}
+                    alt="Chân dung"
+                    style={{ width: 64, height: 64, borderRadius: 12, objectFit: "cover", border: "2px solid #70141D" }}
+                  />
+                  <div style={{ flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <strong style={{ fontSize: 15, color: "#2B2624" }}>{draft.title || "Thầy Quách Hạ Văn"}</strong>
                       <span style={{ fontSize: 10.5, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: draft.tag === "hien-thi" ? "#dcfce7" : "#fef3c7", color: draft.tag === "hien-thi" ? "#166534" : "#92400e" }}>
