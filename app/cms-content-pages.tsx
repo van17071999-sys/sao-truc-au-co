@@ -304,29 +304,360 @@ export function FluteDetail() {
 export function NewsIndex({ initialEntries }: { initialEntries?: CmsEntry[] }) {
   const { t, translate } = useLanguage();
   const entries = useCmsEntries("articles", initialEntries);
-  return <main className="subject-page content-page">
-    <ContentHeader />
-    <section className="content-list-hero"><p className="eyebrow">{t("BÀI VIẾT · BLOG · CHIA SẺ", "ARTICLES · BLOG · KNOWLEDGE")}</p><h1>{t("Bài viết", "Articles")}</h1><p>{t("Bài viết về sáo trúc, kỹ thuật luyện tập, chọn nhạc cụ và âm nhạc dân tộc.", "Guides on bamboo flute practice, technique mastery, instrument selection, and traditional music.")}</p></section>
-    <section className="content-index">
-      {entries === null ? <p className="content-state">{t("Đang tải bài viết…", "Loading articles…")}</p> : entries.length ? <div className="article-grid">{entries.map((entry, index) => <article key={entry.id}>
-        <div className={`article-visual ${entry.imageUrl ? "has-image" : ""}`}>
-          {entry.imageUrl ? (
-            <>
-              <img src={entry.imageUrl} alt={entry.title} className="article-visual-img" onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }} />
-              <span>{String(index + 1).padStart(2, "0")}</span>
-            </>
-          ) : (
-            <>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <b>♪</b>
-            </>
+
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [selectedTag, setSelectedTag] = useState("all");
+
+  const defaultImages = [
+    "/inst-saotruc.jpg",
+    "/inst-dizi.jpg",
+    "/inst-dongtieu.jpg",
+    "/inst-saomeo.jpg",
+    "/classroom-01.jpg",
+    "/classroom-02.jpg",
+  ];
+
+  // Danh mục phân loại chuẩn theo mẫu daythoisao.com
+  const standardCategories = [
+    "Nhập môn sáo trúc",
+    "Kỹ thuật hơi & Khẩu hình",
+    "Cách chọn & Bảo quản sáo",
+    "Nhạc lý & Cảm âm",
+    "Biểu diễn nâng cao",
+  ];
+
+  // Tổng hợp tất cả các tag từ bài viết + danh mục chuẩn
+  const allTags = useMemo(() => {
+    const list: string[] = [];
+    standardCategories.forEach((cat) => list.push(cat));
+    (entries || []).forEach((e) => {
+      if (e.tag && e.tag.trim() && !list.some((it) => it.toLowerCase() === e.tag.toLowerCase())) {
+        list.push(e.tag.trim());
+      }
+    });
+    return list;
+  }, [entries]);
+
+  // Lọc bài viết theo danh mục và từ khóa tìm kiếm
+  const filteredEntries = useMemo(() => {
+    if (!entries) return [];
+    return entries.filter((entry) => {
+      // Lọc theo danh mục
+      if (selectedTag !== "all") {
+        const entryTag = (entry.tag || "").toLowerCase().trim();
+        const targetTag = selectedTag.toLowerCase().trim();
+        const matchTag = entryTag === targetTag || entryTag.includes(targetTag) || targetTag.includes(entryTag);
+        if (!matchTag) return false;
+      }
+
+      // Lọc theo từ khóa tìm kiếm
+      if (searchKeyword.trim()) {
+        const kw = searchKeyword.toLowerCase().trim();
+        const inTitle = (entry.title || "").toLowerCase().includes(kw);
+        const inExcerpt = (entry.excerpt || "").toLowerCase().includes(kw);
+        const inTag = (entry.tag || "").toLowerCase().includes(kw);
+        const inContent = (entry.content || "").toLowerCase().includes(kw);
+        if (!inTitle && !inExcerpt && !inTag && !inContent) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [entries, selectedTag, searchKeyword]);
+
+  // Ước lượng thời gian đọc theo số lượng từ
+  const getReadingTime = (content?: string, excerpt?: string) => {
+    const text = (content || "") + " " + (excerpt || "");
+    const words = text.trim().split(/\s+/).filter(Boolean).length;
+    return Math.max(3, Math.min(15, Math.ceil(words / 140)));
+  };
+
+  return (
+    <main className="subject-page content-page bg-[#FAF7F2] min-h-screen text-[#4A3834] font-sans antialiased">
+      <ContentHeader />
+
+      {/* Hero Header */}
+      <section className="pt-8 sm:pt-12 pb-6 sm:pb-8 px-4 max-w-5xl mx-auto text-center space-y-3">
+        <p className="text-xs uppercase tracking-widest font-bold text-[#A87932]">
+          {t("BÀI VIẾT · BLOG · CHIA SẺ", "ARTICLES · BLOG · KNOWLEDGE")}
+        </p>
+        <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-[#70141D] leading-tight">
+          {t("Bài Viết & Kiến Thức Sáo Trúc", "Flute Articles & Knowledge")}
+        </h1>
+        <p className="text-xs sm:text-sm text-[#6B5751] max-w-2xl mx-auto leading-relaxed">
+          {t(
+            "Cẩm nang kinh nghiệm luyện thổi sáo, kỹ thuật kiểm soát cột hơi, bấm ngón, nhạc lý cảm âm và bí quyết chọn mua nhạc cụ chuẩn hòa tấu.",
+            "Complete guides on bamboo flute practice, breath control, finger technique, music theory, and instrument selection."
           )}
+        </p>
+      </section>
+
+      {/* Main Content Area */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-8 sm:space-y-10">
+        {/* 1. KHUNG TÌM KIẾM & DANH MỤC LỌC (CHUẨN FORM DAYTHOISAO.COM) */}
+        <div className="bg-white rounded-2xl p-5 sm:p-7 border border-[#E0D5C3] shadow-xs space-y-5">
+          {/* Hàng trên: Input tìm kiếm + Đếm số bài viết */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+            <div className="relative flex-1 max-w-md">
+              <input
+                type="text"
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                placeholder="Tìm kiếm bài viết theo từ khóa..."
+                className="w-full pl-9 pr-8 py-2.5 bg-[#FAF7F2] border border-[#E0D5C3] rounded-xl text-xs sm:text-sm text-[#4A3834] placeholder:text-[#A89890] focus:outline-none focus:ring-2 focus:ring-[#70141D] font-medium transition-all"
+              />
+              <span className="absolute left-3 top-2.5 text-[#A89890] text-sm">🔍</span>
+              {searchKeyword && (
+                <button
+                  type="button"
+                  onClick={() => setSearchKeyword("")}
+                  className="absolute right-3 top-2.5 text-xs text-slate-400 hover:text-slate-600 cursor-pointer"
+                  title="Xóa từ khóa tìm kiếm"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            <div className="text-xs text-slate-500 font-medium sm:text-right shrink-0">
+              Hiển thị <b className="text-[#70141D] font-bold">{filteredEntries.length}</b> bài viết
+            </div>
+          </div>
+
+          {/* Hàng dưới: Thanh nút thẻ lọc danh mục bài viết */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none flex-wrap">
+            <button
+              type="button"
+              onClick={() => setSelectedTag("all")}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                selectedTag === "all"
+                  ? "bg-[#70141D] text-white shadow-xs font-bold"
+                  : "bg-[#FAF7F2] hover:bg-[#F2ECE1] text-[#6B5751] border border-[#EADBCA]/80"
+              }`}
+            >
+              Tất cả bài viết
+            </button>
+
+            {allTags.map((tag) => {
+              const isSelected = selectedTag.toLowerCase() === tag.toLowerCase();
+              return (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => setSelectedTag(tag)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                    isSelected
+                      ? "bg-[#70141D] text-white shadow-xs font-bold"
+                      : "bg-[#FAF7F2] hover:bg-[#F2ECE1] text-[#6B5751] border border-[#EADBCA]/80"
+                  }`}
+                >
+                  {tag}
+                </button>
+              );
+            })}
+          </div>
         </div>
-        <div className="article-body"><small>{translate(entry.tag)} · {entry.publishedAt ? new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN") : ""}</small><h3>{translate(entry.title)}</h3><p>{translate(entry.excerpt)}</p><Link href={`/bai-viet/${entry.slug}`}>{t("Đọc bài viết", "Read article")} <span>→</span></Link></div>
-      </article>)}</div> : <p className="content-state">{t("Chưa có bài viết nào được đăng.", "No articles published yet.")}</p>}
-    </section>
-    <ContentFooter />
-  </main>;
+
+        {/* 2. LƯỚI BÀI VIẾT 3 CỘT (CARD STYLE DAYTHOISAO.COM) */}
+        {entries === null ? (
+          <div className="py-20 text-center text-slate-400 italic font-medium">Đang tải danh sách bài viết…</div>
+        ) : filteredEntries.length === 0 ? (
+          <div className="bg-white rounded-2xl p-12 border border-[#E0D5C3] text-center space-y-3 shadow-xs">
+            <div className="text-3xl">🔍</div>
+            <h3 className="font-bold text-slate-800 text-base">Không tìm thấy bài viết nào phù hợp</h3>
+            <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+              Thử tìm kiếm với từ khóa khác hoặc bấm nút "Tất cả bài viết" để xem danh sách đầy đủ.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedTag("all");
+                setSearchKeyword("");
+              }}
+              className="mt-2 px-4 py-2 bg-[#70141D] hover:bg-[#8e1d28] text-white text-xs font-bold rounded-xl transition-colors cursor-pointer shadow-xs"
+            >
+              Xem tất cả bài viết
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            {filteredEntries.map((entry, idx) => {
+              const fallbackImg = defaultImages[idx % defaultImages.length];
+              const displayImg = entry.imageUrl || fallbackImg;
+              const dateStr = entry.publishedAt
+                ? new Date(`${entry.publishedAt}T00:00:00`).toISOString().slice(0, 10)
+                : "2026-08-20";
+              const readTime = getReadingTime(entry.content, entry.excerpt);
+              const categoryBadge = entry.tag || "NHẬP MÔN SÁO TRÚC";
+
+              return (
+                <article
+                  key={entry.id}
+                  className="bg-white rounded-2xl border border-[#E5DCD3] shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col group"
+                >
+                  {/* Thumbnail & Floating Category Badge */}
+                  <div className="relative aspect-[16/10] overflow-hidden bg-[#FAF7F2]">
+                    <Link href={`/bai-viet/${entry.slug}`} className="block w-full h-full">
+                      <img
+                        src={displayImg}
+                        alt={entry.title}
+                        className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = "/inst-saotruc.jpg";
+                        }}
+                      />
+                    </Link>
+
+                    {/* Floating Badge góc trên bên trái ảnh */}
+                    <div className="absolute top-3 left-3 z-10">
+                      <span className="inline-block px-3 py-1 bg-[#70141D]/95 backdrop-blur-xs text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-md border border-white/20">
+                        {categoryBadge}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Body Nội dung bài viết */}
+                  <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between space-y-3">
+                    <div className="space-y-2">
+                      {/* Ngày đăng & Thời gian đọc */}
+                      <div className="text-[11px] text-slate-400 font-medium flex items-center gap-2">
+                        <span>📅 {dateStr}</span>
+                        <span>•</span>
+                        <span>⏱ {readTime} phút đọc</span>
+                      </div>
+
+                      {/* Tiêu đề bài viết */}
+                      <h3 className="font-serif font-bold text-base sm:text-lg text-slate-900 group-hover:text-[#70141D] transition-colors leading-snug line-clamp-2">
+                        <Link href={`/bai-viet/${entry.slug}`}>
+                          {translate(entry.title)}
+                        </Link>
+                      </h3>
+
+                      {/* Mô tả tóm tắt */}
+                      <p className="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-3">
+                        {translate(entry.excerpt) || (entry.content ? entry.content.slice(0, 130) + "..." : "")}
+                      </p>
+                    </div>
+
+                    {/* Footer của Thẻ: Tác giả & Đọc tiếp */}
+                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between mt-auto">
+                      <span className="text-xs font-semibold text-[#70141D] flex items-center gap-1.5">
+                        <span>✎</span>
+                        <span>Sáo Trúc Âu Cơ</span>
+                      </span>
+
+                      <Link
+                        href={`/bai-viet/${entry.slug}`}
+                        className="px-3 py-1 rounded-lg bg-amber-50 group-hover:bg-[#70141D] text-amber-900 group-hover:text-white border border-amber-200/80 text-xs font-bold transition-all flex items-center gap-1"
+                      >
+                        <span>Đọc tiếp</span>
+                        <span>→</span>
+                      </Link>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+
+        {/* 3. INTERNAL LINKS SECTION Ở DƯỚI: ĐĂNG KÝ HỌC, MUA SÁO, MUA GIÁO TRÌNH */}
+        <section className="mt-14 pt-10 border-t border-[#EADBCA] space-y-6">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <span className="text-xs uppercase tracking-widest font-bold text-[#A87932] block">
+              ✦ HỆ SINH THÁI ĐÀO TẠO & NHẠC CỤ ✦
+            </span>
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#70141D]">
+              Khám Phá Thêm Cùng Sáo Trúc Âu Cơ
+            </h2>
+            <p className="text-xs sm:text-sm text-[#6B5751] leading-relaxed">
+              Trung tâm hỗ trợ trọn gói từ khóa học sáo bài bản, cung cấp nhạc cụ hòa tấu chuẩn âm đến bộ giáo trình và sheet cảm âm độc quyền.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Internal Link 1: Đăng ký học */}
+            <Link
+              href="/dang-ky-hoc"
+              className="group bg-white rounded-2xl p-6 border border-[#E0D5C3] shadow-xs hover:shadow-xl hover:border-[#70141D]/40 transition-all flex flex-col justify-between space-y-4"
+            >
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-[#70141D]/10 text-[#70141D] flex items-center justify-center text-2xl border border-[#70141D]/20 group-hover:scale-110 transition-transform">
+                  🎓
+                </div>
+                <span className="text-[10px] uppercase tracking-wider font-bold text-[#A87932] block">
+                  ĐÀO TẠO CHUYÊN NGHIỆP
+                </span>
+                <h3 className="font-serif text-lg font-bold text-slate-900 group-hover:text-[#70141D] transition-colors leading-snug">
+                  Đăng Ký Học Sáo Trúc
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Các lớp học sáo trực tiếp tại Tân Phú, TP.HCM & Học Online 1 kèm 1 cho mọi độ tuổi từ chưa biết gì đến nâng cao.
+                </p>
+              </div>
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#70141D] group-hover:translate-x-1 transition-transform">
+                <span>Đăng ký học ngay</span>
+                <span>→</span>
+              </div>
+            </Link>
+
+            {/* Internal Link 2: Mua sáo */}
+            <Link
+              href="/sao-va-phu-kien"
+              className="group bg-white rounded-2xl p-6 border border-[#E0D5C3] shadow-xs hover:shadow-xl hover:border-[#70141D]/40 transition-all flex flex-col justify-between space-y-4"
+            >
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-[#70141D]/10 text-[#70141D] flex items-center justify-center text-2xl border border-[#70141D]/20 group-hover:scale-110 transition-transform">
+                  🎋
+                </div>
+                <span className="text-[10px] uppercase tracking-wider font-bold text-[#A87932] block">
+                  NHẠC CỤ CHUẨN HÒA TẤU
+                </span>
+                <h3 className="font-serif text-lg font-bold text-slate-900 group-hover:text-[#70141D] transition-colors leading-snug">
+                  Mua Sáo Trúc & Phụ Kiện
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Cung cấp sáo nứa Bắc, nứa Nam, sáo trúc hun, sáo Dizi, động tiêu, sáo mèo chuẩn âm hòa tấu, bảo hành trọn đời.
+                </p>
+              </div>
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#70141D] group-hover:translate-x-1 transition-transform">
+                <span>Xem kho sáo & phụ kiện</span>
+                <span>→</span>
+              </div>
+            </Link>
+
+            {/* Internal Link 3: Mua giáo trình & sheet */}
+            <Link
+              href="/giao-trinh-va-sheet"
+              className="group bg-white rounded-2xl p-6 border border-[#E0D5C3] shadow-xs hover:shadow-xl hover:border-[#70141D]/40 transition-all flex flex-col justify-between space-y-4"
+            >
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-[#70141D]/10 text-[#70141D] flex items-center justify-center text-2xl border border-[#70141D]/20 group-hover:scale-110 transition-transform">
+                  🎼
+                </div>
+                <span className="text-[10px] uppercase tracking-wider font-bold text-[#A87932] block">
+                  TÀI LIỆU & SHEET NHẠC
+                </span>
+                <h3 className="font-serif text-lg font-bold text-slate-900 group-hover:text-[#70141D] transition-colors leading-snug">
+                  Mua Giáo Trình & Sheet Nhạc
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Tuyển tập giáo trình tự học thổi sáo, kho sheet nhạc có cảm âm nốt chuẩn kèm beat và video luyện tập dễ hiểu.
+                </p>
+              </div>
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#70141D] group-hover:translate-x-1 transition-transform">
+                <span>Khám phá giáo trình & sheet</span>
+                <span>→</span>
+              </div>
+            </Link>
+          </div>
+        </section>
+      </div>
+
+      <ContentFooter />
+    </main>
+  );
 }
 
 export function parseInlineArticleFormatting(source: string): ReactNode[] {
