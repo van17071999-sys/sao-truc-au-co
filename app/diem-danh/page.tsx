@@ -347,17 +347,10 @@ function StudentPortalContent() {
     return DEFAULT_SETTINGS;
   });
 
-  // Admin authentication state
-  const [isAdmin, setIsAdmin] = useState<boolean>(isAdminParam);
+  // Thanh quản trị (sidebar 7 mục) CHỈ HIỆN trong phần quản trị (khi có ?admin=1 và KHÔNG CÓ ?id=...)!
+  // Khi mở link học viên (?id=HV-...), 100% người xem chỉ thấy duy nhất trang cá nhân, TUYỆT ĐỐI KHÔNG CÓ SIDEBAR.
+  const isAdmin = isAdminParam && !studentId;
 
-  useEffect(() => {
-    // Check if user has active CMS admin session
-    fetch("/api/cms/admin", { credentials: "same-origin" })
-      .then((res) => {
-        if (res.ok) setIsAdmin(true);
-      })
-      .catch(() => {});
-  }, []);
 
   // Save to localStorage when state changes
   useEffect(() => {
