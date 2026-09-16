@@ -81,6 +81,8 @@ const exactPhraseMap: Record<string, string> = {
 
   "Thu âm & quay video": "Audio Recording & Music Videos",
   "THU ÂM & QUAY VIDEO": "AUDIO RECORDING & MUSIC VIDEOS",
+  "Thu Âm & Quay MV": "Audio Recording & Music Videos",
+  "THU ÂM & QUAY MV": "AUDIO RECORDING & MUSIC VIDEOS",
   "AUDIO RECORDING & MUSIC VIDEOS": "AUDIO RECORDING & MUSIC VIDEOS",
   "Thu âm, mixing, quay hình và dựng video chỉn chu cho học viên, nghệ sĩ.": "Multi-track audio recording, mixing, filming, and video editing for students and artists.",
   "Xem các gói": "View Packages",

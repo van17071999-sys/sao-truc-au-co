@@ -90,50 +90,50 @@ const whyChooseUsList = [
 const servicesList = [
   {
     icon: "fa-solid fa-users",
-    title: "Lớp học các bộ môn",
-    desc: "Học trực tiếp & online",
+    title: "Lớp Học Các Bộ Môn",
+    desc: "Học Trực Tiếp & Online",
     href: "/lop-hoc",
   },
   {
     icon: "fa-solid fa-calendar-check",
-    title: "Đăng ký lớp học",
-    desc: "Tư vấn & xếp lớp nhanh",
+    title: "Đăng Ký Lớp Học",
+    desc: "Tư Vấn & Xếp Lớp Nhanh",
     href: "/dang-ky-hoc",
   },
   {
     icon: "fa-solid fa-wand-magic-sparkles",
-    title: "Sáo & phụ kiện",
-    desc: "Sáo chất lượng, phụ kiện chính hãng",
+    title: "Sáo & Phụ Kiện",
+    desc: "Sáo Chất Lượng, Phụ Kiện Chính Hãng",
     href: "/sao-va-phu-kien",
   },
   {
     icon: "fa-solid fa-circle-play",
-    title: "Khóa học quay sẵn",
-    desc: "Học mọi lúc, mọi nơi",
+    title: "Khóa Học Quay Sẵn",
+    desc: "Học Mọi Lúc, Mọi Nơi",
     href: "/khoa-hoc-quay-san",
   },
   {
     icon: "fa-solid fa-book-open",
-    title: "Giáo trình & sheet",
-    desc: "Tài liệu bài bản, dễ hiểu",
+    title: "Giáo Trình & Sheet",
+    desc: "Tài Liệu Bài Bản, Dễ Hiểu",
     href: "/giao-trinh-va-sheet",
   },
   {
     icon: "fa-solid fa-microphone-lines",
-    title: "Thu âm & quay video",
-    desc: "Ghi lại hành trình âm nhạc",
+    title: "Thu Âm & Quay MV",
+    desc: "Ghi Lại Hành Trình Âm Nhạc",
     href: "/thu-am-va-quay-video",
   },
   {
     icon: "fa-solid fa-people-group",
-    title: "Booking nghệ sĩ",
-    desc: "Biểu diễn, sự kiện, giao lưu",
+    title: "Booking Nghệ Sĩ",
+    desc: "Biểu Diễn, Sự Kiện, Giao Lưu",
     href: "/booking-nghe-si",
   },
   {
     icon: "fa-solid fa-sliders",
-    title: "Thu âm nhạc cụ thật",
-    desc: "Âm thanh mộc mạc, chân thực",
+    title: "Thu Âm Nhạc Cụ Thật",
+    desc: "Âm Thanh Mộc Mạc, Chân Thực",
     href: "/thu-am-nhac-cu-that",
   },
 ];
@@ -745,21 +745,21 @@ export default function HomePage() {
           </div>
 
           {/* 8 Services Grid (4x2) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-4.5">
             {servicesList.map((srv, idx) => (
               <Link
                 key={idx}
                 href={srv.href}
-                className="group p-4 bg-white rounded-xl border border-[#ECE5DC] hover:border-[#70141D] hover:shadow-2xs transition-all flex items-center gap-3.5"
+                className="group p-4 sm:p-5 bg-white rounded-2xl border border-[#E2D8CC] hover:border-[#70141D] shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-4"
               >
-                <div className="w-10 h-10 rounded-lg bg-red-50 text-[#70141D] flex items-center justify-center text-base shrink-0 border border-red-100 group-hover:bg-[#70141D] group-hover:text-white transition-colors">
+                <div className="w-12 h-12 rounded-xl bg-red-50/90 text-[#70141D] flex items-center justify-center text-xl shrink-0 border border-red-100 group-hover:bg-[#70141D] group-hover:text-white group-hover:scale-105 transition-all duration-200 shadow-2xs">
                   <i className={srv.icon}></i>
                 </div>
-                <div className="space-y-0.5 min-w-0">
-                  <h3 className="font-serif font-bold text-xs sm:text-[13.5px] text-[#70141D] group-hover:text-[#5a0e16] transition-colors truncate">
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-serif font-bold text-base sm:text-[17px] text-[#70141D] group-hover:text-[#8C1B26] transition-colors leading-snug line-clamp-1">
                     {srv.title}
                   </h3>
-                  <p className="text-[11px] text-[#6B605A] leading-tight">
+                  <p className="text-xs sm:text-[13px] text-[#6B605A] leading-relaxed font-medium mt-1 line-clamp-1">
                     {srv.desc}
                   </p>
                 </div>
