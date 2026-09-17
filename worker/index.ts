@@ -380,6 +380,278 @@ async function notifyCmsUpdate(env: Env, entry: { title: string; collection: str
   }
 }
 
+async function ensureStudentPortalSchema(db: D1Database) {
+  await db.prepare(`CREATE TABLE IF NOT EXISTS student_portal_state (
+    key TEXT PRIMARY KEY,
+    data TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )`).run();
+}
+
+const initialStudentPortalStudents = [
+  {
+    id: "6-DyqX6a46",
+    name: "Huỳnh Tân Anh",
+    status: "Đang học",
+    phone: "0315478568",
+    course: "Sáo trúc cơ bản",
+    packageSessions: 4,
+    tuition: "1.200.000",
+    attendedSessions: 1,
+    classId: "LOP-01",
+    teacherName: "Quách Hạ Văn",
+    invoiceCode: "HD-2026-6-DyqX6a46",
+    invoiceDate: "26/07/2026",
+    unitPrice: "300.000đ",
+    totalAmount: "1.200.000",
+    paidAmount: "1.200.000",
+    debtAmount: "0đ",
+    paymentStatus: "Đã thanh toán",
+    attendanceList: [
+      { date: "26/07/2026", time: "10:00", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+    ],
+  },
+  {
+    id: "6tgYL+Xq$x",
+    name: "Khang",
+    status: "Đang học",
+    phone: "0939154789",
+    course: "Sáo trúc cơ bản",
+    packageSessions: 8,
+    tuition: "2.400.000đ",
+    attendedSessions: 5,
+    classId: "LOP-01",
+    teacherName: "Quách Hạ Văn",
+    invoiceCode: "HD-2026-6tgYL+Xq$x",
+    invoiceDate: "23/07/2026",
+    unitPrice: "300.000đ",
+    totalAmount: "2.400.000đ",
+    paidAmount: "2.400.000đ",
+    debtAmount: "0đ",
+    paymentStatus: "Đã thanh toán",
+    attendanceList: [
+      { date: "31/08/2026", time: "17:52", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+      { date: "21/08/2026", time: "17:52", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+      { date: "12/08/2026", time: "17:52", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+      { date: "28/07/2026", time: "17:52", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+      { date: "23/07/2026", time: "17:52", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+    ],
+  },
+  {
+    id: "Gy6AbN_-kY",
+    name: "Anh Thắng",
+    status: "Đang học",
+    phone: "0315478641",
+    course: "Sáo trúc cơ bản",
+    packageSessions: 8,
+    tuition: "2.400.000đ",
+    attendedSessions: 6,
+    classId: "LOP-01",
+    teacherName: "Quách Hạ Văn",
+    invoiceCode: "HD-2026-Gy6AbN_-kY",
+    invoiceDate: "29/07/2026",
+    unitPrice: "300.000đ",
+    totalAmount: "2.400.000đ",
+    paidAmount: "2.400.000đ",
+    debtAmount: "0đ",
+    paymentStatus: "Đã thanh toán",
+    attendanceList: [
+      { date: "15/09/2026", time: "20:00", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+      { date: "04/09/2026", time: "20:00", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+      { date: "29/08/2026", time: "17:48", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+      { date: "08/08/2026", time: "17:48", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+      { date: "05/08/2026", time: "17:48", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+      { date: "29/07/2026", time: "20:00", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+    ],
+  },
+  {
+    id: "Nmpz4*pD~*",
+    name: "Tâm Như",
+    status: "Đang học",
+    phone: "0939197520",
+    course: "Sáo trúc cơ bản",
+    packageSessions: 8,
+    tuition: "2.400.000đ",
+    attendedSessions: 1,
+    classId: "LOP-01",
+    teacherName: "Quách Hạ Văn",
+    invoiceCode: "HD-2026-Nmpz4*pD~*",
+    invoiceDate: "15/09/2026",
+    unitPrice: "300.000đ",
+    totalAmount: "2.400.000đ",
+    paidAmount: "2.400.000đ",
+    debtAmount: "0đ",
+    paymentStatus: "Đã thanh toán",
+    attendanceList: [
+      { date: "15/09/2026", time: "09:00", status: "Đã học", note: "- Tập thổi kêu, cắm sáo, lấy hơi, đánh lưỡi đơn - BT Hot Cross Buns", teacher: "Quách Hạ Văn" },
+    ],
+  },
+  {
+    id: "DHNT$6H2bL",
+    name: "Chị Quỳnh",
+    status: "Đang học",
+    phone: "000011112345",
+    course: "Sáo trúc cơ bản",
+    packageSessions: 8,
+    tuition: "2.400.000đ",
+    attendedSessions: 0,
+    classId: "LOP-01",
+    teacherName: "Quách Hạ Văn",
+    invoiceCode: "HD-2026-DHNT$6H2bL",
+    invoiceDate: "15/09/2026",
+    unitPrice: "300.000đ",
+    totalAmount: "2.400.000đ",
+    paidAmount: "2.400.000đ",
+    debtAmount: "0đ",
+    paymentStatus: "Đã thanh toán",
+    attendanceList: [],
+  },
+];
+
+const initialStudentPortalClasses = [
+  {
+    id: "LOP-01",
+    name: "Sáo trúc cơ bản",
+    teacher: "Quách Hạ Văn",
+    scheduleTime: "Lịch linh động",
+    status: "Đang mở",
+    studentIds: ["DHNT$6H2bL", "6-DyqX6a46", "6tgYL+Xq$x", "Gy6AbN_-kY", "Nmpz4*pD~*"],
+  },
+];
+
+const initialStudentPortalTeachers = [
+  {
+    id: "GV-01",
+    name: "Quách Hạ Văn",
+    phone: "0374 261 368",
+    disciplines: "Sáo trúc Việt Nam, Sáo mèo, Sáo Dizi",
+    classes: ["LOP-01"],
+  },
+];
+
+const initialStudentPortalSettings = {
+  centerName: "Sáo Trúc Âu Cơ",
+  hotline: "0374 261 368",
+  address: "106/72 Hòa Bình, Tân Phú, Hồ Chí Minh, Việt Nam",
+  bankName: "STB · Sacombank",
+  bankAccount: "030046023451",
+  accountName: "QUACH HA VAN",
+  invoicePrefix: "HD-2026-",
+  defaultPackages: "4, 8, 12, 16, 24",
+  policyNote: "Học phí đã đăng ký không hoàn lại dưới mọi hình thức; số buổi còn lại được bảo lưu; thời hạn bảo lưu tùy từng trường hợp nghỉ học và giáo viên sẽ thông báo cụ thể.",
+  telegramBotToken: "",
+  telegramChatId: "",
+  notifyTelegramOnAttendance: true,
+};
+
+async function handleStudentPortal(request: Request, env: Env, url: URL): Promise<Response | null> {
+  if (!url.pathname.startsWith("/api/students/")) return null;
+  if (!env.DB) return Response.json({ error: "Database is unavailable" }, { status: 503 });
+
+  await ensureStudentPortalSchema(env.DB);
+
+  if (url.pathname === "/api/students/data" && request.method === "GET") {
+    const rows = await env.DB.prepare("SELECT key, data FROM student_portal_state").all<{ key: string; data: string }>();
+    const stateMap: Record<string, any> = {};
+    for (const r of rows.results || []) {
+      try {
+        stateMap[r.key] = JSON.parse(r.data);
+      } catch {
+        stateMap[r.key] = r.data;
+      }
+    }
+
+    if (!stateMap.students || !Array.isArray(stateMap.students) || stateMap.students.length === 0) {
+      const now = new Date().toISOString();
+      await env.DB.batch([
+        env.DB.prepare("INSERT OR REPLACE INTO student_portal_state (key, data, updated_at) VALUES ('students', ?, ?)").bind(JSON.stringify(initialStudentPortalStudents), now),
+        env.DB.prepare("INSERT OR REPLACE INTO student_portal_state (key, data, updated_at) VALUES ('classes', ?, ?)").bind(JSON.stringify(initialStudentPortalClasses), now),
+        env.DB.prepare("INSERT OR REPLACE INTO student_portal_state (key, data, updated_at) VALUES ('schedules', ?, ?)").bind(JSON.stringify([]), now),
+        env.DB.prepare("INSERT OR REPLACE INTO student_portal_state (key, data, updated_at) VALUES ('teachers', ?, ?)").bind(JSON.stringify(initialStudentPortalTeachers), now),
+        env.DB.prepare("INSERT OR REPLACE INTO student_portal_state (key, data, updated_at) VALUES ('settings', ?, ?)").bind(JSON.stringify(initialStudentPortalSettings), now),
+      ]);
+      return Response.json({
+        ok: true,
+        data: {
+          students: initialStudentPortalStudents,
+          classes: initialStudentPortalClasses,
+          schedules: [],
+          teachers: initialStudentPortalTeachers,
+          settings: initialStudentPortalSettings,
+        },
+      }, {
+        headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+      });
+    }
+
+    return Response.json({
+      ok: true,
+      data: {
+        students: stateMap.students || [],
+        classes: stateMap.classes || [],
+        schedules: stateMap.schedules || [],
+        teachers: stateMap.teachers || [],
+        settings: stateMap.settings || initialStudentPortalSettings,
+      },
+    }, {
+      headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+    });
+  }
+
+  if (url.pathname === "/api/students/sync" && request.method === "POST") {
+    const payload = await request.json().catch(() => null) as Record<string, unknown> | null;
+    if (!payload || typeof payload !== "object") {
+      return Response.json({ error: "Invalid payload" }, { status: 400 });
+    }
+
+    const now = new Date().toISOString();
+    const statements = [];
+
+    for (const key of ["students", "classes", "schedules", "teachers", "settings"]) {
+      if (key in payload && payload[key] !== undefined) {
+        statements.push(
+          env.DB.prepare("INSERT OR REPLACE INTO student_portal_state (key, data, updated_at) VALUES (?, ?, ?)")
+            .bind(key, JSON.stringify(payload[key]), now)
+        );
+      }
+    }
+
+    if (statements.length > 0) {
+      await env.DB.batch(statements);
+    }
+
+    return Response.json({ ok: true, syncedAt: now });
+  }
+
+  if (url.pathname === "/api/students/item" && request.method === "GET") {
+    const id = url.searchParams.get("id")?.trim() || "";
+    const phone = url.searchParams.get("phone")?.trim() || "";
+    const rows = await env.DB.prepare("SELECT data FROM student_portal_state WHERE key = 'students'").first<{ data: string }>();
+    let studentsList: any[] = [];
+    if (rows?.data) {
+      try {
+        studentsList = JSON.parse(rows.data);
+      } catch {}
+    }
+    if (!studentsList.length) {
+      studentsList = initialStudentPortalStudents;
+    }
+
+    const clean = (val: string) => val.replace(/[\s.-]/g, "").toLowerCase();
+    const target = studentsList.find((s) => {
+      if (id && s.id === id) return true;
+      if (phone && clean(s.phone) === clean(phone)) return true;
+      return false;
+    });
+
+    return Response.json({ ok: true, student: target || null }, {
+      headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+    });
+  }
+
+  return null;
+}
+
 async function handleCms(request: Request, env: Env, url: URL): Promise<Response | null> {
   if (!url.pathname.startsWith("/api/cms/") && !url.pathname.startsWith("/media/")) return null;
 
@@ -587,6 +859,9 @@ const worker = {
 
     const cmsResponse = await handleCms(request, env, url);
     if (cmsResponse) return cmsResponse;
+
+    const studentResponse = await handleStudentPortal(request, env, url);
+    if (studentResponse) return studentResponse;
 
     if (url.pathname === "/api/contact-request") {
       if (request.method !== "POST") {

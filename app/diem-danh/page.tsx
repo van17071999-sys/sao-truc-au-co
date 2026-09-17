@@ -143,204 +143,144 @@ export function migrateStudentId(oldId: string): string {
 
 const INITIAL_STUDENTS: StudentData[] = [
   {
-    id: "k9$X_mQ2~P",
-    name: "Nguyễn Văn An",
+    id: "6-DyqX6a46",
+    name: "Huỳnh Tân Anh",
     status: "Đang học",
-    phone: "0934 567 890",
+    phone: "0315478568",
     course: "Sáo trúc cơ bản",
-    packageSessions: 12,
-    tuition: "3.600.000đ",
-    attendedSessions: 8,
+    packageSessions: 4,
+    tuition: "1.200.000",
+    attendedSessions: 1,
     classId: "LOP-01",
     teacherName: "Quách Hạ Văn",
-    invoiceCode: "HD-2026-00128",
+    invoiceCode: "HD-2026-6-DyqX6a46",
+    invoiceDate: "26/07/2026",
+    unitPrice: "300.000đ",
+    totalAmount: "1.200.000",
+    paidAmount: "1.200.000",
+    debtAmount: "0đ",
+    paymentStatus: "Đã thanh toán",
+    attendanceList: [
+      { date: "26/07/2026", time: "10:00", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+    ],
+  },
+  {
+    id: "6tgYL+Xq$x",
+    name: "Khang",
+    status: "Đang học",
+    phone: "0939154789",
+    course: "Sáo trúc cơ bản",
+    packageSessions: 8,
+    tuition: "2.400.000đ",
+    attendedSessions: 5,
+    classId: "LOP-01",
+    teacherName: "Quách Hạ Văn",
+    invoiceCode: "HD-2026-6tgYL+Xq$x",
+    invoiceDate: "23/07/2026",
+    unitPrice: "300.000đ",
+    totalAmount: "2.400.000đ",
+    paidAmount: "2.400.000đ",
+    debtAmount: "0đ",
+    paymentStatus: "Đã thanh toán",
+    attendanceList: [
+      { date: "31/08/2026", time: "17:52", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+      { date: "21/08/2026", time: "17:52", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+      { date: "12/08/2026", time: "17:52", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+      { date: "28/07/2026", time: "17:52", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+      { date: "23/07/2026", time: "17:52", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+    ],
+  },
+  {
+    id: "Gy6AbN_-kY",
+    name: "Anh Thắng",
+    status: "Đang học",
+    phone: "0315478641",
+    course: "Sáo trúc cơ bản",
+    packageSessions: 8,
+    tuition: "2.400.000đ",
+    attendedSessions: 6,
+    classId: "LOP-01",
+    teacherName: "Quách Hạ Văn",
+    invoiceCode: "HD-2026-Gy6AbN_-kY",
+    invoiceDate: "29/07/2026",
+    unitPrice: "300.000đ",
+    totalAmount: "2.400.000đ",
+    paidAmount: "2.400.000đ",
+    debtAmount: "0đ",
+    paymentStatus: "Đã thanh toán",
+    attendanceList: [
+      { date: "15/09/2026", time: "20:00", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+      { date: "04/09/2026", time: "20:00", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+      { date: "29/08/2026", time: "17:48", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+      { date: "08/08/2026", time: "17:48", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+      { date: "05/08/2026", time: "17:48", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+      { date: "29/07/2026", time: "20:00", status: "Đã học", note: "Điểm danh tại trung tâm", teacher: "Quách Hạ Văn" },
+    ],
+  },
+  {
+    id: "Nmpz4*pD~*",
+    name: "Tâm Như",
+    status: "Đang học",
+    phone: "0939197520",
+    course: "Sáo trúc cơ bản",
+    packageSessions: 8,
+    tuition: "2.400.000đ",
+    attendedSessions: 1,
+    classId: "LOP-01",
+    teacherName: "Quách Hạ Văn",
+    invoiceCode: "HD-2026-Nmpz4*pD~*",
     invoiceDate: "15/09/2026",
     unitPrice: "300.000đ",
-    totalAmount: "3.600.000đ",
-    paidAmount: "3.600.000đ",
+    totalAmount: "2.400.000đ",
+    paidAmount: "2.400.000đ",
     debtAmount: "0đ",
     paymentStatus: "Đã thanh toán",
     attendanceList: [
-      { date: "15/09/2026", time: "19:00", status: "Đã học", note: "Luyện âm thanh & nhịp cơ bản", teacher: "Quách Hạ Văn" },
-      { date: "12/09/2026", time: "19:00", status: "Đã học", note: "Ngón bấm nốt Rê - Mi - Son", teacher: "Quách Hạ Văn" },
-      { date: "08/09/2026", time: "19:00", status: "Đã học", note: "Kiểm tra bài tập về nhà", teacher: "Quách Hạ Văn" },
-      { date: "05/09/2026", time: "19:00", status: "Đã học", note: "Thổi bài Bèo dạt mây trôi đoạn 1", teacher: "Quách Hạ Văn" },
-      { date: "01/09/2026", time: "19:00", status: "Đã học", note: "Thực hành lấy hơi bụng", teacher: "Quách Hạ Văn" },
-      { date: "28/08/2026", time: "19:00", status: "Đã học", note: "Kỹ thuật vuốt ngón cơ bản", teacher: "Quách Hạ Văn" },
-      { date: "25/08/2026", time: "19:00", status: "Đã học", note: "Luyện thang âm Đô trưởng", teacher: "Quách Hạ Văn" },
-      { date: "22/08/2026", time: "19:00", status: "Đã học", note: "Buổi đầu tiên: Làm quen cây sáo C5", teacher: "Quách Hạ Văn" },
+      { date: "15/09/2026", time: "09:00", status: "Đã học", note: "- Tập thổi kêu, cắm sáo, lấy hơi, đánh lưỡi đơn - BT Hot Cross Buns", teacher: "Quách Hạ Văn" },
     ],
   },
   {
-    id: "W7-pL9$zK2",
-    name: "Trần Minh Đức",
+    id: "DHNT$6H2bL",
+    name: "Chị Quỳnh",
     status: "Đang học",
-    phone: "0912 345 678",
-    course: "Sáo Dizi nâng cao",
-    packageSessions: 12,
-    tuition: "4.200.000đ",
-    attendedSessions: 11,
-    classId: "LOP-02",
-    teacherName: "Thầy Minh",
-    invoiceCode: "HD-2026-00129",
-    invoiceDate: "10/08/2026",
-    unitPrice: "350.000đ",
-    totalAmount: "4.200.000đ",
-    paidAmount: "4.200.000đ",
-    debtAmount: "0đ",
-    paymentStatus: "Đã thanh toán",
-    attendanceList: [
-      { date: "14/09/2026", time: "19:30", status: "Đã học", note: "Kỹ thuật phi ngón & láy rền", teacher: "Thầy Minh" },
-      { date: "10/09/2026", time: "19:30", status: "Đã học", note: "Thực hành bài Thần thoại", teacher: "Thầy Minh" },
-    ],
-  },
-  {
-    id: "m4_Tk8$Ny~",
-    name: "Lê Hoàng Yến",
-    status: "Bảo lưu",
-    phone: "0988 765 432",
-    course: "Động tiêu & Xiao",
-    packageSessions: 12,
-    tuition: "3.600.000đ",
-    attendedSessions: 5,
-    classId: "LOP-03",
-    teacherName: "Cô Lan",
-    invoiceCode: "HD-2026-00130",
-    invoiceDate: "01/08/2026",
-    unitPrice: "300.000đ",
-    totalAmount: "3.600.000đ",
-    paidAmount: "3.600.000đ",
-    debtAmount: "0đ",
-    paymentStatus: "Đã thanh toán",
-    attendanceList: [
-      { date: "15/08/2026", time: "18:00", status: "Đã học", note: "Bảo lưu từ ngày 20/08", teacher: "Cô Lan" },
-    ],
-  },
-  {
-    id: "X2~qM9-pB$",
-    name: "Phạm Quốc Tuấn",
-    status: "Hết buổi",
-    phone: "0909 888 777",
+    phone: "000011112345",
     course: "Sáo trúc cơ bản",
-    packageSessions: 12,
-    tuition: "3.600.000đ",
-    attendedSessions: 12,
+    packageSessions: 8,
+    tuition: "2.400.000đ",
+    attendedSessions: 0,
     classId: "LOP-01",
     teacherName: "Quách Hạ Văn",
-    invoiceCode: "HD-2026-00131",
-    invoiceDate: "01/07/2026",
+    invoiceCode: "HD-2026-DHNT$6H2bL",
+    invoiceDate: "15/09/2026",
     unitPrice: "300.000đ",
-    totalAmount: "3.600.000đ",
-    paidAmount: "3.600.000đ",
+    totalAmount: "2.400.000đ",
+    paidAmount: "2.400.000đ",
     debtAmount: "0đ",
     paymentStatus: "Đã thanh toán",
     attendanceList: [],
-  },
-  {
-    id: "r8$Vn2-kQ~",
-    name: "Vũ Bảo Ngọc",
-    status: "Đang học",
-    phone: "0977 123 456",
-    course: "Sáo trúc cơ bản",
-    packageSessions: 12,
-    tuition: "3.600.000đ",
-    attendedSessions: 10,
-    classId: "LOP-01",
-    teacherName: "Quách Hạ Văn",
-    invoiceCode: "HD-2026-00132",
-    invoiceDate: "05/08/2026",
-    unitPrice: "300.000đ",
-    totalAmount: "3.600.000đ",
-    paidAmount: "3.000.000đ",
-    debtAmount: "600.000đ",
-    paymentStatus: "Còn nợ",
-    attendanceList: [
-      { date: "15/09/2026", time: "19:00", status: "Đã học", note: "Luyện bài Mẹ yêu con" },
-    ],
   },
 ];
 
 const INITIAL_CLASSES: ClassData[] = [
   {
     id: "LOP-01",
-    name: "Sáo trúc cơ bản K05",
-    teacher: "Quách Hà Vân",
-    scheduleTime: "Thứ 3 & Thứ 6 (19:00 - 20:30)",
+    name: "Sáo trúc cơ bản",
+    teacher: "Quách Hạ Văn",
+    scheduleTime: "Lịch linh động",
     status: "Đang mở",
-    studentIds: ["k9$X_mQ2~P", "X2~qM9-pB$", "r8$Vn2-kQ~"],
-  },
-  {
-    id: "LOP-02",
-    name: "Sáo Dizi nâng cao K02",
-    teacher: "Thầy Minh",
-    scheduleTime: "Thứ 2 & Thứ 5 (19:30 - 21:00)",
-    status: "Đang mở",
-    studentIds: ["W7-pL9$zK2"],
-  },
-  {
-    id: "LOP-03",
-    name: "Động tiêu & Xiao K01",
-    teacher: "Cô Lan",
-    scheduleTime: "Thứ 7 & Chủ Nhật (09:00 - 10:30)",
-    status: "Đang mở",
-    studentIds: ["m4_Tk8$Ny~"],
+    studentIds: ["DHNT$6H2bL", "6-DyqX6a46", "6tgYL+Xq$x", "Gy6AbN_-kY", "Nmpz4*pD~*"],
   },
 ];
 
-const INITIAL_SCHEDULES: ScheduleItem[] = [
-  {
-    id: "SCH-001",
-    date: "16/09/2026",
-    time: "19:00 - 20:30",
-    studentId: "k9$X_mQ2~P",
-    studentName: "Nguyễn Văn An",
-    course: "Sáo trúc cơ bản",
-    teacher: "Quách Hà Vân",
-    status: "Chưa học",
-  },
-  {
-    id: "SCH-002",
-    date: "16/09/2026",
-    time: "19:30 - 21:00",
-    studentId: "W7-pL9$zK2",
-    studentName: "Trần Minh Đức",
-    course: "Sáo Dizi nâng cao",
-    teacher: "Thầy Minh",
-    status: "Chưa học",
-  },
-  {
-    id: "SCH-003",
-    date: "15/09/2026",
-    time: "19:00 - 20:30",
-    studentId: "k9$X_mQ2~P",
-    studentName: "Nguyễn Văn An",
-    course: "Sáo trúc cơ bản",
-    teacher: "Quách Hà Vân",
-    status: "Đã học",
-  },
-];
+const INITIAL_SCHEDULES: ScheduleItem[] = [];
 
 const INITIAL_TEACHERS: TeacherData[] = [
   {
     id: "GV-01",
-    name: "Quách Hà Vân",
+    name: "Quách Hạ Văn",
     phone: "0374 261 368",
-    disciplines: "Sáo trúc Việt Nam, Sáo mèo, Sáo bầu",
+    disciplines: "Sáo trúc Việt Nam, Sáo mèo, Sáo Dizi",
     classes: ["LOP-01"],
-  },
-  {
-    id: "GV-02",
-    name: "Thầy Minh",
-    phone: "0987 112 233",
-    disciplines: "Sáo Dizi Trung Quốc, Kỹ thuật nâng cao",
-    classes: ["LOP-02"],
-  },
-  {
-    id: "GV-03",
-    name: "Cô Lan",
-    phone: "0912 889 900",
-    disciplines: "Động tiêu, Xiao, Flute phương Tây",
-    classes: ["LOP-03"],
   },
 ];
 
@@ -359,6 +299,10 @@ function StudentPortalContent() {
   const [lookupInput, setLookupInput] = useState(initialSearch);
   const [activeLookupQuery, setActiveLookupQuery] = useState(initialSearch);
 
+  // Cloud sync states
+  const [syncStatus, setSyncStatus] = useState<"synced" | "syncing" | "error">("synced");
+  const [isLoadedFromServer, setIsLoadedFromServer] = useState(false);
+
   // Data States (synced with localStorage & auto migrated)
   const [students, setStudents] = useState<StudentData[]>(() => {
     if (typeof window !== "undefined") {
@@ -366,11 +310,14 @@ function StudentPortalContent() {
         const local = localStorage.getItem("auco_students_data");
         if (local) {
           const parsed = JSON.parse(local);
-          if (Array.isArray(parsed)) {
-            return parsed.map((s: StudentData) => ({
-              ...s,
-              id: migrateStudentId(s.id),
-            }));
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const hasReal = parsed.some((s: StudentData) => s.id === "6-DyqX6a46" || s.name === "Huỳnh Tân Anh");
+            if (hasReal) {
+              return parsed.map((s: StudentData) => ({
+                ...s,
+                id: migrateStudentId(s.id),
+              }));
+            }
           }
         }
       } catch (e) {}
@@ -384,11 +331,14 @@ function StudentPortalContent() {
         const local = localStorage.getItem("auco_classes_data");
         if (local) {
           const parsed = JSON.parse(local);
-          if (Array.isArray(parsed)) {
-            return parsed.map((c: ClassData) => ({
-              ...c,
-              studentIds: (c.studentIds || []).map(migrateStudentId),
-            }));
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const hasReal = parsed.some((c: ClassData) => c.studentIds?.includes("6-DyqX6a46"));
+            if (hasReal) {
+              return parsed.map((c: ClassData) => ({
+                ...c,
+                studentIds: (c.studentIds || []).map(migrateStudentId),
+              }));
+            }
           }
         }
       } catch (e) {}
@@ -438,8 +388,101 @@ function StudentPortalContent() {
   // Khi mở link học viên (?id=HV-...), 100% người xem chỉ thấy duy nhất trang cá nhân, TUYỆT ĐỐI KHÔNG CÓ SIDEBAR.
   const isAdmin = isAdminParam && !studentId;
 
+  // Function to sync current data to server D1
+  const syncToServer = async (overrideData?: {
+    students?: StudentData[];
+    classes?: ClassData[];
+    schedules?: ScheduleItem[];
+    teachers?: TeacherData[];
+    settings?: CenterSettings;
+  }) => {
+    setSyncStatus("syncing");
+    try {
+      const res = await fetch("/api/students/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          students: overrideData?.students ?? students,
+          classes: overrideData?.classes ?? classes,
+          schedules: overrideData?.schedules ?? schedules,
+          teachers: overrideData?.teachers ?? teachers,
+          settings: overrideData?.settings ?? settings,
+        }),
+      });
+      if (res.ok) {
+        setSyncStatus("synced");
+      } else {
+        setSyncStatus("error");
+      }
+    } catch (e) {
+      console.error("Failed to sync student data to server:", e);
+      setSyncStatus("error");
+    }
+  };
 
-  // Save to localStorage when state changes
+  // Load from Cloudflare D1 server on initial mount
+  useEffect(() => {
+    let isMounted = true;
+    async function loadServerData() {
+      try {
+        const res = await fetch("/api/students/data", { cache: "no-store" });
+        if (!res.ok) return;
+        const result = await res.json();
+        if (result?.ok && result.data && isMounted) {
+          if (Array.isArray(result.data.students) && result.data.students.length > 0) {
+            setStudents(result.data.students);
+            if (typeof window !== "undefined") {
+              localStorage.setItem("auco_students_data", JSON.stringify(result.data.students));
+            }
+          }
+          if (Array.isArray(result.data.classes) && result.data.classes.length > 0) {
+            setClasses(result.data.classes);
+            if (typeof window !== "undefined") {
+              localStorage.setItem("auco_classes_data", JSON.stringify(result.data.classes));
+            }
+          }
+          if (Array.isArray(result.data.schedules)) {
+            setSchedules(result.data.schedules);
+            if (typeof window !== "undefined") {
+              localStorage.setItem("auco_schedules_data", JSON.stringify(result.data.schedules));
+            }
+          }
+          if (Array.isArray(result.data.teachers) && result.data.teachers.length > 0) {
+            setTeachers(result.data.teachers);
+            if (typeof window !== "undefined") {
+              localStorage.setItem("auco_teachers_data", JSON.stringify(result.data.teachers));
+            }
+          }
+          if (result.data.settings) {
+            setSettings(result.data.settings);
+            if (typeof window !== "undefined") {
+              localStorage.setItem("auco_settings_data", JSON.stringify(result.data.settings));
+            }
+          }
+          setSyncStatus("synced");
+        }
+      } catch (err) {
+        console.error("Failed to load student data from server:", err);
+      } finally {
+        if (isMounted) setIsLoadedFromServer(true);
+      }
+    }
+    loadServerData();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Debounced auto-sync to Cloudflare D1 server when state updates after initial load
+  useEffect(() => {
+    if (!isLoadedFromServer) return;
+    const timer = setTimeout(() => {
+      syncToServer();
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [students, classes, schedules, teachers, settings, isLoadedFromServer]);
+
+  // Save to localStorage when state changes as secondary offline cache
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("auco_students_data", JSON.stringify(students));
@@ -472,7 +515,7 @@ function StudentPortalContent() {
 
   // UI States
   const [activeTab, setActiveTab] = useState<ActiveTab>("hoc-vien");
-  const [selectedStudentId, setSelectedStudentId] = useState<string>(studentId || (students[0]?.id ?? "k9$X_mQ2~P"));
+  const [selectedStudentId, setSelectedStudentId] = useState<string>(studentId || (students[0]?.id ?? "6-DyqX6a46"));
   const [collapsedCourses, setCollapsedCourses] = useState<Record<string, boolean>>({});
 
   const toggleCourse = (courseName: string) => {
@@ -774,6 +817,18 @@ function StudentPortalContent() {
     const student = portalStudent;
 
     if (!student) {
+      if (!isLoadedFromServer) {
+        return (
+          <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 font-sans">
+            <div className="bg-white max-w-sm w-full p-8 rounded-2xl shadow-xl border border-slate-200 text-center space-y-4">
+              <div className="w-12 h-12 border-4 border-[#4A101D] border-t-transparent rounded-full animate-spin mx-auto" />
+              <div className="text-sm font-bold text-slate-800">Đang tải dữ liệu học viên...</div>
+              <p className="text-xs text-slate-500">Hệ thống đang đồng bộ dữ liệu điểm danh mới nhất từ máy chủ.</p>
+            </div>
+          </div>
+        );
+      }
+
       const attemptedQuery = (activeLookupQuery || initialSearch || studentId).trim();
       return (
         <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 font-sans">
@@ -819,7 +874,7 @@ function StudentPortalContent() {
                     required
                     value={lookupInput}
                     onChange={(e) => setLookupInput(e.target.value)}
-                    placeholder="Ví dụ: 0934567890 hoặc k9$X_mQ2~P"
+                    placeholder="Ví dụ: 0315478568 hoặc 6-DyqX6a46"
                     className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-[#4A101D]"
                   />
                   <span className="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
@@ -1251,6 +1306,27 @@ function StudentPortalContent() {
                   className="px-3 py-1.5 bg-[#4A101D] hover:bg-[#631728] text-white text-xs font-bold rounded-xl shadow transition-colors flex items-center gap-1 cursor-pointer"
                 >
                   <span>+ Thêm HV</span>
+                </button>
+              </div>
+
+              {/* Đồng bộ đám mây D1 */}
+              <div className="flex items-center justify-between gap-1.5 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-[10px]">
+                <div className="flex items-center gap-1.5 overflow-hidden">
+                  <span className={`w-2 h-2 rounded-full shrink-0 ${syncStatus === "syncing" ? "bg-amber-500 animate-ping" : syncStatus === "error" ? "bg-rose-500" : "bg-emerald-500"}`} />
+                  <span className="font-medium text-slate-600 truncate">
+                    {syncStatus === "syncing" ? "Đang đồng bộ..." : syncStatus === "error" ? "Chưa đồng bộ D1" : "Đã đồng bộ máy chủ D1"}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    syncToServer();
+                    showToast("☁️ Đang đồng bộ dữ liệu lên máy chủ D1...");
+                  }}
+                  title="Bấm để đồng bộ dữ liệu ngay lên đám mây D1"
+                  className="shrink-0 text-[10px] text-[#4A101D] font-bold hover:underline cursor-pointer"
+                >
+                  Đồng bộ ngay
                 </button>
               </div>
 

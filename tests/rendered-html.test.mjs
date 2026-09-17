@@ -134,4 +134,110 @@ test("verifies page-specific canonical URLs, blog titles, and sitemap.xml", asyn
   assert.match(sitemapXml, /<loc>https:\/\/saotrucauco\.com\/bai-viet\/5-buoc-tao-tieng-sao<\/loc>/);
 });
 
+test("verifies student portal endpoints and synchronization", async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+
+  const dbStore = new Map();
+  const mockDB = {
+    prepare(sql) {
+      return {
+        bind(...args) {
+          return {
+            async run() {
+              if (sql.includes("INSERT OR REPLACE INTO student_portal_state")) {
+                dbStore.set(args[0], { data: args[1], updated_at: args[2] });
+              }
+              return { success: true };
+            },
+            async all() {
+              return { results: [] };
+            },
+            async first() {
+              if (sql.includes("WHERE key = 'students'")) {
+                const item = dbStore.get("students");
+                return item ? { data: item.data } : null;
+              }
+              return null;
+            }
+          };
+        },
+        async run() {
+          return { success: true };
+        },
+        async all() {
+          const results = [];
+          for (const [key, val] of dbStore.entries()) {
+            results.push({ key, data: val.data });
+          }
+          return { results };
+        },
+        async first() {
+          return null;
+        }
+      };
+    },
+    async batch(stmts) {
+      for (const s of stmts) {
+        if (s && typeof s.run === "function") await s.run();
+      }
+      return [];
+    }
+  };
+
+  const mockEnv = {
+    DB: mockDB,
+    ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) },
+  };
+  const mockCtx = { waitUntil() {}, passThroughOnException() {} };
+
+  // 1. Initial GET on /api/students/data seeds the 5 students
+  const resData = await worker.fetch(new Request("https://saotrucauco.com/api/students/data"), mockEnv, mockCtx);
+  assert.equal(resData.status, 200);
+  const json = await resData.json();
+  assert.equal(json.ok, true);
+  assert.equal(json.data.students.length, 5);
+
+  const studentNames = json.data.students.map((s) => s.name);
+  assert.ok(studentNames.includes("Huỳnh Tân Anh"));
+  assert.ok(studentNames.includes("Khang"));
+  assert.ok(studentNames.includes("Anh Thắng"));
+  assert.ok(studentNames.includes("Tâm Như"));
+  assert.ok(studentNames.includes("Chị Quỳnh"));
+
+  // 2. Query individual student via /api/students/item
+  const resItem = await worker.fetch(new Request("https://saotrucauco.com/api/students/item?id=6-DyqX6a46"), mockEnv, mockCtx);
+  assert.equal(resItem.status, 200);
+  const jsonItem = await resItem.json();
+  assert.equal(jsonItem.ok, true);
+  assert.equal(jsonItem.student.name, "Huỳnh Tân Anh");
+  assert.equal(jsonItem.student.phone, "0315478568");
+  assert.equal(jsonItem.student.attendedSessions, 1);
+
+  // 3. Test sync via POST /api/students/sync
+  const updatedStudents = [...json.data.students, {
+    id: "test-new-student",
+    name: "Học Viên Mới Test",
+    phone: "0999888777",
+    status: "Đang học",
+    course: "Sáo trúc cơ bản",
+    packageSessions: 8,
+    tuition: "2.400.000đ",
+    attendedSessions: 0,
+    attendanceList: [],
+  }];
+
+  const resSync = await worker.fetch(new Request("https://saotrucauco.com/api/students/sync", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ students: updatedStudents }),
+  }), mockEnv, mockCtx);
+  assert.equal(resSync.status, 200);
+  const jsonSync = await resSync.json();
+  assert.equal(jsonSync.ok, true);
+  assert.ok(jsonSync.syncedAt);
+});
+
+
 
