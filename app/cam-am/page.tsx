@@ -14,6 +14,9 @@ export const metadata: Metadata = {
     "tự thổi sáo",
     "Sáo Trúc Âu Cơ",
   ],
+  alternates: {
+    canonical: "https://saotrucauco.com/cam-am",
+  },
   openGraph: {
     title: "Kho Cảm Âm Sáo Trúc Chuẩn Nhất",
     description: "Kho cảm âm sáo trúc chuẩn 2 dòng lời và nốt quãng, dễ tập cho người mới và nâng cao.",

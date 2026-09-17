@@ -4,6 +4,9 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: { absolute: "Các Lớp Học Sáo TP.HCM & Online | Sáo Trúc Âu Cơ" },
   description: "Các bộ môn đào tạo âm nhạc dân tộc tại Sáo Trúc Âu Cơ: Sáo trúc Việt Nam, Dizi, Recorder, Động tiêu & Xiao, Flute, Sáo H'Mông. Học offline tại TP.HCM hoặc online 1 kèm 1.",
+  alternates: {
+    canonical: "https://saotrucauco.com/lop-hoc",
+  },
 };
 
 export default function Page() {

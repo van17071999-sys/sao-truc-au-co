@@ -1,18 +1,29 @@
 import type { Metadata } from "next";
 import { GuideDetail } from "../../cms-content-pages";
 
+const guideTitles: Record<string, string> = {
+  "cach-lay-hoi-va-tao-tieng-sao-tron-ro": "Cách Lấy Hơi Và Tạo Tiếng Sáo Tròn, Rõ",
+  "meo-sua-loi-xi-tieng-va-rung-ngon": "Mẹo Sửa Lỗi Xì Tiếng Và Rung Ngón Khi Thổi Sáo",
+  "chon-nhac-cu-va-xay-dung-lo-trinh-hoc": "Hướng Dẫn Chọn Nhạc Cụ Và Lộ Trình Học Sáo",
+};
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
+  const rawTitle = slug.split("-").filter(Boolean).map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+  const baseTitle = guideTitles[slug] || `Hướng Dẫn ${rawTitle}`;
+  const fullTitle = `${baseTitle} | Sáo Trúc Âu Cơ`;
+  const canonicalUrl = `https://saotrucauco.com/huong-dan/${slug}`;
+
   return {
-    title: `Hướng Dẫn Kỹ Thuật & Video Sáo Trúc`,
-    description: `Bài viết và video hướng dẫn kỹ thuật thổi sáo trúc tại Sáo Trúc Âu Cơ.`,
+    title: { absolute: fullTitle },
+    description: `Bài viết và video hướng dẫn ${baseTitle} chi tiết từ Sáo Trúc Âu Cơ.`,
     alternates: {
-      canonical: `https://saotrucauco.com/huong-dan/${slug}`,
+      canonical: canonicalUrl,
     },
     openGraph: {
-      title: `Hướng Dẫn Kỹ Thuật & Video Sáo Trúc`,
-      description: `Bài viết và video hướng dẫn kỹ thuật thổi sáo trúc tại Sáo Trúc Âu Cơ.`,
-      url: `https://saotrucauco.com/huong-dan/${slug}`,
+      title: fullTitle,
+      description: `Bài viết và video hướng dẫn ${baseTitle} chi tiết từ Sáo Trúc Âu Cơ.`,
+      url: canonicalUrl,
       siteName: "Sáo Trúc Âu Cơ",
       type: "article",
     },

@@ -2,7 +2,9 @@ import type { MetadataRoute } from "next";
 
 const subjects = ["sao-truc-viet-nam", "sao-dizi", "sao-recorder", "dong-tieu-xiao", "flute", "sao-hmong"];
 const articleSlugs = ["hoc-thoi-sao-hcm", "5-buoc-tao-tieng-sao", "nguoi-moi-chon-sao-tone-nao", "cach-luyen-hoi-dai"];
-const fluteTabSlugs = ["beo-dat-may-troi", "ve-que", "tinh-ca-tay-bac"];
+const guideSlugs = ["cach-lay-hoi-va-tao-tieng-sao-tron-ro", "meo-sua-loi-xi-tieng-va-rung-ngon", "chon-nhac-cu-va-xay-dung-lo-trinh-hoc"];
+const fluteTabSlugs = ["beo-dat-may-troi", "chieu-tren-que-huong", "khuc-sao-vung-cao", "ve-que", "tinh-ca-tay-bac"];
+
 const catalogPaths = [
   ..."dan-ca-nhac-co nhac-dan-gian nhac-tru-tinh-bolero nhac-tre sao-meo-co-ban nhac-ngu-cung giao-trinh-steiner nhac-thieu-nhi dizi-co-ban nhac-hoa-loi-viet".split(" ").map((slug) => `/khoa-hoc/${slug}`),
   ..."beo-dat-may-troi-sao-truc ve-que-sao-truc tinh-ca-tay-bac-sao-truc dai-ngu-sao-dizi than-thoai-sao-dizi luong-son-ba-chuc-anh-dai-sao-dizi inh-la-oi-sao-meo xuan-ve-ban-mong-sao-meo goi-em-ben-suoi-sao-meo vo-ky-tieu-xiao co-mong-tieu-xiao tinh-tam-tieu-xiao always-with-me-recorder ly-cay-xanh-recorder con-chim-non-recorder the-swan-flute canon-in-d-flute a-thousand-years-flute".split(" ").map((slug) => `/video/${slug}`),
@@ -11,8 +13,8 @@ const catalogPaths = [
 ];
 
 const servicePages = [
-  "/gioi-thieu-admin",
   "/gioi-thieu",
+  "/gioi-thieu-admin",
   "/lop-hoc",
   "/dang-ky-hoc",
   "/sao-va-phu-kien",
@@ -25,15 +27,19 @@ const servicePages = [
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://saotrucauco.com";
+  const now = new Date();
+
   return [
-    { url: baseUrl, changeFrequency: "daily", priority: 1.0 },
-    ...servicePages.map((path) => ({ url: `${baseUrl}${path}`, changeFrequency: "weekly" as const, priority: 0.95 })),
-    { url: `${baseUrl}/bai-viet`, changeFrequency: "weekly", priority: 0.9 },
-    { url: `${baseUrl}/huong-dan`, changeFrequency: "weekly", priority: 0.9 },
-    { url: `${baseUrl}/cam-am`, changeFrequency: "weekly", priority: 0.9 },
-    ...articleSlugs.map((slug) => ({ url: `${baseUrl}/bai-viet/${slug}`, changeFrequency: "monthly" as const, priority: 0.85 })),
-    ...fluteTabSlugs.map((slug) => ({ url: `${baseUrl}/cam-am/${slug}`, changeFrequency: "monthly" as const, priority: 0.85 })),
-    ...subjects.map((slug) => ({ url: `${baseUrl}/bo-mon/${slug}`, changeFrequency: "monthly" as const, priority: 0.8 })),
-    ...catalogPaths.map((path) => ({ url: `${baseUrl}${path}`, changeFrequency: "monthly" as const, priority: 0.7 })),
+    { url: baseUrl, lastModified: now, changeFrequency: "daily", priority: 1.0 },
+    ...servicePages.map((path) => ({ url: `${baseUrl}${path}`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.95 })),
+    { url: `${baseUrl}/bai-viet`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${baseUrl}/huong-dan`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${baseUrl}/cam-am`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
+    ...articleSlugs.map((slug) => ({ url: `${baseUrl}/bai-viet/${slug}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.85 })),
+    ...guideSlugs.map((slug) => ({ url: `${baseUrl}/huong-dan/${slug}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.85 })),
+    ...fluteTabSlugs.map((slug) => ({ url: `${baseUrl}/cam-am/${slug}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.85 })),
+    ...subjects.map((slug) => ({ url: `${baseUrl}/bo-mon/${slug}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.8 })),
+    ...catalogPaths.map((path) => ({ url: `${baseUrl}${path}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.7 })),
   ];
 }
+

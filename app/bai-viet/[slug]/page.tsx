@@ -11,47 +11,65 @@ const targetPath = `/bai-viet/${hocThoiSaoHcmArticle.slug}`;
 const seoTitle = "Học Thổi Sáo Tại TP.HCM – Lớp Sáo Trúc Tân Phú";
 const seoDescription = "Lớp học thổi sáo tại Tân Phú, TP.HCM cho người mới và học viên nâng cao. Học trực tiếp hoặc online theo lộ trình bài bản tại Sáo Trúc Âu Cơ.";
 
+const articleMetadataMap: Record<string, { title: string; description: string }> = {
+  "5-buoc-tao-tieng-sao": {
+    title: "5 Bước Tạo Tiếng Sáo Trong Cho Người Mới",
+    description: "Hướng dẫn 5 bước cơ bản từ tư thế, khẩu hình đến luồng hơi giúp người mới thổi sáo phát ra âm thanh trong trẻo, tròn và ổn định.",
+  },
+  "nguoi-moi-chon-sao-tone-nao": {
+    title: "Người Mới Nên Chọn Sáo Tone Nào?",
+    description: "So sánh chi tiết sáo Đô C5, La A4 và Sol G4 để người mới bắt đầu dễ dàng chọn được cây sáo phù hợp với mục tiêu học tập.",
+  },
+  "cach-luyen-hoi-dai": {
+    title: "Cách Luyện Hơi Dài Khi Thổi Sáo",
+    description: "Phương pháp luyện tập cột hơi bằng cơ hoành mỗi ngày giúp hơi dài, không bị mệt và kiểm soát tốt cao độ khi thổi sáo trúc.",
+  },
+  "hoc-thoi-sao-hcm": {
+    title: "Học Thổi Sáo Tại TP.HCM – Lớp Sáo Trúc Tân Phú",
+    description: "Lớp học thổi sáo tại Tân Phú, TP.HCM cho người mới và học viên nâng cao. Học trực tiếp hoặc online theo lộ trình bài bản tại Sáo Trúc Âu Cơ.",
+  },
+};
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const article = getSeoArticle(slug);
+  const articleInfo = articleMetadataMap[slug];
 
-  if (!article || article.slug !== hocThoiSaoHcmArticle.slug) {
-    return {
-      title: "Bài viết",
-      alternates: { canonical: `/bai-viet/${slug}` },
-    };
-  }
+  const title = articleInfo?.title || article?.title || "Bài Viết Sáo Trúc";
+  const description = articleInfo?.description || article?.excerpt || "Kiến thức, hướng dẫn và kỹ thuật thổi sáo trúc từ Sáo Trúc Âu Cơ.";
+  const canonicalUrl = `${siteUrl}/bai-viet/${slug}`;
+  const fullTitle = `${title} | Sáo Trúc Âu Cơ`;
+  const imageUrl = article?.imageUrl || `${siteUrl}/logo.jpg`;
 
   return {
-    title: seoTitle,
-    description: seoDescription,
+    title: { absolute: fullTitle },
+    description,
     keywords: [
+      title,
       "học thổi sáo TP.HCM",
-      "lớp học sáo trúc Tân Phú",
-      "lớp học sáo Tân Bình",
-      "học sáo trúc cho người mới",
-      "học sáo trúc online",
+      "sáo trúc Việt Nam",
+      "kỹ thuật sáo trúc",
+      "Sáo Trúc Âu Cơ",
     ],
-    alternates: { canonical: targetPath },
+    alternates: { canonical: canonicalUrl },
     openGraph: {
       type: "article",
       locale: "vi_VN",
-      url: targetPath,
+      url: canonicalUrl,
       siteName: "Sáo Trúc Âu Cơ",
-      title: `${seoTitle} | Sáo Trúc Âu Cơ`,
-      description: seoDescription,
-      publishedTime: "2026-08-20T00:00:00+07:00",
-      modifiedTime: "2026-08-20T16:32:29+07:00",
+      title: fullTitle,
+      description,
+      publishedTime: article?.publishedAt ? `${article.publishedAt}T00:00:00+07:00` : undefined,
       images: [{
-        url: article.imageUrl,
-        alt: "Lớp học thổi sáo tại TP.HCM của Sáo Trúc Âu Cơ",
+        url: imageUrl.startsWith("http") ? imageUrl : `${siteUrl}${imageUrl}`,
+        alt: fullTitle,
       }],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${seoTitle} | Sáo Trúc Âu Cơ`,
-      description: seoDescription,
-      images: [article.imageUrl],
+      title: fullTitle,
+      description,
+      images: [imageUrl.startsWith("http") ? imageUrl : `${siteUrl}${imageUrl}`],
     },
     robots: {
       index: true,
