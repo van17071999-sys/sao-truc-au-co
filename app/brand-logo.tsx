@@ -1,4 +1,4 @@
-export default function BrandLogo({ size = 46, radius = 8, className }: { size?: number; radius?: number; className?: string }) {
+export default function BrandLogo({ size = 46, radius = 999, className }: { size?: number; radius?: number; className?: string }) {
   return (
     <img
       className={className}

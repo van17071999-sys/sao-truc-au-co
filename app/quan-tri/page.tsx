@@ -1555,7 +1555,7 @@ export default function ContentAdmin() {
   if (!authenticated) {
     return <main className="admin-login-shell">
       <section className="admin-login-card">
-        <BrandLogo className="admin-login-mark" size={52} radius={15} />
+        <BrandLogo className="admin-login-mark" size={52} radius={999} />
         <p>SÁO TRÚC ÂU CƠ</p>
         <h1>Quản trị nội dung</h1>
         <span>Đăng nhập để chỉnh sửa nội dung đang hiển thị trên website.</span>
@@ -1571,7 +1571,7 @@ export default function ContentAdmin() {
 
   return <main className="admin-shell">
     <aside className={navOpen ? "admin-sidebar open" : "admin-sidebar"}>
-      <div className="admin-brand"><BrandLogo size={35} radius={9} /><span><strong>Sáo Trúc Âu Cơ</strong><small>Quản trị nội dung</small></span></div>
+      <div className="admin-brand"><BrandLogo size={35} radius={999} /><span><strong>Sáo Trúc Âu Cơ</strong><small>Quản trị nội dung</small></span></div>
       <button className="admin-nav-close" onClick={() => setNavOpen(false)}>×</button>
       <a className="admin-dashboard-link" href="/" target="_blank" rel="noreferrer">↗ Xem website</a>
       <p className="admin-nav-title">BỘ SƯU TẬP</p>

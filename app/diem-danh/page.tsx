@@ -864,9 +864,11 @@ function StudentPortalContent() {
           {/* Header Banner */}
           <div className="bg-gradient-to-r from-[#4A101D] to-[#6E162A] text-white rounded-2xl p-6 sm:p-8 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-[#7D1B32]">
             <div className="flex items-center gap-4 text-center sm:text-left">
-              <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-white text-2xl font-bold border border-white/20 shrink-0">
-                ÂC
-              </div>
+              <img
+                src="/logo.jpg"
+                alt="Logo Sáo Trúc Âu Cơ"
+                className="w-14 h-14 rounded-full object-cover border border-white/20 shadow-md shrink-0"
+              />
               <div>
                 <span className="text-xs uppercase tracking-wider font-semibold text-amber-300">Trung Tâm Âm Nhạc Truyền Thống</span>
                 <h1 className="text-xl sm:text-2xl font-serif font-bold text-white leading-tight">Sáo Trúc Âu Cơ</h1>
@@ -1114,9 +1116,11 @@ function StudentPortalContent() {
           {/* Logo / Brand Header */}
           <div className="mb-6 px-2 flex items-center justify-between">
             <Link href="/quan-tri" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
-              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-amber-300 text-sm font-bold border border-white/15">
-                ÂC
-              </div>
+              <img
+                src="/logo.jpg"
+                alt="Logo Sáo Trúc Âu Cơ"
+                className="w-8 h-8 rounded-full object-cover border border-amber-400/40 shadow-xs shrink-0"
+              />
               <div>
                 <div className="text-white font-serif font-bold text-sm leading-tight">Quản Trị Âu Cơ</div>
                 <div className="text-[10px] text-amber-300/80 font-medium">Hệ thống đào tạo</div>
