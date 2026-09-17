@@ -604,7 +604,12 @@ function StudentPortalContent() {
   const portalStudent = useMemo(() => {
     // 1. Tìm theo studentId nếu có
     if (studentId) {
-      const found = students.find((s) => s.id === studentId || s.id === ID_MIGRATION_MAP[studentId]);
+      const found = students.find((s) =>
+        s.id === studentId ||
+        s.id === studentId.replace(/ /g, "+") ||
+        s.id.replace(/\+/g, " ") === studentId ||
+        s.id === ID_MIGRATION_MAP[studentId]
+      );
       if (found) return found;
     }
 
@@ -615,7 +620,13 @@ function StudentPortalContent() {
       const found = students.find((s) => {
         const cleanPhone = s.phone.replace(/[\s.-]/g, "").toLowerCase();
         const cleanId = s.id.toLowerCase();
-        return cleanPhone === cleanQ || cleanId === cleanQ || s.id === query || ID_MIGRATION_MAP[query] === s.id;
+        return (
+          cleanPhone === cleanQ ||
+          cleanId === cleanQ ||
+          s.id === query ||
+          s.id === query.replace(/ /g, "+") ||
+          ID_MIGRATION_MAP[query] === s.id
+        );
       });
       if (found) return found;
     }
@@ -783,7 +794,7 @@ function StudentPortalContent() {
   // Copy private student link
   const copyStudentLink = (id: string) => {
     if (typeof window === "undefined") return;
-    const url = `${window.location.origin}/diem-danh?id=${id}`;
+    const url = `${window.location.origin}/diem-danh?id=${encodeURIComponent(id)}`;
     navigator.clipboard.writeText(url);
     showToast(`✓ Đã sao chép link tra cứu riêng: ${url}`);
   };

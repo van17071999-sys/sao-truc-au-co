@@ -639,7 +639,7 @@ async function handleStudentPortal(request: Request, env: Env, url: URL): Promis
 
     const clean = (val: string) => val.replace(/[\s.-]/g, "").toLowerCase();
     const target = studentsList.find((s) => {
-      if (id && s.id === id) return true;
+      if (id && (s.id === id || s.id === id.replace(/ /g, "+") || s.id.replace(/\+/g, " ") === id)) return true;
       if (phone && clean(s.phone) === clean(phone)) return true;
       return false;
     });
