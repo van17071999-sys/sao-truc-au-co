@@ -1,22 +1,8 @@
 User-agent: *
 Allow: /
-Allow: /favicon.ico
-Allow: /favicon.png
-Allow: /favicon-48x48.png
-Allow: /favicon-96x96.png
-Allow: /favicon-144x144.png
-Allow: /icon-192.png
-Allow: /icon-512.png
-Allow: /apple-touch-icon.png
-Allow: /logo.jpg
-
-User-agent: Googlebot
-Allow: /
-
-User-agent: Googlebot-Image
-Allow: /
-
-User-agent: Google-Favicon
-Allow: /
+Disallow: /quan-tri
+Disallow: /diem-danh
+Disallow: /api/
 
 Sitemap: https://saotrucauco.com/sitemap.xml
+
