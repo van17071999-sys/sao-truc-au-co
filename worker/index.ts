@@ -566,6 +566,24 @@ async function handleCms(request: Request, env: Env, url: URL): Promise<Response
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
+    const host = (url.hostname || request.headers.get("host") || "").toLowerCase().replace(/:\d+$/, "");
+
+    // ── Canonical Hostname Redirect ───────────────────────────────────────────
+    // Enforce https://saotrucauco.com as the single canonical hostname.
+    // Permanently redirect (HTTP 301) all traffic from www.saotrucauco.com to saotrucauco.com.
+    // Preserves full pathname and query string.
+    if (host === "www.saotrucauco.com") {
+      const destination = new URL(request.url);
+      destination.protocol = "https:";
+      destination.hostname = "saotrucauco.com";
+      destination.port = "";
+      return new Response(null, {
+        status: 301,
+        headers: {
+          Location: destination.toString(),
+        },
+      });
+    }
 
     const cmsResponse = await handleCms(request, env, url);
     if (cmsResponse) return cmsResponse;
