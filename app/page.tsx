@@ -55,8 +55,8 @@ const disciplinesList = [
 const defaultHomeIntro = {
   id: "home-intro-01",
   collection: "home-intro",
-  title: "Người Sáng Lập Sáo Trúc Âu Cơ – Thầy Quách Hạ Văn",
-  excerpt: "Hơn 8 năm tâm huyết nghiên cứu, giảng dạy và lan tỏa nghệ thuật sáo trúc Việt Nam. Nội dung giới thiệu chi tiết về Người sáng lập đang được cập nhật.",
+  title: "Lớp Dạy Thổi Sáo Tại TP.HCM – Sáo Trúc Âu Cơ",
+  excerpt: "Trung tâm Sáo Trúc Âu Cơ dạy thổi sáo trực tiếp tại Tân Phú, TP.HCM, hỗ trợ từ người mới bắt đầu đến trình độ nâng cao. Chúng tôi giảng dạy sáo trúc Việt Nam, Dizi, Recorder, Flute, Tiêu và các loại sáo dân tộc khác, với hình thức học linh hoạt: học tại lớp, học online 1 kèm 1 và gia sư tại nhà.",
   imageUrl: "/intro-portrait.jpg",
   price: "Giới thiệu nhà sáng lập",
   content: "/gioi-thieu-admin",
@@ -540,19 +540,9 @@ export default function HomePage() {
         )}
       </header>
 
-      {/* ================= 3. HERO SECTION ================= */}
+      {/* ================= 3. HERO SECTION (LOCKED SVG PIXEL ACCURACY) ================= */}
       <section className="relative overflow-hidden bg-[#FAF7F2] border-b border-[#EADBCA]">
-        {/* Semantic H1 & Introduction for SEO & Search Engine Crawlers */}
-        <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-3 sm:pb-4 text-center">
-          <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-[40px] font-bold text-[#70141D] leading-tight tracking-tight">
-            Dạy Thổi Sáo Tại TP.HCM &amp; Online – Sáo Trúc Âu Cơ
-          </h1>
-          <p className="mt-2 text-xs sm:text-sm md:text-base text-[#5C4D47] max-w-3xl mx-auto leading-relaxed">
-            Trung tâm đào tạo sáo trúc và nhạc cụ dân tộc bài bản từ cơ bản đến nâng cao tại TP.HCM và Online. Lộ trình học cá nhân hóa, phương pháp trực quan giúp người mới bắt đầu tự tin thổi những giai điệu yêu thích.
-          </p>
-        </div>
-
-        <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6">
+        <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           
           {/* Master Responsive Container with Exact Aspect Ratio (2048 / 676) */}
           <div className="relative w-full rounded-2xl overflow-hidden shadow-sm border border-[#E0D5C3] bg-[#FAF7F2]">
@@ -618,9 +608,9 @@ export default function HomePage() {
 
               {/* Middle: Studio Description & CTA Button */}
               <div className="order-2 lg:order-2 lg:col-span-5 space-y-4">
-                <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#70141D] leading-tight">
+                <h1 className="font-serif text-xl sm:text-2xl font-bold text-[#70141D] leading-tight">
                   {homeIntro.title}
-                </h2>
+                </h1>
                 <p className="text-xs sm:text-[13.5px] text-[#4A423F] leading-relaxed whitespace-pre-line">
                   {homeIntro.excerpt}
                 </p>
