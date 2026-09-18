@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 
 const subjects = ["sao-truc-viet-nam", "sao-dizi", "sao-recorder", "dong-tieu-xiao", "flute", "sao-hmong"];
-const articleSlugs = ["hoc-thoi-sao-hcm", "5-buoc-tao-tieng-sao", "nguoi-moi-chon-sao-tone-nao", "cach-luyen-hoi-dai"];
+// Only include indexable articles with substantial content. Thin articles are excluded.
+const articleSlugs = ["hoc-thoi-sao-hcm"];
 const guideSlugs = ["cach-lay-hoi-va-tao-tieng-sao-tron-ro", "meo-sua-loi-xi-tieng-va-rung-ngon", "chon-nhac-cu-va-xay-dung-lo-trinh-hoc"];
 const fluteTabSlugs = ["beo-dat-may-troi", "chieu-tren-que-huong", "khuc-sao-vung-cao", "ve-que", "tinh-ca-tay-bac"];
 
@@ -12,9 +13,9 @@ const catalogPaths = [
   ..."tuyen-tap-sheet-sao-truc sheet-kem-ngon-bam tuyen-tap-sheet-dizi sheet-kem-ky-thuat-dizi tuyen-tap-sheet-recorder sheet-hoa-tau-recorder".split(" ").map((slug) => `/sheet/${slug}`),
 ];
 
+// Service pages that have completed indexable content (excludes incomplete /gioi-thieu-admin)
 const servicePages = [
   "/gioi-thieu",
-  "/gioi-thieu-admin",
   "/lop-hoc",
   "/dang-ky-hoc",
   "/sao-va-phu-kien",
@@ -42,4 +43,3 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...catalogPaths.map((path) => ({ url: `${baseUrl}${path}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.7 })),
   ];
 }
-

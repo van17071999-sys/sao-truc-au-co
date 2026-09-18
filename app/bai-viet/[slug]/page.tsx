@@ -41,6 +41,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const fullTitle = `${title} | Sáo Trúc Âu Cơ`;
   const imageUrl = article?.imageUrl || `${siteUrl}/logo.jpg`;
 
+  const isThinArticle = [
+    "5-buoc-tao-tieng-sao",
+    "nguoi-moi-chon-sao-tone-nao",
+    "cach-luyen-hoi-dai",
+  ].includes(slug);
+
   return {
     title: { absolute: fullTitle },
     description,
@@ -71,17 +77,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       images: [imageUrl.startsWith("http") ? imageUrl : `${siteUrl}${imageUrl}`],
     },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-        "max-video-preview": -1,
-      },
-    },
+    robots: isThinArticle
+      ? {
+          index: false,
+          follow: true,
+          googleBot: {
+            index: false,
+            follow: true,
+          },
+        }
+      : {
+          index: true,
+          follow: true,
+          googleBot: {
+            index: true,
+            follow: true,
+            "max-image-preview": "large",
+            "max-snippet": -1,
+            "max-video-preview": -1,
+          },
+        },
   };
 }
 

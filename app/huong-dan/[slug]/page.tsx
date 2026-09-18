@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { GuideDetail } from "../../cms-content-pages";
+import { getGuideBySlug } from "../../seo-pre-render-data";
 
 const guideTitles: Record<string, string> = {
   "cach-lay-hoi-va-tao-tieng-sao-tron-ro": "Cách Lấy Hơi Và Tạo Tiếng Sáo Tròn, Rõ",
@@ -30,6 +31,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-export default function HuongDanDetailPage() {
-  return <GuideDetail />;
+export default async function HuongDanDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const initialEntry = getGuideBySlug(slug);
+  return <GuideDetail initialEntry={initialEntry} />;
 }

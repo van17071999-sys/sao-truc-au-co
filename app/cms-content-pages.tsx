@@ -249,12 +249,16 @@ export function parseFluteTab(content: string): ParsedTabRow[] {
   return rows;
 }
 
-export function FluteIndex() {
+export function FluteIndex({ initialEntries }: { initialEntries?: CmsEntry[] } = {}) {
   const { t, translate } = useLanguage();
-  const entries = useCmsEntries("flute-tabs");
+  const entries = useCmsEntries("flute-tabs", initialEntries);
   return <main className="subject-page content-page">
     <ContentHeader />
-    <section className="content-list-hero"><p className="eyebrow">{t("LỜI BÀI HÁT · NỐT CẢM ÂM", "LYRICS · FLUTE TABS")}</p><h1>{t("Cảm âm sáo trúc", "Bamboo Flute Tabs")}</h1><p>{t("Chọn một bài để mở trang cảm âm riêng, thuận tiện khi luyện tập và chia sẻ.", "Select a song to open its dedicated tab page with full lyrics and notation.")}</p></section>
+    <section className="content-list-hero">
+      <p className="eyebrow">{t("LỜI BÀI HÁT · NỐT CẢM ÂM QUÃNG", "LYRICS · FLUTE TABS")}</p>
+      <h1>{t("Kho Cảm Âm Sáo Trúc Chuẩn", "Bamboo Flute Tabs Library")}</h1>
+      <p>{t("Tổng hợp các bản cảm âm sáo trúc chuẩn 2 dòng: lời bài hát ở trên, nốt cảm âm quãng chuẩn cao độ ở dưới. Thuận tiện tra cứu, tự học và luyện tập trên mọi dòng sáo.", "Complete bamboo flute tabs with standard 2-line layout: lyrics above, pitch notation below for easy self-study and practice.")}</p>
+    </section>
     <section className="content-index">
       {entries === null ? <p className="content-state">{t("Đang tải cảm âm…", "Loading flute tabs…")}</p> : entries.length ? <div className="flute-tab-list">{entries.map((entry, index) => <article className="flute-tab" key={entry.id}>
         <Link className="flute-tab-summary" href={`/cam-am/${entry.slug}`}><span><small>{t("BÀI CẢM ÂM", "FLUTE TAB")} {String(index + 1).padStart(2, "0")}</small><b>{entry.title}</b><em>{translate(entry.tag)}</em></span><i>→</i></Link>
@@ -265,11 +269,11 @@ export function FluteIndex() {
   </main>;
 }
 
-export function FluteDetail() {
+export function FluteDetail({ initialEntry }: { initialEntry?: CmsEntry } = {}) {
   const { t, translate } = useLanguage();
   const params = useParams<{ slug: string }>();
-  const entries = useCmsEntries("flute-tabs");
-  const entry = entries?.find((item) => item.slug === params.slug);
+  const entries = useCmsEntries("flute-tabs", initialEntry ? [initialEntry] : undefined);
+  const entry = entries?.find((item) => item.slug === params.slug) || initialEntry;
   const rows = useMemo(() => parseFluteTab(entry?.content || ""), [entry?.content]);
 
   return <main className="subject-page content-page">
@@ -1713,9 +1717,9 @@ export function SubjectDetail() {
   );
 }
 
-export function GuideIndex() {
+export function GuideIndex({ initialEntries }: { initialEntries?: CmsEntry[] } = {}) {
   const { t, translate } = useLanguage();
-  const entries = useCmsEntries("free-guides");
+  const entries = useCmsEntries("free-guides", initialEntries);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
 
@@ -1751,12 +1755,12 @@ export function GuideIndex() {
     {
       id: "guide-03",
       collection: "free-guides",
-      title: "Chọn sáo tone nào cho người mới bắt đầu?",
-      slug: "chon-sao-tone-nao-cho-nguoi-moi-bat-dau",
+      title: "Chọn nhạc cụ và xây dựng lộ trình học sáo hiệu quả",
+      slug: "chon-nhac-cu-va-xay-dung-lo-trinh-hoc",
       tag: "Bài viết",
       price: "Kiến thức chuyên sâu",
-      excerpt: "So sánh chi tiết ưu nhược điểm của các tone sáo C5, A4, G4 để người mới lựa chọn phù hợp nhất.",
-      content: "/bai-viet/nguoi-moi-chon-sao-tone-nao",
+      excerpt: "Hướng dẫn chọn sáo tone phù hợp (C5, A4, Dizi, Tiêu) và xây dựng lộ trình tự học bài bản từ cơ bản đến nâng cao.",
+      content: "/huong-dan/chon-nhac-cu-va-xay-dung-lo-trinh-hoc",
       imageUrl: "/carousel-tieu.webp",
       visible: true,
       sortOrder: 3,
@@ -1764,7 +1768,7 @@ export function GuideIndex() {
     },
   ];
 
-  const guideList = (entries && entries.length > 0) ? entries : (entries === null ? null : fallbackGuides);
+  const guideList = (entries && entries.length > 0) ? entries : (entries === null ? (initialEntries || null) : fallbackGuides);
 
   const filtered = (guideList || []).filter((item) => {
     const matchesFilter =
@@ -1785,8 +1789,8 @@ export function GuideIndex() {
       <ContentHeader />
       <section className="content-list-hero">
         <p className="eyebrow">{t("CHIA SẺ KIẾN THỨC · VIDEO & BÀI HƯỚNG DẪN", "KNOWLEDGE SHARING · VIDEOS & TUTORIALS")}</p>
-        <h1>{t("Hướng dẫn & Video", "Tutorials & Videos")}</h1>
-        <p>{t("Tổng hợp các bài viết hướng dẫn chi tiết, video bài giảng YouTube và clip mẹo luyện sáo TikTok từ Sáo Trúc Âu Cơ.", "Collection of detailed guides, YouTube video lessons, and TikTok flute practice tips by Au Co Bamboo Flute.")}</p>
+        <h1>{t("Hướng Dẫn Thổi Sáo & Video Bài Giảng", "Flute Tutorials & Video Lessons")}</h1>
+        <p>{t("Tổng hợp các bài viết hướng dẫn chi tiết kỹ thuật bấm ngón, lấy hơi, video bài giảng YouTube và clip mẹo luyện sáo TikTok từ Sáo Trúc Âu Cơ.", "Comprehensive collection of step-by-step flute tutorials, breath control techniques, YouTube video lessons, and practice tips by Au Co Bamboo Flute.")}</p>
       </section>
       <section className="content-index" style={{ paddingTop: 30 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16, marginBottom: 32 }}>
@@ -1846,7 +1850,16 @@ export function GuideIndex() {
                   </div>
                   <div className="guide-copy" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
                     <small>{translate(guide.price) || t("Hướng dẫn miễn phí", "Free Guide")}</small>
-                    <h3 style={{ fontSize: 20, margin: "8px 0 10px", lineHeight: 1.35 }}>{translate(guide.title)}</h3>
+                    <h3 style={{ fontSize: 20, margin: "8px 0 10px", lineHeight: 1.35 }}>
+                      <a
+                        href={targetHref}
+                        target={isExternal ? "_blank" : undefined}
+                        rel={isExternal ? "noopener noreferrer" : undefined}
+                        style={{ color: "inherit", textDecoration: "none" }}
+                      >
+                        {translate(guide.title)}
+                      </a>
+                    </h3>
                     <p style={{ flex: 1, minHeight: 60 }}>{translate(guide.excerpt)}</p>
                     <a
                       href={targetHref}
@@ -1891,13 +1904,13 @@ export function GuideIndex() {
   );
 }
 
-export function GuideDetail() {
+export function GuideDetail({ initialEntry }: { initialEntry?: CmsEntry | null } = {}) {
   const { t, translate } = useLanguage();
   const params = useParams<{ slug: string }>();
-  const entries = useCmsEntries("free-guides");
-  const entry = entries?.find((item) => item.slug === params.slug);
+  const entries = useCmsEntries("free-guides", initialEntry ? [initialEntry] : undefined);
+  const entry = entries?.find((item) => item.slug === params.slug) || initialEntry;
 
-  if (entries === null) {
+  if (entries === null && !entry) {
     return (
       <main className="subject-page content-page">
         <ContentHeader />

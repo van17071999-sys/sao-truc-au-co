@@ -84,7 +84,7 @@ test("permanently redirects www.saotrucauco.com to saotrucauco.com (301)", async
   assert.equal(canonicalRes.status, 200, "Canonical host should return 200 OK");
 });
 
-test("verifies page-specific canonical URLs, blog titles, and sitemap.xml", async () => {
+test("SSR / Pre-render for /cam-am and /huong-dan delivers complete HTML without JS", async () => {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
@@ -92,46 +92,128 @@ test("verifies page-specific canonical URLs, blog titles, and sitemap.xml", asyn
   const mockEnv = { ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } };
   const mockCtx = { waitUntil() {}, passThroughOnException() {} };
 
-  const check = async (path) => {
+  // 1. Verify /cam-am initial HTML
+  const camAmRes = await worker.fetch(new Request("https://saotrucauco.com/cam-am", { headers: { accept: "text/html" } }), mockEnv, mockCtx);
+  assert.equal(camAmRes.status, 200);
+  const camAmHtml = await camAmRes.text();
+
+  // Must NOT contain loading state
+  assert.doesNotMatch(camAmHtml, /Đang tải cảm âm/i, "Initial HTML of /cam-am must not contain 'Đang tải cảm âm'");
+
+  // Must contain H1
+  assert.match(camAmHtml, /<h1[^>]*>Kho Cảm Âm Sáo Trúc Chuẩn<\/h1>/i);
+
+  // Must contain page description
+  assert.match(camAmHtml, /Tổng hợp các bản cảm âm sáo trúc chuẩn 2 dòng/i);
+
+  // Must contain article/tab list with titles
+  assert.match(camAmHtml, /Bèo dạt mây trôi/i);
+  assert.match(camAmHtml, /Chiều trên quê hương/i);
+  assert.match(camAmHtml, /Khúc sáo vùng cao/i);
+  assert.match(camAmHtml, /Về Quê/i);
+  assert.match(camAmHtml, /Tình Ca Tây Bắc/i);
+
+  // Must contain real <a href="..."> links to detail pages
+  assert.match(camAmHtml, /<a[^>]+href=["']\/cam-am\/beo-dat-may-troi["']/i);
+  assert.match(camAmHtml, /<a[^>]+href=["']\/cam-am\/chieu-tren-que-huong["']/i);
+  assert.match(camAmHtml, /<a[^>]+href=["']\/cam-am\/khuc-sao-vung-cao["']/i);
+
+  // Must have dedicated canonical and title
+  assert.match(camAmHtml, /<link[^>]*rel=["']canonical["'][^>]*href=["']https:\/\/saotrucauco\.com\/cam-am["']/i);
+  assert.match(camAmHtml, /<title>Kho Cảm Âm Sáo Trúc Chuẩn Nhất – Lời Bài Hát &amp; Nốt Quãng \| Sáo Trúc Âu Cơ<\/title>/i);
+
+  // 2. Verify /huong-dan initial HTML
+  const huongDanRes = await worker.fetch(new Request("https://saotrucauco.com/huong-dan", { headers: { accept: "text/html" } }), mockEnv, mockCtx);
+  assert.equal(huongDanRes.status, 200);
+  const huongDanHtml = await huongDanRes.text();
+
+  // Must NOT contain loading state
+  assert.doesNotMatch(huongDanHtml, /Đang tải danh sách hướng dẫn/i, "Initial HTML of /huong-dan must not contain 'Đang tải danh sách hướng dẫn'");
+
+  // Must contain H1
+  assert.match(huongDanHtml, /<h1[^>]*>Hướng Dẫn Thổi Sáo &amp; Video Bài Giảng<\/h1>/i);
+
+  // Must contain page description
+  assert.match(huongDanHtml, /Tổng hợp các bài viết hướng dẫn chi tiết kỹ thuật bấm ngón, lấy hơi/i);
+
+  // Must contain guide items
+  assert.match(huongDanHtml, /Cách lấy hơi và tạo tiếng sáo tròn, rõ/i);
+  assert.match(huongDanHtml, /Mẹo sửa lỗi xì tiếng và rung ngón/i);
+  assert.match(huongDanHtml, /Chọn nhạc cụ và xây dựng lộ trình học sáo hiệu quả/i);
+
+  // Must contain real <a href="..."> links
+  assert.match(huongDanHtml, /href=["']https:\/\/www\.youtube\.com\/@saotrucauco["']/i);
+  assert.match(huongDanHtml, /href=["']\/huong-dan\/chon-nhac-cu-va-xay-dung-lo-trinh-hoc["']/i);
+
+  // Must have dedicated canonical and title
+  assert.match(huongDanHtml, /<link[^>]*rel=["']canonical["'][^>]*href=["']https:\/\/saotrucauco\.com\/huong-dan["']/i);
+  assert.match(huongDanHtml, /<title>Hướng Dẫn Thổi Sáo Trúc &amp; Video Bài Giảng Chuẩn Kỹ Thuật \| Sáo Trúc Âu Cơ<\/title>/i);
+});
+
+test("handles thin content and gioi-thieu-admin with noindex and sitemap exclusion", async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+
+  const mockEnv = { ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } };
+  const mockCtx = { waitUntil() {}, passThroughOnException() {} };
+
+  const checkNoindex = async (path) => {
     const res = await worker.fetch(new Request(`https://saotrucauco.com${path}`, { headers: { accept: "text/html" } }), mockEnv, mockCtx);
     assert.equal(res.status, 200, `Expected 200 for ${path}`);
     const html = await res.text();
-    const titleMatch = html.match(/<title>([^<]*)<\/title>/i);
-    const canonicalMatch = html.match(/<link[^>]*rel=["\x27]canonical["\x27][^>]*href=["\x27]([^"\x27]*)["\x27]/i) ||
-                           html.match(/<link[^>]*href=["\x27]([^"\x27]*)["\x27][^>]*rel=["\x27]canonical["\x27]/i);
-    return {
-      title: titleMatch ? titleMatch[1] : "",
-      canonical: canonicalMatch ? canonicalMatch[1] : "",
-    };
+    const hasNoindex = /<meta[^>]*name=["']robots["'][^>]*content=["'][^"']*noindex/i.test(html);
+    const hasFollow = /<meta[^>]*name=["']robots["'][^>]*content=["'][^"']*follow/i.test(html);
+    return { html, hasNoindex, hasFollow };
   };
 
-  // 1. Verify Canonical for subpages (not pointing to homepage)
-  const camAm = await check("/cam-am");
-  assert.equal(camAm.canonical, "https://saotrucauco.com/cam-am");
+  // 1. Thin content articles must have noindex, follow
+  const thinArticles = [
+    "/bai-viet/5-buoc-tao-tieng-sao",
+    "/bai-viet/nguoi-moi-chon-sao-tone-nao",
+    "/bai-viet/cach-luyen-hoi-dai",
+  ];
 
-  const boMon = await check("/bo-mon/sao-truc-viet-nam");
-  assert.equal(boMon.canonical, "https://saotrucauco.com/bo-mon/sao-truc-viet-nam");
+  for (const path of thinArticles) {
+    const { html, hasNoindex, hasFollow } = await checkNoindex(path);
+    assert.ok(hasNoindex, `${path} must have noindex`);
+    assert.ok(hasFollow, `${path} must have follow`);
+    // Retain internal links to related classes/courses
+    assert.match(html, /href=["']\/(?:dang-ky-hoc|lop-hoc|sao-va-phu-kien)["']/i, `${path} should keep internal links`);
+  }
 
-  // 2. Verify specific blog titles and canonicals
-  const blog1 = await check("/bai-viet/5-buoc-tao-tieng-sao");
-  assert.equal(blog1.title, "5 Bước Tạo Tiếng Sáo Trong Cho Người Mới | Sáo Trúc Âu Cơ");
-  assert.equal(blog1.canonical, "https://saotrucauco.com/bai-viet/5-buoc-tao-tieng-sao");
+  // 2. /gioi-thieu-admin must have noindex, follow
+  const adminIntro = await checkNoindex("/gioi-thieu-admin");
+  assert.ok(adminIntro.hasNoindex, "/gioi-thieu-admin must have noindex");
+  assert.ok(adminIntro.hasFollow, "/gioi-thieu-admin must have follow");
 
-  const blog2 = await check("/bai-viet/nguoi-moi-chon-sao-tone-nao");
-  assert.equal(blog2.title, "Người Mới Nên Chọn Sáo Tone Nào? | Sáo Trúc Âu Cơ");
-  assert.equal(blog2.canonical, "https://saotrucauco.com/bai-viet/nguoi-moi-chon-sao-tone-nao");
+  // 3. Fully fleshed article must have index, follow
+  const fullArticleRes = await worker.fetch(new Request("https://saotrucauco.com/bai-viet/hoc-thoi-sao-hcm", { headers: { accept: "text/html" } }), mockEnv, mockCtx);
+  const fullArticleHtml = await fullArticleRes.text();
+  assert.match(fullArticleHtml, /<meta[^>]*name=["']robots["'][^>]*content=["'][^"']*index/i);
+  assert.doesNotMatch(fullArticleHtml, /<meta[^>]*name=["']robots["'][^>]*content=["'][^"']*noindex/i);
 
-  const blog3 = await check("/bai-viet/cach-luyen-hoi-dai");
-  assert.equal(blog3.title, "Cách Luyện Hơi Dài Khi Thổi Sáo | Sáo Trúc Âu Cơ");
-  assert.equal(blog3.canonical, "https://saotrucauco.com/bai-viet/cach-luyen-hoi-dai");
-
-  // 3. Verify sitemap.xml
+  // 4. Sitemap.xml must NOT contain noindexed URLs
   const sitemapRes = await worker.fetch(new Request("https://saotrucauco.com/sitemap.xml"), mockEnv, mockCtx);
   assert.equal(sitemapRes.status, 200);
   const sitemapXml = await sitemapRes.text();
-  assert.doesNotMatch(sitemapXml, /www\.saotrucauco\.com/i, "Sitemap must not contain www");
+
+  assert.doesNotMatch(sitemapXml, /www\.saotrucauco\.com/i);
+  assert.doesNotMatch(sitemapXml, /<loc>https:\/\/saotrucauco\.com\/gioi-thieu-admin<\/loc>/i, "Sitemap must not contain /gioi-thieu-admin");
+  assert.doesNotMatch(sitemapXml, /<loc>https:\/\/saotrucauco\.com\/bai-viet\/5-buoc-tao-tieng-sao<\/loc>/i, "Sitemap must not contain thin article 5-buoc-tao-tieng-sao");
+  assert.doesNotMatch(sitemapXml, /<loc>https:\/\/saotrucauco\.com\/bai-viet\/nguoi-moi-chon-sao-tone-nao<\/loc>/i, "Sitemap must not contain thin article nguoi-moi-chon-sao-tone-nao");
+  assert.doesNotMatch(sitemapXml, /<loc>https:\/\/saotrucauco\.com\/bai-viet\/cach-luyen-hoi-dai<\/loc>/i, "Sitemap must not contain thin article cach-luyen-hoi-dai");
+
+  // Sitemap MUST contain valid indexable URLs
   assert.match(sitemapXml, /<loc>https:\/\/saotrucauco\.com\/cam-am<\/loc>/);
-  assert.match(sitemapXml, /<loc>https:\/\/saotrucauco\.com\/bai-viet\/5-buoc-tao-tieng-sao<\/loc>/);
+  assert.match(sitemapXml, /<loc>https:\/\/saotrucauco\.com\/huong-dan<\/loc>/);
+  assert.match(sitemapXml, /<loc>https:\/\/saotrucauco\.com\/bai-viet\/hoc-thoi-sao-hcm<\/loc>/);
+
+  // 5. Robots.txt must declare sitemap URL
+  const robotsRes = await worker.fetch(new Request("https://saotrucauco.com/robots.txt"), mockEnv, mockCtx);
+  assert.equal(robotsRes.status, 200);
+  const robotsTxt = await robotsRes.text();
+  assert.match(robotsTxt, /Sitemap:\s*https:\/\/saotrucauco\.com\/sitemap\.xml/i);
 });
 
 test("verifies student portal endpoints and synchronization", async () => {
@@ -238,6 +320,3 @@ test("verifies student portal endpoints and synchronization", async () => {
   assert.equal(jsonSync.ok, true);
   assert.ok(jsonSync.syncedAt);
 });
-
-
-

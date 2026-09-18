@@ -246,6 +246,8 @@ const detailedCmsEntries = [
   ["tab-beo-dat", "flute-tabs", "Bèo dạt mây trôi", "beo-dat-may-troi", "Bèo dạt mây trôi – Dân ca quan họ Bắc Ninh", "", "Tone C5 · Nhịp 4/4 · Dễ", "", "Bèo dạt mây trôi chốn xa xôi\ndo2 re2 mi2 sol2 la2 sol2 mi2 re2 do2\n\nAnh ơi em vẫn đợi cánh bèo dạt trôi\nla sol do2 re2 mi2 sol2 re2 do2 la sol", 1],
   ["tab-chieu-que-huong", "flute-tabs", "Chiều trên quê hương", "chieu-tren-que-huong", "Chiều trên quê hương – Cảm âm dân gian", "", "Tone C5 · Nhịp 2/4 · Trung bình", "", "Chiều nghiêng theo gió bờ tre ru êm đềm\nsol la sol mi re mi sol\n\nDòng sông lấp lánh chở câu ca về làng\nmi sol la do2 si la sol mi re mi sol do", 2],
   ["tab-vung-cao", "flute-tabs", "Khúc sáo vùng cao", "khuc-sao-vung-cao", "Khúc sáo vùng cao – Bài luyện luyến láy", "", "Tone G4 · Nhịp 6/8 · Trung bình", "", "Mây bay qua núi bước chân vui trên đồi\nsol la si re2 si la sol la sol mi\n\nTiếng sáo ngân dài gọi mùa xuân về đây\nsi re2 mi2 re2 si la sol mi sol la sol", 3],
+  ["tab-ve-que", "flute-tabs", "Về Quê", "ve-que", "Về Quê (Phó Đức Phương) – Bản cảm âm sáo trúc chuẩn âm sắc quê hương", "", "Tone C5 · Nhịp 2/4 · Nâng cao", "", "Về quê nghe gió ru bờ tre\nsol do2 re2 mi2 re2 do2 sol\n\nNghe câu hát xưa êm đềm bến xưa\nla do2 re2 do2 la sol do2 re2", 4],
+  ["tab-tinh-ca-tay-bac", "flute-tabs", "Tình Ca Tây Bắc", "tinh-ca-tay-bac", "Tình Ca Tây Bắc – Giai điệu trữ tình miền sơn cước", "", "Tone C5/A4 · Nhịp 4/4 · Nâng cao", "", "Rừng rừng hoa với chim ca vui tưng bừng\nsol sol la do2 si la sol mi re\n\nSuối nước trong xanh soi bóng em và anh\nmi sol la do2 re2 do2 la sol do2", 5],
 ] as const;
 
 function normalizeCmsRow(row: CmsRow) {

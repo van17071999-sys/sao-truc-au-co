@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { FluteDetail } from "../../cms-content-pages";
+import { getFluteTabBySlug } from "../../seo-pre-render-data";
 
 const fluteTabTitles: Record<string, string> = {
   "beo-dat-may-troi": "Cảm Âm Bèo Dạt Mây Trôi – Chuẩn 2 Dòng Lời & Nốt Sáo Trúc",
@@ -31,7 +32,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-export default function Page() {
-  return <FluteDetail />;
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const initialEntry = getFluteTabBySlug(slug);
+  return <FluteDetail initialEntry={initialEntry} />;
 }
-
