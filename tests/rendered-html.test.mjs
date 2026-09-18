@@ -29,6 +29,9 @@ test("renders production domain metadata", async () => {
   const html = await response.text();
   assert.match(html, /<link rel=["']canonical["'] href=["']https:\/\/saotrucauco\.com\/?["']/i);
   assert.match(html, /property=["']og:image["'] content=["']https:\/\/saotrucauco\.com\/(logo\.jpg|hero-flute\.webp)["']/i);
+  assert.match(html, /<title>Dạy thổi sáo tại TP\.HCM &amp; Online \| Sáo Trúc Âu Cơ<\/title>/i);
+  assert.match(html, /<h1[^>]*>Học Sáo Trúc, Dizi, Tiêu &amp; Các Loại Sáo Tại TP\.HCM và Online<\/h1>/i);
+  assert.match(html, /<meta[^>]*name=["']description["'][^>]*content=["']Trung tâm dạy sáo tại TP\.HCM và Online\. Học Sáo Trúc, Dizi, Tiêu và nhiều loại sáo với lộ trình từ cơ bản đến nâng cao\.["']/i);
   assert.doesNotMatch(html, /chatgpt\.site|codex-preview/i);
 });
 

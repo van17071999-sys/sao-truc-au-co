@@ -542,6 +542,9 @@ export default function HomePage() {
 
       {/* ================= 3. HERO SECTION (LOCKED SVG PIXEL ACCURACY) ================= */}
       <section className="relative overflow-hidden bg-[#FAF7F2] border-b border-[#EADBCA]">
+        <h1 className="sr-only" style={{ position: "absolute", width: "1px", height: "1px", padding: 0, margin: "-1px", overflow: "hidden", clip: "rect(0, 0, 0, 0)", whiteSpace: "nowrap", borderWidth: 0 }}>
+          Học Sáo Trúc, Dizi, Tiêu &amp; Các Loại Sáo Tại TP.HCM và Online
+        </h1>
         <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           
           {/* Master Responsive Container with Exact Aspect Ratio (2048 / 676) */}

@@ -8,10 +8,10 @@ const geistMono = { variable: "--font-geist-mono" };
 export const metadata: Metadata = {
   metadataBase: new URL("https://saotrucauco.com"),
   title: {
-    default: "Dạy Thổi Sáo TP.HCM & Online | Bán Sáo Chuẩn Âm – Sáo Trúc Âu Cơ",
+    default: "Dạy thổi sáo tại TP.HCM & Online | Sáo Trúc Âu Cơ",
     template: "%s | Sáo Trúc Âu Cơ",
   },
-  description: "Sáo Trúc Âu Cơ chuyên dạy thổi sáo tại TP.HCM và online: Sáo Trúc, Dizi, Recorder, Tiêu, Sáo Mèo, Flute. Bán sáo chuẩn âm, phụ kiện và giáo trình học sáo.",
+  description: "Trung tâm dạy sáo tại TP.HCM và Online. Học Sáo Trúc, Dizi, Tiêu và nhiều loại sáo với lộ trình từ cơ bản đến nâng cao.",
   keywords: [
     "sáo trúc âu cơ",
     "sao truc au co",
@@ -64,8 +64,8 @@ export const metadata: Metadata = {
     locale: "vi_VN",
     url: "https://saotrucauco.com",
     siteName: "Sáo Trúc Âu Cơ",
-    title: "Sáo Trúc Âu Cơ | Lớp Học Sáo Trúc TP.HCM & Online - Bán Sáo Chuẩn Âm",
-    description: "Trung tâm đào tạo sáo trúc và nhạc cụ dân tộc uy tín: Lớp học trực tiếp tại TP.HCM & Online 1 kèm 1, cung cấp sáo chuẩn âm cao cấp, kho cảm âm phong phú và phòng thu âm chuyên nghiệp.",
+    title: "Dạy thổi sáo tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    description: "Trung tâm dạy sáo tại TP.HCM và Online. Học Sáo Trúc, Dizi, Tiêu và nhiều loại sáo với lộ trình từ cơ bản đến nâng cao.",
     images: [
       {
         url: "https://saotrucauco.com/logo.jpg",
@@ -83,8 +83,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Sáo Trúc Âu Cơ | Lớp Học Sáo Trúc & Nhạc Cụ Dân Tộc TP.HCM & Online",
-    description: "Đào tạo sáo trúc từ cơ bản đến chuyên nghiệp, cung cấp sáo chuẩn âm và kho cảm âm miễn phí.",
+    title: "Dạy thổi sáo tại TP.HCM & Online | Sáo Trúc Âu Cơ",
+    description: "Trung tâm dạy sáo tại TP.HCM và Online. Học Sáo Trúc, Dizi, Tiêu và nhiều loại sáo với lộ trình từ cơ bản đến nâng cao.",
     images: ["https://saotrucauco.com/logo.jpg"],
   },
   robots: {
