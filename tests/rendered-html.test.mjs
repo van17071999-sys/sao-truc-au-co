@@ -412,13 +412,13 @@ test("verifies internal analytics system: tracking, bot filtering, authenticatio
                 return { results: [{ device: "desktop", visitors: 1, total_events: 2 }] };
               }
               if (sql.includes("FROM analytics_events") && sql.includes("GROUP BY path")) {
+                if (sql.includes("HAVING") || sql.includes("zalo_clicks")) {
+                  return { results: [{ path: "/", visitors: 1, pageviews: 1, zalo_clicks: 1, signup_clicks: 1 }] };
+                }
                 return { results: [{ path: "/", views: 1, visitors: 1 }] };
               }
               if (sql.includes("FROM analytics_events") && sql.includes("GROUP BY substr(created_at, 1, 10)")) {
                 return { results: [{ day: "2026-09-18", visitors: 1, pageviews: 1, zalo_clicks: 1, signup_clicks: 1 }] };
-              }
-              if (sql.includes("first_views")) {
-                return { results: [{ landing_page: "/", visitors: 1, pageviews: 1, avg_time_sec: 45, zalo_clicks: 1, signup_clicks: 1 }] };
               }
               return { results: [] };
             },

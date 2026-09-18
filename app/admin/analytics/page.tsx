@@ -695,7 +695,6 @@ export default function AnalyticsAdminPage() {
                   <th className="py-3 px-4">Landing Page / URL</th>
                   <th className="py-3 px-4 text-center">Khách (Visitors)</th>
                   <th className="py-3 px-4 text-center">Lượt xem (Pageviews)</th>
-                  <th className="py-3 px-4 text-center">Avg time</th>
                   <th className="py-3 px-4 text-center text-blue-700">Click Zalo</th>
                   <th className="py-3 px-4 text-center text-emerald-700">Click Đăng ký</th>
                   <th className="py-3 px-4 text-right">Tỷ lệ chuyển đổi</th>
@@ -705,14 +704,6 @@ export default function AnalyticsAdminPage() {
                 {(data?.landing_pages || []).map((p, idx) => {
                   const totalConversions = (p.zalo_clicks || 0) + (p.signup_clicks || 0);
                   const cr = p.visitors > 0 ? ((totalConversions / p.visitors) * 100).toFixed(1) : "0.0";
-                  const avgTimeFormatted = (() => {
-                    const sec = p.avgTimeSeconds || 0;
-                    if (!sec || sec <= 0) return "0s";
-                    if (sec < 60) return `${Math.round(sec)}s`;
-                    const mins = Math.floor(sec / 60);
-                    const remSec = Math.round(sec % 60);
-                    return `${mins}m ${remSec}s`;
-                  })();
 
                   return (
                     <tr key={idx} className="hover:bg-[#FAF6EE]/50 transition-colors">
@@ -732,9 +723,6 @@ export default function AnalyticsAdminPage() {
                       </td>
                       <td className="py-3 px-4 text-center text-stone-600">
                         {(p.pageviews || 0).toLocaleString()}
-                      </td>
-                      <td className="py-3 px-4 text-center font-mono text-stone-600">
-                        {avgTimeFormatted}
                       </td>
                       <td className="py-3 px-4 text-center font-bold text-blue-700">
                         {(p.zalo_clicks || 0).toLocaleString()}
@@ -758,7 +746,7 @@ export default function AnalyticsAdminPage() {
                 })}
                 {(data?.landing_pages || []).length === 0 && (
                   <tr>
-                    <td colSpan={7} className="py-6 text-center text-stone-400">
+                    <td colSpan={6} className="py-6 text-center text-stone-400">
                       Chưa có dữ liệu landing page
                     </td>
                   </tr>

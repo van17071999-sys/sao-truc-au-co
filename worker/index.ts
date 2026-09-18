@@ -980,42 +980,22 @@ async function handleAnalytics(request: Request, env: Env, url: URL): Promise<Re
       }>();
 
       const landingPages = await env.DB.prepare(`
-        WITH first_views AS (
-          SELECT session_id, path as landing_page, MIN(created_at) as session_start
-          FROM analytics_events
-          WHERE event_name = 'page_view'
-          GROUP BY session_id
-        ),
-        session_summary AS (
-          SELECT
-            fv.landing_page,
-            fv.session_id,
-            e.visitor_id,
-            COUNT(CASE WHEN e.event_name = 'page_view' THEN 1 END) as pv_count,
-            COUNT(CASE WHEN e.event_name = 'click_zalo' THEN 1 END) as zalo_count,
-            COUNT(CASE WHEN e.event_name = 'click_signup' THEN 1 END) as signup_count,
-            (strftime('%s', MAX(e.created_at)) - strftime('%s', MIN(e.created_at))) as duration_seconds
-          FROM first_views fv
-          JOIN analytics_events e ON e.session_id = fv.session_id
-          WHERE e.created_at >= ? AND e.created_at <= ?
-          GROUP BY fv.landing_page, fv.session_id, e.visitor_id
-        )
-        SELECT
-          landing_page,
+        SELECT 
+          path,
           COUNT(DISTINCT visitor_id) as visitors,
-          SUM(pv_count) as pageviews,
-          ROUND(AVG(duration_seconds), 0) as avg_time_sec,
-          SUM(zalo_count) as zalo_clicks,
-          SUM(signup_count) as signup_clicks
-        FROM session_summary
-        GROUP BY landing_page
-        ORDER BY visitors DESC
+          SUM(CASE WHEN event_name = 'page_view' THEN 1 ELSE 0 END) as pageviews,
+          SUM(CASE WHEN event_name = 'click_zalo' THEN 1 ELSE 0 END) as zalo_clicks,
+          SUM(CASE WHEN event_name = 'click_signup' THEN 1 ELSE 0 END) as signup_clicks
+        FROM analytics_events
+        WHERE created_at >= ? AND created_at <= ?
+        GROUP BY path
+        HAVING pageviews > 0 OR zalo_clicks > 0 OR signup_clicks > 0
+        ORDER BY pageviews DESC, visitors DESC
         LIMIT 30
       `).bind(filterStart, filterEnd).all<{
-        landing_page: string;
+        path: string;
         visitors: number;
         pageviews: number;
-        avg_time_sec: number | null;
         zalo_clicks: number;
         signup_clicks: number;
       }>();
@@ -1050,11 +1030,10 @@ async function handleAnalytics(request: Request, env: Env, url: URL): Promise<Re
       }));
 
       const landingPagesFormatted = (landingPages.results || []).map((row) => ({
-        path: row.landing_page,
-        landingPage: row.landing_page,
+        path: row.path,
+        landingPage: row.path,
         visitors: row.visitors,
         pageviews: row.pageviews,
-        avgTimeSeconds: Math.max(0, Number(row.avg_time_sec) || 0),
         zalo_clicks: row.zalo_clicks,
         signup_clicks: row.signup_clicks,
         zaloClicks: row.zalo_clicks,

@@ -5,7 +5,9 @@ import { usePathname } from "next/navigation";
 
 const STORAGE_KEY_VID = "_stac_vid";
 const STORAGE_KEY_SID = "_stac_sid";
+const STORAGE_KEY_SID_TS = "_stac_sid_ts";
 const STORAGE_KEY_UTM = "_stac_utm";
+const SESSION_INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 mins
 
 function getOrSetVisitorId(): string {
   try {
@@ -22,11 +24,16 @@ function getOrSetVisitorId(): string {
 
 function getOrSetSessionId(): string {
   try {
+    const now = Date.now();
     let sid = sessionStorage.getItem(STORAGE_KEY_SID);
-    if (!sid || sid.length < 5) {
-      sid = `s_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+    const lastActiveStr = sessionStorage.getItem(STORAGE_KEY_SID_TS);
+    const lastActive = lastActiveStr ? parseInt(lastActiveStr, 10) : 0;
+
+    if (!sid || sid.length < 5 || !lastActive || now - lastActive > SESSION_INACTIVITY_TIMEOUT) {
+      sid = `s_${now.toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
       sessionStorage.setItem(STORAGE_KEY_SID, sid);
     }
+    sessionStorage.setItem(STORAGE_KEY_SID_TS, now.toString());
     return sid;
   } catch {
     return `s_${Date.now().toString(36)}_mem`;
