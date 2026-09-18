@@ -30,12 +30,12 @@ test("renders production domain metadata", async () => {
   assert.match(html, /<link rel=["']canonical["'] href=["']https:\/\/saotrucauco\.com\/?["']/i);
   assert.match(html, /property=["']og:image["'] content=["']https:\/\/saotrucauco\.com\/(logo\.jpg|hero-flute\.webp)["']/i);
   assert.match(html, /<title>Dạy thổi sáo tại TP\.HCM &amp; Online \| Sáo Trúc Âu Cơ<\/title>/i);
-  assert.match(html, /<h1[^>]*>Học Sáo Trúc, Dizi, Tiêu &amp; Các Loại Sáo Tại TP\.HCM và Online<\/h1>/i);
+  assert.match(html, /<h1[^>]*>Dạy Thổi Sáo Tại TP\.HCM &amp; Online – Sáo Trúc Âu Cơ<\/h1>/i);
   assert.match(html, /<meta[^>]*name=["']description["'][^>]*content=["']Trung tâm dạy sáo tại TP\.HCM và Online\. Học Sáo Trúc, Dizi, Tiêu và nhiều loại sáo với lộ trình từ cơ bản đến nâng cao\.["']/i);
   assert.doesNotMatch(html, /chatgpt\.site|codex-preview/i);
 });
 
-test("permanently redirects www.saotrucauco.com to saotrucauco.com (301)", async () => {
+test("permanently redirects www and http traffic to https://saotrucauco.com (301)", async () => {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
@@ -44,40 +44,35 @@ test("permanently redirects www.saotrucauco.com to saotrucauco.com (301)", async
   const mockCtx = { waitUntil() {}, passThroughOnException() {} };
 
   const testCases = [
-    {
-      incoming: "https://www.saotrucauco.com/",
-      expected: "https://saotrucauco.com/",
-    },
-    {
-      incoming: "https://www.saotrucauco.com/cam-am",
-      expected: "https://saotrucauco.com/cam-am",
-    },
-    {
-      incoming: "https://www.saotrucauco.com/huong-dan",
-      expected: "https://saotrucauco.com/huong-dan",
-    },
-    {
-      incoming: "https://www.saotrucauco.com/bai-viet",
-      expected: "https://saotrucauco.com/bai-viet",
-    },
-    {
-      incoming: "https://www.saotrucauco.com/bo-mon/sao-truc-viet-nam",
-      expected: "https://saotrucauco.com/bo-mon/sao-truc-viet-nam",
-    },
-    {
-      incoming: "https://www.saotrucauco.com/cam-am?utm_source=facebook&utm_campaign=test",
-      expected: "https://saotrucauco.com/cam-am?utm_source=facebook&utm_campaign=test",
-    },
-    {
-      incoming: "https://www.saotrucauco.com/cam-am?utm_source=test&utm_campaign=seo",
-      expected: "https://saotrucauco.com/cam-am?utm_source=test&utm_campaign=seo",
-    },
+    // 1. https://www -> https://non-www
+    { incoming: "https://www.saotrucauco.com/", expected: "https://saotrucauco.com/" },
+    { incoming: "https://www.saotrucauco.com/cam-am", expected: "https://saotrucauco.com/cam-am" },
+    { incoming: "https://www.saotrucauco.com/huong-dan", expected: "https://saotrucauco.com/huong-dan" },
+    { incoming: "https://www.saotrucauco.com/lop-hoc", expected: "https://saotrucauco.com/lop-hoc" },
+    { incoming: "https://www.saotrucauco.com/bai-viet", expected: "https://saotrucauco.com/bai-viet" },
+    { incoming: "https://www.saotrucauco.com/bo-mon/sao-truc-viet-nam", expected: "https://saotrucauco.com/bo-mon/sao-truc-viet-nam" },
+    { incoming: "https://www.saotrucauco.com/cam-am?utm_source=facebook&utm_campaign=test", expected: "https://saotrucauco.com/cam-am?utm_source=facebook&utm_campaign=test" },
+
+    // 2. http://www -> https://non-www
+    { incoming: "http://www.saotrucauco.com/", expected: "https://saotrucauco.com/" },
+    { incoming: "http://www.saotrucauco.com/cam-am", expected: "https://saotrucauco.com/cam-am" },
+    { incoming: "http://www.saotrucauco.com/huong-dan", expected: "https://saotrucauco.com/huong-dan" },
+    { incoming: "http://www.saotrucauco.com/lop-hoc", expected: "https://saotrucauco.com/lop-hoc" },
+    { incoming: "http://www.saotrucauco.com/bai-viet", expected: "https://saotrucauco.com/bai-viet" },
+
+    // 3. http://non-www -> https://non-www
+    { incoming: "http://saotrucauco.com/", expected: "https://saotrucauco.com/" },
+    { incoming: "http://saotrucauco.com/cam-am", expected: "https://saotrucauco.com/cam-am" },
+    { incoming: "http://saotrucauco.com/huong-dan", expected: "https://saotrucauco.com/huong-dan" },
+    { incoming: "http://saotrucauco.com/lop-hoc", expected: "https://saotrucauco.com/lop-hoc" },
+    { incoming: "http://saotrucauco.com/bai-viet", expected: "https://saotrucauco.com/bai-viet" },
   ];
 
   for (const { incoming, expected } of testCases) {
     const res = await worker.fetch(new Request(incoming), mockEnv, mockCtx);
     assert.equal(res.status, 301, `Expected 301 for ${incoming}`);
-    assert.equal(res.headers.get("Location"), expected, `Expected Location ${expected}`);
+    assert.equal(res.headers.get("Location"), expected, `Expected Location ${expected} for ${incoming}`);
+    assert.match(res.headers.get("Cache-Control") || "", /max-age/);
   }
 
   // Ensure canonical host does NOT redirect to itself (no loop)

@@ -540,12 +540,19 @@ export default function HomePage() {
         )}
       </header>
 
-      {/* ================= 3. HERO SECTION (LOCKED SVG PIXEL ACCURACY) ================= */}
+      {/* ================= 3. HERO SECTION ================= */}
       <section className="relative overflow-hidden bg-[#FAF7F2] border-b border-[#EADBCA]">
-        <h1 className="sr-only" style={{ position: "absolute", width: "1px", height: "1px", padding: 0, margin: "-1px", overflow: "hidden", clip: "rect(0, 0, 0, 0)", whiteSpace: "nowrap", borderWidth: 0 }}>
-          Học Sáo Trúc, Dizi, Tiêu &amp; Các Loại Sáo Tại TP.HCM và Online
-        </h1>
-        <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        {/* Semantic H1 & Introduction for SEO & Search Engine Crawlers */}
+        <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-3 sm:pb-4 text-center">
+          <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-[40px] font-bold text-[#70141D] leading-tight tracking-tight">
+            Dạy Thổi Sáo Tại TP.HCM &amp; Online – Sáo Trúc Âu Cơ
+          </h1>
+          <p className="mt-2 text-xs sm:text-sm md:text-base text-[#5C4D47] max-w-3xl mx-auto leading-relaxed">
+            Trung tâm đào tạo sáo trúc và nhạc cụ dân tộc bài bản từ cơ bản đến nâng cao tại TP.HCM và Online. Lộ trình học cá nhân hóa, phương pháp trực quan giúp người mới bắt đầu tự tin thổi những giai điệu yêu thích.
+          </p>
+        </div>
+
+        <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6">
           
           {/* Master Responsive Container with Exact Aspect Ratio (2048 / 676) */}
           <div className="relative w-full rounded-2xl overflow-hidden shadow-sm border border-[#E0D5C3] bg-[#FAF7F2]">

@@ -840,21 +840,30 @@ async function handleCms(request: Request, env: Env, url: URL): Promise<Response
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
-    const host = (url.hostname || request.headers.get("host") || "").toLowerCase().replace(/:\d+$/, "");
+    const hostHeader = (request.headers.get("x-forwarded-host") || request.headers.get("host") || "").toLowerCase().replace(/:\d+$/, "");
+    const hostname = (url.hostname || "").toLowerCase().replace(/:\d+$/, "");
+    const proto = (request.headers.get("x-forwarded-proto") || url.protocol.replace(":", "")).toLowerCase();
 
-    // ── Canonical Hostname Redirect ───────────────────────────────────────────
+    const isWww = hostHeader === "www.saotrucauco.com" ||
+                  hostHeader.startsWith("www.") ||
+                  hostname === "www.saotrucauco.com" ||
+                  hostname.startsWith("www.");
+    const isHttp = proto === "http" || url.protocol === "http:";
+    const isSaotruc = hostHeader.includes("saotrucauco.com") || hostname.includes("saotrucauco.com");
+
+    // ── Canonical Hostname & HTTPS Redirect ───────────────────────────────────────────
     // Enforce https://saotrucauco.com as the single canonical hostname.
-    // Permanently redirect (HTTP 301) all traffic from www.saotrucauco.com to saotrucauco.com.
-    // Preserves full pathname and query string.
-    if (host === "www.saotrucauco.com") {
-      const destination = new URL(request.url);
-      destination.protocol = "https:";
-      destination.hostname = "saotrucauco.com";
-      destination.port = "";
+    // Permanently redirect (HTTP 301) all traffic from:
+    // - http://www -> https://non-www
+    // - https://www -> https://non-www
+    // - http://non-www -> https://non-www
+    // Across ALL paths and query strings in a single hop.
+    if (isWww || (isHttp && isSaotruc)) {
       return new Response(null, {
         status: 301,
         headers: {
-          Location: destination.toString(),
+          Location: `https://saotrucauco.com${url.pathname}${url.search}`,
+          "Cache-Control": "public, max-age=31536000, immutable",
         },
       });
     }
