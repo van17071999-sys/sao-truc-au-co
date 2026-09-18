@@ -670,12 +670,14 @@ async function ensureAnalyticsSchema(db: D1Database) {
       campaign TEXT NOT NULL DEFAULT '',
       device TEXT NOT NULL DEFAULT 'desktop',
       browser TEXT NOT NULL DEFAULT '',
+      site TEXT NOT NULL DEFAULT 'saotrucauco.com',
       created_at TEXT NOT NULL
     )`),
     db.prepare("CREATE INDEX IF NOT EXISTS idx_analytics_created ON analytics_events(created_at)"),
     db.prepare("CREATE INDEX IF NOT EXISTS idx_analytics_visitor ON analytics_events(visitor_id, session_id)"),
     db.prepare("CREATE INDEX IF NOT EXISTS idx_analytics_event ON analytics_events(event_name, created_at)"),
     db.prepare("CREATE INDEX IF NOT EXISTS idx_analytics_path ON analytics_events(path)"),
+    db.prepare("CREATE INDEX IF NOT EXISTS idx_analytics_site ON analytics_events(site)"),
   ]);
   analyticsSchemaInitialized = true;
 }
@@ -771,8 +773,8 @@ async function handleAnalytics(request: Request, env: Env, url: URL): Promise<Re
       await ensureAnalyticsSchema(env.DB);
       await env.DB.prepare(`
         INSERT INTO analytics_events
-        (id, visitor_id, session_id, event_name, path, referrer, source, medium, campaign, device, browser, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (id, visitor_id, session_id, event_name, path, referrer, source, medium, campaign, device, browser, site, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'saotrucauco.com', ?)
       `).bind(id, visitorId, sessionId, eventName, path, referrer, source, medium, campaign, device, browser, createdAt).run();
     } catch (err) {
       console.error("Analytics track insertion error:", err);
@@ -854,7 +856,7 @@ async function handleAnalytics(request: Request, env: Env, url: URL): Promise<Re
 
     try {
       const onlineRow = await env.DB.prepare(
-        "SELECT COUNT(DISTINCT visitor_id) as online_count FROM analytics_events WHERE created_at >= ?"
+        "SELECT COUNT(DISTINCT visitor_id) as online_count FROM analytics_events WHERE created_at >= ? AND (site = 'saotrucauco.com' OR site IS NULL)"
       ).bind(onlineCutoff).first<{ online_count: number }>();
 
       const todayRow = await env.DB.prepare(`
@@ -862,7 +864,7 @@ async function handleAnalytics(request: Request, env: Env, url: URL): Promise<Re
           COUNT(DISTINCT visitor_id) as visitors_today,
           COUNT(CASE WHEN event_name = 'page_view' THEN 1 END) as pageviews_today
         FROM analytics_events
-        WHERE created_at >= ? AND created_at <= ?
+        WHERE created_at >= ? AND created_at <= ? AND (site = 'saotrucauco.com' OR site IS NULL)
       `).bind(todayStart, todayEnd).first<{ visitors_today: number; pageviews_today: number }>();
 
       const overviewRow = await env.DB.prepare(`
@@ -880,7 +882,7 @@ async function handleAnalytics(request: Request, env: Env, url: URL): Promise<Re
           COUNT(CASE WHEN event_name = 'scroll_75' THEN 1 END) as scroll_75,
           COUNT(CASE WHEN event_name = 'scroll_100' THEN 1 END) as scroll_100
         FROM analytics_events
-        WHERE created_at >= ? AND created_at <= ?
+        WHERE created_at >= ? AND created_at <= ? AND (site = 'saotrucauco.com' OR site IS NULL)
       `).bind(filterStart, filterEnd).first<{
         total_visitors: number;
         total_sessions: number;
@@ -899,21 +901,21 @@ async function handleAnalytics(request: Request, env: Env, url: URL): Promise<Re
       const googleRow = await env.DB.prepare(`
         SELECT COUNT(DISTINCT visitor_id) as count
         FROM analytics_events
-        WHERE created_at >= ? AND created_at <= ?
+        WHERE created_at >= ? AND created_at <= ? AND (site = 'saotrucauco.com' OR site IS NULL)
           AND (lower(source) LIKE '%google%' OR lower(referrer) LIKE '%google%')
       `).bind(filterStart, filterEnd).first<{ count: number }>();
 
       const facebookRow = await env.DB.prepare(`
         SELECT COUNT(DISTINCT visitor_id) as count
         FROM analytics_events
-        WHERE created_at >= ? AND created_at <= ?
+        WHERE created_at >= ? AND created_at <= ? AND (site = 'saotrucauco.com' OR site IS NULL)
           AND (lower(source) LIKE '%facebook%' OR lower(source) LIKE '%fb%' OR lower(referrer) LIKE '%facebook%' OR lower(referrer) LIKE '%fb.com%')
       `).bind(filterStart, filterEnd).first<{ count: number }>();
 
       const directRow = await env.DB.prepare(`
         SELECT COUNT(DISTINCT visitor_id) as count
         FROM analytics_events
-        WHERE created_at >= ? AND created_at <= ?
+        WHERE created_at >= ? AND created_at <= ? AND (site = 'saotrucauco.com' OR site IS NULL)
           AND (source = '' OR lower(source) = 'direct')
           AND (referrer = '' OR referrer IS NULL)
       `).bind(filterStart, filterEnd).first<{ count: number }>();
@@ -932,7 +934,8 @@ async function handleAnalytics(request: Request, env: Env, url: URL): Promise<Re
           COUNT(DISTINCT visitor_id) as visitors,
           COUNT(id) as total_events
         FROM analytics_events
-        WHERE created_at >= ? AND created_at <= ?
+        WHERE created_at >= ? AND created_at <= ? AND (site = 'saotrucauco.com' OR site IS NULL)
+          AND path NOT LIKE '/kho-cam-am%' AND path != '/danh-sach-bai-tap'
         GROUP BY channel
         ORDER BY visitors DESC
         LIMIT 10
@@ -944,7 +947,8 @@ async function handleAnalytics(request: Request, env: Env, url: URL): Promise<Re
           COUNT(DISTINCT visitor_id) as visitors,
           COUNT(id) as total_events
         FROM analytics_events
-        WHERE created_at >= ? AND created_at <= ?
+        WHERE created_at >= ? AND created_at <= ? AND (site = 'saotrucauco.com' OR site IS NULL)
+          AND path NOT LIKE '/kho-cam-am%' AND path != '/danh-sach-bai-tap'
         GROUP BY device
       `).bind(filterStart, filterEnd).all<{ device: string; visitors: number; total_events: number }>();
 
@@ -954,7 +958,8 @@ async function handleAnalytics(request: Request, env: Env, url: URL): Promise<Re
           COUNT(id) as views,
           COUNT(DISTINCT visitor_id) as visitors
         FROM analytics_events
-        WHERE event_name = 'page_view' AND created_at >= ? AND created_at <= ?
+        WHERE event_name = 'page_view' AND created_at >= ? AND created_at <= ? AND (site = 'saotrucauco.com' OR site IS NULL)
+          AND path NOT LIKE '/kho-cam-am%' AND path != '/danh-sach-bai-tap'
         GROUP BY path
         ORDER BY views DESC
         LIMIT 25
@@ -968,7 +973,8 @@ async function handleAnalytics(request: Request, env: Env, url: URL): Promise<Re
           COUNT(CASE WHEN event_name = 'click_zalo' THEN 1 END) as zalo_clicks,
           COUNT(CASE WHEN event_name = 'click_signup' THEN 1 END) as signup_clicks
         FROM analytics_events
-        WHERE created_at >= ? AND created_at <= ?
+        WHERE created_at >= ? AND created_at <= ? AND (site = 'saotrucauco.com' OR site IS NULL)
+          AND path NOT LIKE '/kho-cam-am%' AND path != '/danh-sach-bai-tap'
         GROUP BY substr(created_at, 1, 10)
         ORDER BY day ASC
       `).bind(filterStart, filterEnd).all<{
@@ -987,7 +993,8 @@ async function handleAnalytics(request: Request, env: Env, url: URL): Promise<Re
           SUM(CASE WHEN event_name = 'click_zalo' THEN 1 ELSE 0 END) as zalo_clicks,
           SUM(CASE WHEN event_name = 'click_signup' THEN 1 ELSE 0 END) as signup_clicks
         FROM analytics_events
-        WHERE created_at >= ? AND created_at <= ?
+        WHERE created_at >= ? AND created_at <= ? AND (site = 'saotrucauco.com' OR site IS NULL)
+          AND path NOT LIKE '/kho-cam-am%' AND path != '/danh-sach-bai-tap'
         GROUP BY path
         HAVING pageviews > 0 OR zalo_clicks > 0 OR signup_clicks > 0
         ORDER BY pageviews DESC, visitors DESC
