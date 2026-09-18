@@ -659,7 +659,7 @@ async function ensureAnalyticsSchema(db: D1Database) {
   if (analyticsSchemaInitialized) return;
   await db.batch([
     db.prepare(`CREATE TABLE IF NOT EXISTS analytics_events (
-      id TEXT PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       visitor_id TEXT NOT NULL,
       session_id TEXT NOT NULL,
       event_name TEXT NOT NULL,
@@ -766,16 +766,15 @@ async function handleAnalytics(request: Request, env: Env, url: URL): Promise<Re
       return Response.json({ ok: false, error: "Database not available" }, { status: 503 });
     }
 
-    const id = `evt_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
     const createdAt = new Date().toISOString();
 
     try {
       await ensureAnalyticsSchema(env.DB);
       await env.DB.prepare(`
         INSERT INTO analytics_events
-        (id, visitor_id, session_id, event_name, path, referrer, source, medium, campaign, device, browser, site, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'saotrucauco.com', ?)
-      `).bind(id, visitorId, sessionId, eventName, path, referrer, source, medium, campaign, device, browser, createdAt).run();
+        (visitor_id, session_id, event_name, path, referrer, source, medium, campaign, device, browser, site, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'saotrucauco.com', ?)
+      `).bind(visitorId, sessionId, eventName, path, referrer, source, medium, campaign, device, browser, createdAt).run();
     } catch (err) {
       console.error("Analytics track insertion error:", err);
       return Response.json({ ok: false, error: "Insert failed" }, { status: 500 });
