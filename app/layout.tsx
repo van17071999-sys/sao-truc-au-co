@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { LanguageProvider } from "./i18n-context";
 import AnalyticsTracker from "./analytics-tracker";
+import FloatingSignupButton from "./floating-signup-button";
 
 const geistSans = { variable: "--font-geist-sans" };
 const geistMono = { variable: "--font-geist-mono" };
@@ -337,6 +338,7 @@ export default function RootLayout({
       >
         <LanguageProvider>
           <AnalyticsTracker />
+          <FloatingSignupButton />
           {children}
         </LanguageProvider>
       </body>

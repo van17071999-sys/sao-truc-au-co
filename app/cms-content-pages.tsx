@@ -1336,7 +1336,7 @@ export function SubjectDetail() {
     <main className="subject-page">
       <ContentHeader />
 
-      <article className="subject-article" style={{ maxWidth: 1250, margin: "0 auto", padding: "28px clamp(14px, 3vw, 24px)", display: "grid", gridTemplateColumns: "1fr 310px", gap: 20 }}>
+      <article className="subject-article" style={{ maxWidth: 1080, margin: "0 auto", padding: "28px clamp(14px, 3vw, 24px)" }}>
         <div className="article-main" id="subject-content-view" style={{ maxWidth: "100%", display: "grid", gap: 18 }}>
           
           {/* KHỐI HERO BỘ MÔN (Nằm gọn trong cột chính bên trái, thẳng hàng hoàn hảo với các thẻ bên dưới) */}
@@ -1713,30 +1713,6 @@ export function SubjectDetail() {
             </section>
           )}
         </div>
-
-        {/* CỘT PHẢI: Sticky Widget */}
-        <aside style={{ position: "sticky", top: 95, alignSelf: "start", display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ background: "#fffaf1", border: "1px solid var(--line)", borderRadius: 10, padding: 16 }}>
-            <small style={{ color: "var(--gold)", fontSize: 9, fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase" }}>{t("HÌNH THỨC HỌC", "STUDY FORMAT")}</small>
-            <ul style={{ margin: "6px 0 0", paddingLeft: 16, fontSize: 12.5, color: "#5a4542", lineHeight: 1.55 }}>
-              {parsed.formatItems.map((f) => <li key={f}>{translate(f)}</li>)}
-            </ul>
-          </div>
-
-          <div style={{ background: "linear-gradient(135deg, #7c1c38, #591024)", color: "#fff", borderRadius: 10, padding: "16px 18px" }}>
-            <small style={{ color: "#fce3b8", fontSize: 9.5, fontWeight: 700, letterSpacing: ".12em" }}>{t("TƯ VẤN NHANH", "QUICK INQUIRY")}</small>
-            <h4 style={{ margin: "4px 0 4px", color: "#fff", fontSize: 14.5 }}>Hotline & Zalo</h4>
-            <a href="tel:0374261368" style={{ color: "#fce3b8", fontSize: 17, fontWeight: 800, textDecoration: "none", display: "block" }}>
-              0374 261 368
-            </a>
-            <p style={{ fontSize: 11, color: "#f3d2bb", margin: "4px 0 10px", lineHeight: 1.35 }}>
-              Nhận bài kiểm tra khẩu hình và tư vấn lộ trình học miễn phí!
-            </p>
-            <a href="#dang-ky" className="button button-gold" style={{ width: "100%", textAlign: "center", display: "block", padding: "7px 12px", fontSize: 12.5 }}>
-              Đăng ký ngay ↓
-            </a>
-          </div>
-        </aside>
       </article>
 
       <div className="contact-page-container" style={{ margin: "16px 0 0", width: "100%" }}>
