@@ -1,61 +1,41 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import BrandLogo from "../../brand-logo";
 
-type StatsResponse = {
-  ok: boolean;
-  error?: string;
-  period: {
-    range: string;
-    from: string;
-    to: string;
-    todayDate: string;
+type StatsData = {
+  online_now?: number;
+  online?: number;
+  summary?: {
+    visitors?: number;
+    pageviews?: number;
+    sessions?: number;
+    zalo_clicks?: number;
+    signup_clicks?: number;
+    phone_clicks?: number;
   };
-  online: number;
-  today: {
+  sources?: Array<{
+    group_source: string;
+    visitors: number;
+    events?: number;
+  }>;
+  devices?: Array<{
+    device: string;
+    visitors: number;
+    events?: number;
+  }>;
+  trend?: Array<{
+    date: string;
     visitors: number;
     pageviews: number;
-  };
-  overview: {
-    visitors: number;
-    sessions: number;
-    pageviews: number;
-    zaloClicks: number;
-    signupClicks: number;
-    phoneClicks: number;
-    playAudio: number;
-    playVideo: number;
-    scrollMilestones: {
-      s25: number;
-      s50: number;
-      s75: number;
-      s100: number;
-    };
-  };
-  trafficChannels: {
-    google: number;
-    facebook: number;
-    direct: number;
-    sources: Array<{ channel: string; visitors: number; total_events: number }>;
-  };
-  devices: Array<{ device: string; visitors: number; total_events: number }>;
-  topPages: Array<{ path: string; views: number; visitors: number }>;
-  timeline: Array<{
-    day: string;
+  }>;
+  landing_pages?: Array<{
+    path: string;
     visitors: number;
     pageviews: number;
     zalo_clicks: number;
     signup_clicks: number;
-  }>;
-  landingPages: Array<{
-    landingPage: string;
-    visitors: number;
-    pageviews: number;
-    avgTimeSeconds: number;
-    zaloClicks: number;
-    signupClicks: number;
+    avgTimeSeconds?: number;
   }>;
 };
 
@@ -65,39 +45,27 @@ export default function AnalyticsAdminPage() {
   const [loginError, setLoginError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // Date filter states
-  const [filterRange, setFilterRange] = useState<"today" | "7d" | "30d" | "custom">("today");
-  const [customFrom, setCustomFrom] = useState("");
-  const [customTo, setCustomTo] = useState("");
+  // Range and dates
+  const [currentRange, setCurrentRange] = useState<"today" | "7d" | "30d" | "custom">("today");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
-  // Data & loading states
-  const [stats, setStats] = useState<StatsResponse | null>(null);
+  // Data states
+  const [data, setData] = useState<StatsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  // Realtime polling
-  const [autoRefresh, setAutoRefresh] = useState(true);
-  const [countdown, setCountdown] = useState(25);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Landing page search filter
-  const [lpSearch, setLpSearch] = useState("");
-
-  // Chart tooltip state
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-
-  const fetchStats = async (isBackground = false) => {
-    if (!isBackground) setIsLoading(true);
-    else setIsRefreshing(true);
-
+  const fetchStats = async (isManual = false) => {
+    if (isManual) setIsRefreshing(true);
     try {
-      let queryUrl = `/api/analytics/stats?range=${filterRange}`;
-      if (filterRange === "custom" && customFrom && customTo) {
-        queryUrl += `&from=${encodeURIComponent(customFrom)}&to=${encodeURIComponent(customTo)}`;
+      let url = `/api/analytics/stats?range=${currentRange}`;
+      if (currentRange === "custom" && dateFrom && dateTo) {
+        url += `&from=${encodeURIComponent(dateFrom)}&to=${encodeURIComponent(dateTo)}`;
       }
 
-      const res = await fetch(queryUrl, { credentials: "same-origin" });
-
+      const res = await fetch(url, { credentials: "same-origin" });
       if (res.status === 401) {
         setAuthenticated(false);
         setIsLoading(false);
@@ -105,16 +73,46 @@ export default function AnalyticsAdminPage() {
         return;
       }
 
-      if (!res.ok) throw new Error("Failed to load stats");
+      if (!res.ok) throw new Error("Failed to load analytics");
 
-      const data = (await res.json()) as StatsResponse;
-      if (data.ok) {
-        setStats(data);
-        setAuthenticated(true);
-        setLastUpdated(new Date());
-      }
+      const json = await res.json();
+      const statsPayload: StatsData = json.data || {
+        online_now: json.online || 0,
+        summary: {
+          visitors: json.overview?.visitors || 0,
+          pageviews: json.overview?.pageviews || 0,
+          sessions: json.overview?.sessions || 0,
+          zalo_clicks: json.overview?.zaloClicks || 0,
+          signup_clicks: json.overview?.signupClicks || 0,
+          phone_clicks: json.overview?.phoneClicks || 0,
+        },
+        sources: (json.trafficChannels?.sources || []).map((s: any) => ({
+          group_source: s.channel || s.group_source || "Others",
+          visitors: s.visitors || 0,
+        })),
+        devices: (json.devices || []).map((d: any) => ({
+          device: d.device || "Desktop",
+          visitors: d.visitors || 0,
+          events: d.events || d.total_events || 0,
+        })),
+        trend: (json.timeline || []).map((t: any) => ({
+          date: t.day || t.date || "",
+          visitors: t.visitors || 0,
+          pageviews: t.pageviews || 0,
+        })),
+        landing_pages: (json.landingPages || []).map((lp: any) => ({
+          path: lp.landingPage || lp.path || "/",
+          visitors: lp.visitors || 0,
+          pageviews: lp.pageviews || 0,
+          zalo_clicks: lp.zaloClicks || lp.zalo_clicks || 0,
+          signup_clicks: lp.signupClicks || lp.signup_clicks || 0,
+        })),
+      };
+
+      setData(statsPayload);
+      setAuthenticated(true);
     } catch (err) {
-      console.error("Error fetching analytics stats:", err);
+      console.error("Fetch stats error:", err);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -123,24 +121,126 @@ export default function AnalyticsAdminPage() {
 
   useEffect(() => {
     void fetchStats();
-  }, [filterRange]);
+  }, [currentRange]);
 
-  // Handle countdown and polling
+  // Polling every 25 seconds
   useEffect(() => {
-    if (!authenticated || !autoRefresh) return;
+    if (!authenticated) return;
+    const interval = setInterval(() => {
+      void fetchStats();
+    }, 25000);
+    return () => clearInterval(interval);
+  }, [authenticated, currentRange, dateFrom, dateTo]);
 
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          void fetchStats(true);
-          return 25;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+  // Draw trend canvas chart
+  useEffect(() => {
+    if (!data?.trend || !canvasRef.current) return;
 
-    return () => clearInterval(timer);
-  }, [authenticated, autoRefresh, filterRange, customFrom, customTo]);
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+
+    const w = rect.width;
+    const h = rect.height;
+    ctx.clearRect(0, 0, w, h);
+
+    const trendData = data.trend;
+    if (!trendData.length) {
+      ctx.fillStyle = "#9C9388";
+      ctx.font = "13px 'Plus Jakarta Sans', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Chưa có dữ liệu xu hướng cho khoảng thời gian này", w / 2, h / 2);
+      return;
+    }
+
+    const padding = { top: 25, right: 25, bottom: 35, left: 45 };
+    const chartW = w - padding.left - padding.right;
+    const chartH = h - padding.top - padding.bottom;
+
+    const maxVal = Math.max(
+      ...trendData.map((d) => Math.max(d.pageviews || 0, d.visitors || 0)),
+      10
+    );
+
+    // Grid lines
+    ctx.strokeStyle = "#EADFCB";
+    ctx.lineWidth = 1;
+    ctx.fillStyle = "#9C9388";
+    ctx.font = "10px 'Plus Jakarta Sans', sans-serif";
+    ctx.textAlign = "right";
+
+    const gridSteps = 4;
+    for (let i = 0; i <= gridSteps; i++) {
+      const y = padding.top + (chartH / gridSteps) * i;
+      const val = Math.round(maxVal - (maxVal / gridSteps) * i);
+      ctx.beginPath();
+      ctx.moveTo(padding.left, y);
+      ctx.lineTo(w - padding.right, y);
+      ctx.stroke();
+      ctx.fillText(val.toString(), padding.left - 8, y + 3);
+    }
+
+    const stepX = chartW / Math.max(1, trendData.length - 1);
+
+    // Draw Pageviews Line (Red #881B1B)
+    ctx.beginPath();
+    trendData.forEach((d, idx) => {
+      const x = padding.left + idx * stepX;
+      const y = padding.top + chartH - ((d.pageviews || 0) / maxVal) * chartH;
+      if (idx === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = "#881B1B";
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Pageview points
+    trendData.forEach((d, idx) => {
+      const x = padding.left + idx * stepX;
+      const y = padding.top + chartH - ((d.pageviews || 0) / maxVal) * chartH;
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = "#881B1B";
+      ctx.fill();
+    });
+
+    // Draw Visitors Line (Green #20402C)
+    ctx.beginPath();
+    trendData.forEach((d, idx) => {
+      const x = padding.left + idx * stepX;
+      const y = padding.top + chartH - ((d.visitors || 0) / maxVal) * chartH;
+      if (idx === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = "#20402C";
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Visitor points & Date labels
+    ctx.fillStyle = "#20402C";
+    ctx.textAlign = "center";
+    ctx.font = "10px 'Plus Jakarta Sans', sans-serif";
+
+    trendData.forEach((d, idx) => {
+      const x = padding.left + idx * stepX;
+      const y = padding.top + chartH - ((d.visitors || 0) / maxVal) * chartH;
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Date label
+      ctx.fillStyle = "#9C9388";
+      const dateText = d.date ? d.date.slice(5) : "";
+      ctx.fillText(dateText, x, h - 10);
+      ctx.fillStyle = "#20402C";
+    });
+  }, [data?.trend]);
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
@@ -155,7 +255,7 @@ export default function AnalyticsAdminPage() {
       });
 
       if (!res.ok) {
-        setLoginError("Mật khẩu không đúng. Vui lòng kiểm tra lại.");
+        setLoginError("Mật khẩu không đúng! Vui lòng kiểm tra lại.");
         setIsLoggingIn(false);
         return;
       }
@@ -170,78 +270,43 @@ export default function AnalyticsAdminPage() {
     }
   };
 
-  const handleLogout = async () => {
-    await fetch("/api/cms/logout", { method: "POST" });
-    setAuthenticated(false);
-    setStats(null);
-  };
-
-  const handleApplyCustomDate = (e: FormEvent) => {
-    e.preventDefault();
-    if (!customFrom || !customTo) return;
-    setFilterRange("custom");
+  const applyCustomRange = () => {
+    if (!dateFrom || !dateTo) {
+      alert("Vui lòng chọn cả ngày bắt đầu và ngày kết thúc.");
+      return;
+    }
+    setCurrentRange("custom");
     void fetchStats();
   };
 
-  // Filtered Landing Pages
-  const filteredLandingPages = useMemo(() => {
-    if (!stats?.landingPages) return [];
-    if (!lpSearch.trim()) return stats.landingPages;
-    const term = lpSearch.toLowerCase().trim();
-    return stats.landingPages.filter((lp) => lp.landingPage.toLowerCase().includes(term));
-  }, [stats?.landingPages, lpSearch]);
-
-  // Format seconds to mm:ss
-  const formatDuration = (seconds: number) => {
-    if (!seconds || seconds <= 0) return "0s";
-    if (seconds < 60) return `${Math.round(seconds)}s`;
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.round(seconds % 60);
-    return `${mins}m ${secs}s`;
-  };
-
-  // If waiting for initial auth check
-  if (authenticated === null && isLoading) {
+  // Auth Screen
+  if (authenticated === false) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#11050a] text-slate-300">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-amber-500/20 border-t-amber-400" />
-          <p className="text-sm tracking-wide text-amber-200/70">Đang xác thực và tải dữ liệu Analytics...</p>
-        </div>
-      </div>
-    );
-  }
+      <div className="fixed inset-0 z-50 bg-[#FAF6EE] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-[#D9C4A6] shadow-2xl text-center">
+          <img
+            src="/logo.jpg"
+            alt="Logo"
+            className="w-16 h-16 mx-auto rounded-full object-cover border-2 border-[#881B1B] shadow-md mb-4"
+          />
+          <h1 className="font-serif text-2xl font-bold text-[#881B1B]">saotrucauco.com</h1>
+          <p className="text-xs text-stone-500 mt-1 mb-6">Hệ Thống Analytics & Báo Cáo Nội Bộ</p>
 
-  // If not authenticated, display login form
-  if (!authenticated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#11050a] px-4 py-12">
-        <div className="w-full max-w-md rounded-2xl border border-amber-500/20 bg-[#1c0a13]/90 p-8 shadow-2xl backdrop-blur-md">
-          <div className="mb-6 flex flex-col items-center text-center">
-            <BrandLogo size="md" />
-            <h1 className="mt-4 text-xl font-bold tracking-tight text-amber-100">QUẢN TRỊ ANALYTICS</h1>
-            <p className="mt-1 text-xs text-amber-200/60">
-              Vui lòng nhập mật khẩu quản trị Sáo Trúc Âu Cơ để truy cập báo cáo
-            </p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4 text-left">
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-amber-200/80">
-                Mật khẩu Quản trị
-              </label>
+              <label className="block text-xs font-bold uppercase text-stone-700 mb-1.5">Mật khẩu quản trị:</label>
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Nhập mã bảo mật..."
-                className="w-full rounded-xl border border-amber-500/30 bg-[#2b0f1d] px-4 py-3 text-sm text-amber-100 placeholder-amber-200/30 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20"
+                placeholder="Nhập mật khẩu quản trị..."
+                className="w-full bg-[#FAF6EE] border border-[#D9CDBB] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#881B1B]"
               />
             </div>
 
             {loginError && (
-              <div className="rounded-lg bg-red-950/60 border border-red-500/40 p-3 text-xs text-red-200">
+              <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-700">
                 {loginError}
               </div>
             )}
@@ -249,15 +314,14 @@ export default function AnalyticsAdminPage() {
             <button
               type="submit"
               disabled={isLoggingIn}
-              className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 py-3 text-sm font-bold text-stone-950 shadow-lg transition-all duration-200 hover:from-amber-400 hover:to-amber-500 active:scale-[0.98] disabled:opacity-50"
+              className="w-full py-3 bg-[#881B1B] hover:bg-[#701515] text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              {isLoggingIn ? "Đang kiểm tra..." : "Đăng nhập Dashboard"}
+              <i className="fa-solid fa-chart-line"></i> {isLoggingIn ? "Đang kiểm tra..." : "Mở Báo Cáo Thống Kê"}
             </button>
           </form>
-
-          <div className="mt-6 text-center">
-            <Link href="/" className="text-xs text-amber-300/60 hover:text-amber-200 transition-colors">
-              ← Trở về Trang chủ
+          <div className="mt-4">
+            <Link href="/" className="text-xs text-stone-500 hover:text-[#881B1B]">
+              ← Về trang chủ saotrucauco.com
             </Link>
           </div>
         </div>
@@ -265,749 +329,437 @@ export default function AnalyticsAdminPage() {
     );
   }
 
-  // Total devices calculation
-  const totalDeviceEvents = (stats?.devices || []).reduce((acc, d) => acc + d.visitors, 0) || 1;
-  const mobileDevice = (stats?.devices || []).find((d) => d.device === "mobile")?.visitors || 0;
-  const desktopDevice = (stats?.devices || []).find((d) => d.device === "desktop")?.visitors || 0;
-  const mobilePercent = Math.round((mobileDevice / totalDeviceEvents) * 100);
-  const desktopPercent = Math.max(0, 100 - mobilePercent);
+  const s = data?.summary || {};
+  const totalVisitors = Math.max(1, s.visitors || 1);
 
-  // SVG Chart points calculation
-  const chartData = stats?.timeline || [];
-  const maxPv = Math.max(...chartData.map((d) => d.pageviews), 10);
-  const maxVisitors = Math.max(...chartData.map((d) => d.visitors), 10);
-  const chartMax = Math.max(maxPv, maxVisitors);
-
-  const chartWidth = 700;
-  const chartHeight = 220;
-  const paddingX = 40;
-  const paddingY = 25;
-
-  const getCoordinates = (val: number, index: number, total: number) => {
-    if (total <= 1) return { x: paddingX, y: chartHeight - paddingY };
-    const x = paddingX + (index / (total - 1)) * (chartWidth - paddingX * 2);
-    const y = chartHeight - paddingY - (val / chartMax) * (chartHeight - paddingY * 2);
-    return { x, y };
+  // Traffic sources color mapping
+  const sourceColors: Record<string, string> = {
+    Google: "bg-blue-600",
+    Facebook: "bg-indigo-600",
+    Zalo: "bg-sky-500",
+    YouTube: "bg-red-600",
+    TikTok: "bg-stone-900",
+    Direct: "bg-emerald-600",
+    Others: "bg-stone-400",
   };
 
-  const pvPoints = chartData.map((d, i) => getCoordinates(d.pageviews, i, chartData.length));
-  const visPoints = chartData.map((d, i) => getCoordinates(d.visitors, i, chartData.length));
+  const sourceIcons: Record<string, string> = {
+    Google: "fa-brands fa-google text-blue-600",
+    Facebook: "fa-brands fa-facebook text-indigo-600",
+    Zalo: "fa-solid fa-comment-dots text-sky-500",
+    YouTube: "fa-brands fa-youtube text-red-600",
+    TikTok: "fa-brands fa-tiktok text-stone-800",
+    Direct: "fa-solid fa-compass text-emerald-600",
+    Others: "fa-solid fa-link text-stone-500",
+  };
 
-  const pvPolyline = pvPoints.map((p) => `${p.x},${p.y}`).join(" ");
-  const visPolyline = visPoints.map((p) => `${p.x},${p.y}`).join(" ");
-
-  const pvArea = pvPoints.length > 0
-    ? `${pvPoints[0].x},${chartHeight - paddingY} ${pvPolyline} ${pvPoints[pvPoints.length - 1].x},${chartHeight - paddingY}`
-    : "";
+  // Device breakdown
+  const deviceIcons: Record<string, string> = {
+    Mobile: "fa-solid fa-mobile-screen text-[#881B1B]",
+    Desktop: "fa-solid fa-laptop text-[#20402C]",
+    Tablet: "fa-solid fa-tablet-screen-button text-amber-600",
+  };
 
   return (
-    <div className="min-h-screen bg-[#0f0408] text-stone-100 font-sans antialiased pb-16">
-      {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-40 border-b border-amber-900/30 bg-[#16060c]/90 backdrop-blur-md px-4 lg:px-8 py-3.5">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <BrandLogo size="sm" />
+    <div className="min-h-screen flex flex-col text-sm text-[#292421]">
+      {/* Top Bar */}
+      <header className="bg-white/90 backdrop-blur-md border-b border-[#EADFCB] sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <Link href="/quan-tri" className="flex items-center gap-2.5">
+            <img
+              src="/logo.jpg"
+              alt="Logo"
+              className="w-9 h-9 rounded-full object-cover border border-[#881B1B]/30"
+            />
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base font-bold text-amber-100 tracking-tight">SÁO TRÚC ÂU CƠ</h1>
-                <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-300 border border-amber-500/30">
-                  INTERNAL ANALYTICS
-                </span>
-              </div>
-              <p className="text-[11px] text-amber-200/50">Hệ thống phân tích truy cập & hành vi không làm chậm website</p>
-            </div>
-          </div>
-
-          <div className="flex items-center flex-wrap gap-2.5">
-            {/* Realtime Online Badge */}
-            <div className="flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-3 py-1 text-xs text-emerald-300 shadow-inner">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+              <span className="font-serif font-bold text-base text-[#881B1B] leading-none block">
+                saotrucauco.com
               </span>
-              <span className="font-semibold">{stats?.online ?? 0}</span> người đang online
+              <span className="text-[11px] text-[#20402C] font-semibold tracking-wider uppercase mt-0.5 block">
+                Internal Analytics
+              </span>
             </div>
+          </Link>
+        </div>
 
-            {/* Auto refresh button / countdown */}
-            <button
-              onClick={() => setAutoRefresh(!autoRefresh)}
-              title={autoRefresh ? "Bấm để tạm dừng tự động tải" : "Bấm để bật tự động tải"}
-              className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs transition-colors ${
-                autoRefresh
-                  ? "border-amber-500/40 bg-amber-950/30 text-amber-200"
-                  : "border-stone-800 bg-stone-900/50 text-stone-400"
-              }`}
-            >
-              <i className={`fa-solid fa-arrows-rotate text-[11px] ${isRefreshing ? "animate-spin" : ""}`} />
-              <span>{autoRefresh ? `${countdown}s` : "Tạm dừng"}</span>
-            </button>
-
-            <button
-              onClick={() => void fetchStats(true)}
-              disabled={isRefreshing}
-              className="rounded-lg border border-amber-500/30 bg-amber-950/50 px-3 py-1 text-xs font-medium text-amber-200 hover:bg-amber-900/40 transition-colors"
-            >
-              Làm mới ngay
-            </button>
-
-            <Link
-              href="/quan-tri"
-              className="rounded-lg border border-amber-500/20 bg-stone-900/80 px-3 py-1 text-xs font-medium text-amber-200/80 hover:text-amber-100 hover:border-amber-500/40 transition-colors"
-            >
-              ← Về CMS
-            </Link>
-
-            <button
-              onClick={handleLogout}
-              className="rounded-lg border border-red-900/40 bg-red-950/30 px-3 py-1 text-xs font-medium text-red-300 hover:bg-red-900/40 transition-colors"
-            >
-              Đăng xuất
-            </button>
+        {/* Realtime badge & Polling status */}
+        <div className="flex items-center gap-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold shadow-xs">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            <span>
+              Online: <strong className="text-emerald-700 text-sm">{data?.online_now ?? 0}</strong>
+            </span>
           </div>
+
+          <button
+            onClick={() => void fetchStats(true)}
+            className="p-2 rounded-xl border border-[#D9CDBB] bg-[#FAF6EE] hover:bg-stone-200 text-stone-700 transition-colors"
+            title="Làm mới dữ liệu"
+          >
+            <i className={`fa-solid fa-arrows-rotate text-xs ${isRefreshing ? "animate-spin" : ""}`} />
+          </button>
+
+          <Link
+            href="/quan-tri"
+            className="px-3 py-1.5 bg-[#881B1B] hover:bg-[#701515] text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5"
+          >
+            <i className="fa-solid fa-sliders"></i> Quản trị
+          </Link>
         </div>
       </header>
 
-      {/* Main Container */}
-      <main className="mx-auto max-w-7xl px-4 lg:px-8 pt-6">
-        {/* Date Filter Toolbar */}
-        <section className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-amber-900/30 bg-[#190810]/70 p-4 backdrop-blur shadow-lg">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-amber-300/70 mr-1">Bộ lọc thời gian:</span>
-            {(["today", "7d", "30d", "custom"] as const).map((r) => {
-              const labels = {
-                today: "Hôm nay",
-                "7d": "7 ngày qua",
-                "30d": "30 ngày qua",
-                custom: "Tùy chọn khoảng ngày",
-              };
-              const active = filterRange === r;
-              return (
-                <button
-                  key={r}
-                  onClick={() => setFilterRange(r)}
-                  className={`rounded-xl px-3.5 py-1.5 text-xs font-medium transition-all ${
-                    active
-                      ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 font-bold shadow-md shadow-amber-900/20"
-                      : "border border-amber-900/40 bg-[#240c17]/60 text-amber-100/70 hover:bg-[#311120] hover:text-amber-100"
-                  }`}
-                >
-                  {labels[r]}
-                </button>
-              );
-            })}
+      {/* Content Area */}
+      <main className="max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6 flex-1">
+        {/* Banner Section matching Screenshot 1 */}
+        <div className="bg-white rounded-2xl border border-[#E8DFC8] shadow-sm p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#881B1B] text-white flex items-center justify-center font-bold text-lg shadow-sm">
+              <i className="fa-solid fa-chart-line"></i>
+            </div>
+            <div>
+              <h3 className="font-serif text-base font-bold text-[#193822]">Hệ Thống Analytics & Phễu Chuyển Đổi</h3>
+              <p className="text-xs text-stone-500">Xem trực tiếp số liệu lưu lượng, tỷ lệ chuyển đổi Zalo & Đăng ký học</p>
+            </div>
+          </div>
+          <a
+            href="/admin/analytics"
+            target="_blank"
+            rel="noreferrer"
+            className="px-4 py-2 bg-[#FAF6EE] hover:bg-[#EADBCA] border border-[#D9CDBB] text-[#881B1B] font-bold rounded-xl text-xs flex items-center gap-2 transition-all"
+          >
+            <i className="fa-solid fa-arrow-up-right-from-square"></i> Mở trang riêng
+          </a>
+        </div>
+
+        {/* Filter Bar */}
+        <div className="bg-white rounded-2xl p-4 border border-[#E8DFC8] shadow-sm flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="font-serif text-xl font-bold text-[#292421]">Báo Cáo Lưu Lượng & Chuyển Đổi</h2>
+            <p className="text-xs text-stone-500 mt-0.5">Dữ liệu cập nhật tự động mỗi 25 giây • Không block render</p>
           </div>
 
-          {filterRange === "custom" && (
-            <form onSubmit={handleApplyCustomDate} className="flex flex-wrap items-center gap-2 text-xs">
+          {/* Date Range Buttons */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex p-1 bg-[#FAF6EE] border border-[#D9CDBB] rounded-xl text-xs font-medium">
+              <button
+                onClick={() => setCurrentRange("today")}
+                className={`px-3 py-1.5 rounded-lg transition-all ${
+                  currentRange === "today"
+                    ? "bg-[#881B1B] text-white font-semibold shadow-xs"
+                    : "text-stone-700 hover:text-[#881B1B]"
+                }`}
+              >
+                Hôm nay
+              </button>
+              <button
+                onClick={() => setCurrentRange("7d")}
+                className={`px-3 py-1.5 rounded-lg transition-all ${
+                  currentRange === "7d"
+                    ? "bg-[#881B1B] text-white font-semibold shadow-xs"
+                    : "text-stone-700 hover:text-[#881B1B]"
+                }`}
+              >
+                7 ngày qua
+              </button>
+              <button
+                onClick={() => setCurrentRange("30d")}
+                className={`px-3 py-1.5 rounded-lg transition-all ${
+                  currentRange === "30d"
+                    ? "bg-[#881B1B] text-white font-semibold shadow-xs"
+                    : "text-stone-700 hover:text-[#881B1B]"
+                }`}
+              >
+                30 ngày qua
+              </button>
+            </div>
+
+            {/* Custom Date Input */}
+            <div className="flex items-center gap-1.5">
               <input
                 type="date"
-                required
-                value={customFrom}
-                onChange={(e) => setCustomFrom(e.target.value)}
-                className="rounded-lg border border-amber-500/30 bg-[#280c19] px-2.5 py-1.5 text-amber-100 focus:outline-none focus:border-amber-400"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="bg-[#FAF6EE] border border-[#D9CDBB] rounded-lg px-2.5 py-1 text-xs text-stone-700 outline-none"
               />
-              <span className="text-amber-200/50">đến</span>
+              <span className="text-stone-400 text-xs">→</span>
               <input
                 type="date"
-                required
-                value={customTo}
-                onChange={(e) => setCustomTo(e.target.value)}
-                className="rounded-lg border border-amber-500/30 bg-[#280c19] px-2.5 py-1.5 text-amber-100 focus:outline-none focus:border-amber-400"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="bg-[#FAF6EE] border border-[#D9CDBB] rounded-lg px-2.5 py-1 text-xs text-stone-700 outline-none"
               />
               <button
-                type="submit"
-                className="rounded-lg bg-amber-500 px-3 py-1.5 font-semibold text-stone-950 hover:bg-amber-400 transition-colors"
+                onClick={applyCustomRange}
+                className="px-2.5 py-1 bg-[#193822] text-white rounded-lg text-xs font-medium hover:bg-[#122a19]"
               >
-                Áp dụng
+                Lọc
               </button>
-            </form>
-          )}
-
-          {lastUpdated && (
-            <div className="text-[11px] text-amber-200/40">
-              Cập nhật lúc: {lastUpdated.toLocaleTimeString("vi-VN")}
-            </div>
-          )}
-        </section>
-
-        {isLoading ? (
-          <div className="flex h-64 items-center justify-center rounded-2xl border border-amber-900/30 bg-[#16060c]/50">
-            <div className="flex flex-col items-center gap-2">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-amber-400 border-t-transparent" />
-              <p className="text-xs text-amber-200/60">Đang tổng hợp số liệu...</p>
             </div>
           </div>
-        ) : (
-          <>
-            {/* Top KPI Summary Cards */}
-            <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {/* Card 1: Visitors */}
-              <div className="relative overflow-hidden rounded-2xl border border-amber-900/30 bg-gradient-to-br from-[#1d0a13] to-[#14060d] p-4 lg:p-5 shadow-lg">
-                <div className="flex items-center justify-between text-amber-300/80">
-                  <span className="text-xs font-bold uppercase tracking-wider">Khách truy cập</span>
-                  <i className="fa-solid fa-users text-amber-400/80 text-sm" />
-                </div>
-                <div className="mt-3 flex items-baseline gap-2">
-                  <span className="text-2xl lg:text-3xl font-extrabold text-amber-100">
-                    {stats?.overview.visitors.toLocaleString("vi-VN") ?? 0}
-                  </span>
-                  <span className="text-xs text-amber-200/60 font-medium">trong kỳ</span>
-                </div>
-                <div className="mt-2 text-[11px] text-emerald-400/90 font-medium">
-                  Hôm nay: <strong className="text-emerald-300">{stats?.today.visitors.toLocaleString("vi-VN") ?? 0}</strong> visitors
-                </div>
-              </div>
+        </div>
 
-              {/* Card 2: Pageviews */}
-              <div className="relative overflow-hidden rounded-2xl border border-amber-900/30 bg-gradient-to-br from-[#1d0a13] to-[#14060d] p-4 lg:p-5 shadow-lg">
-                <div className="flex items-center justify-between text-amber-300/80">
-                  <span className="text-xs font-bold uppercase tracking-wider">Lượt xem trang</span>
-                  <i className="fa-regular fa-eye text-amber-400/80 text-sm" />
-                </div>
-                <div className="mt-3 flex items-baseline gap-2">
-                  <span className="text-2xl lg:text-3xl font-extrabold text-amber-100">
-                    {stats?.overview.pageviews.toLocaleString("vi-VN") ?? 0}
-                  </span>
-                  <span className="text-xs text-amber-200/60 font-medium">pageviews</span>
-                </div>
-                <div className="mt-2 text-[11px] text-emerald-400/90 font-medium">
-                  Hôm nay: <strong className="text-emerald-300">{stats?.today.pageviews.toLocaleString("vi-VN") ?? 0}</strong> lượt xem
-                </div>
-              </div>
+        {/* KPI Metric Cards Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+          {/* Card 1: Visitors */}
+          <div className="bg-white rounded-2xl p-4 border border-[#E8DFC8] shadow-xs">
+            <div className="flex items-center justify-between text-stone-400 mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-stone-500">Khách xem (Visitors)</span>
+              <i className="fa-solid fa-users text-[#881B1B]"></i>
+            </div>
+            <div className="text-2xl font-bold font-serif text-[#292421]">{(s.visitors || 0).toLocaleString()}</div>
+            <p className="text-[11px] text-stone-500 mt-1">Unique visitor ID</p>
+          </div>
 
-              {/* Card 3: Sessions */}
-              <div className="relative overflow-hidden rounded-2xl border border-amber-900/30 bg-gradient-to-br from-[#1d0a13] to-[#14060d] p-4 lg:p-5 shadow-lg">
-                <div className="flex items-center justify-between text-amber-300/80">
-                  <span className="text-xs font-bold uppercase tracking-wider">Phiên truy cập</span>
-                  <i className="fa-solid fa-clock-rotate-left text-amber-400/80 text-sm" />
-                </div>
-                <div className="mt-3 flex items-baseline gap-2">
-                  <span className="text-2xl lg:text-3xl font-extrabold text-amber-100">
-                    {stats?.overview.sessions.toLocaleString("vi-VN") ?? 0}
-                  </span>
-                  <span className="text-xs text-amber-200/60 font-medium">sessions</span>
-                </div>
-                <div className="mt-2 text-[11px] text-amber-200/60">
-                  TB {(stats?.overview.sessions ? (stats.overview.pageviews / stats.overview.sessions).toFixed(1) : 0)} trang / phiên
-                </div>
-              </div>
+          {/* Card 2: Pageviews */}
+          <div className="bg-white rounded-2xl p-4 border border-[#E8DFC8] shadow-xs">
+            <div className="flex items-center justify-between text-stone-400 mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-stone-500">Lượt xem (Pageviews)</span>
+              <i className="fa-solid fa-eye text-[#20402C]"></i>
+            </div>
+            <div className="text-2xl font-bold font-serif text-[#20402C]">{(s.pageviews || 0).toLocaleString()}</div>
+            <p className="text-[11px] text-stone-500 mt-1">Tổng số trang đã xem</p>
+          </div>
 
-              {/* Card 4: Conversions (Zalo & Signup) */}
-              <div className="relative overflow-hidden rounded-2xl border border-amber-500/30 bg-gradient-to-br from-[#280e1a] to-[#1a0710] p-4 lg:p-5 shadow-lg">
-                <div className="flex items-center justify-between text-amber-300">
-                  <span className="text-xs font-bold uppercase tracking-wider">Chuyển đổi Zalo & Đăng ký</span>
-                  <i className="fa-solid fa-bullseye text-amber-400 text-sm" />
-                </div>
-                <div className="mt-2.5 flex items-center justify-between gap-2">
-                  <div>
-                    <div className="text-xl lg:text-2xl font-black text-amber-200">
-                      {stats?.overview.zaloClicks.toLocaleString("vi-VN") ?? 0}
-                    </div>
-                    <div className="text-[10px] uppercase font-bold text-sky-400">Click Zalo</div>
-                  </div>
-                  <div className="h-8 w-px bg-amber-900/50" />
-                  <div>
-                    <div className="text-xl lg:text-2xl font-black text-amber-200">
-                      {stats?.overview.signupClicks.toLocaleString("vi-VN") ?? 0}
-                    </div>
-                    <div className="text-[10px] uppercase font-bold text-amber-400">Đăng ký học</div>
-                  </div>
-                </div>
-                <div className="mt-2 text-[11px] text-amber-300/80 font-medium">
-                  Tỷ lệ chuyển đổi:{" "}
-                  <strong>
-                    {stats?.overview.visitors
-                      ? (
-                          (((stats.overview.zaloClicks + stats.overview.signupClicks) / stats.overview.visitors) * 100)
-                        ).toFixed(1)
-                      : 0}
-                    %
-                  </strong>
-                </div>
-              </div>
-            </section>
+          {/* Card 3: Sessions */}
+          <div className="bg-white rounded-2xl p-4 border border-[#E8DFC8] shadow-xs">
+            <div className="flex items-center justify-between text-stone-400 mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-stone-500">Phiên (Sessions)</span>
+              <i className="fa-solid fa-clock-rotate-left text-amber-600"></i>
+            </div>
+            <div className="text-2xl font-bold font-serif text-[#292421]">{(s.sessions || 0).toLocaleString()}</div>
+            <p className="text-[11px] text-stone-500 mt-1">Chu kỳ 30 phút</p>
+          </div>
 
-            {/* Traffic Channels & Devices */}
-            <section className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-              {/* Traffic Channels Breakdown */}
-              <div className="rounded-2xl border border-amber-900/30 bg-[#16060c]/80 p-5 shadow-lg lg:col-span-2">
-                <div className="mb-4 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-sm font-bold uppercase tracking-wider text-amber-100">
-                      Nguồn Traffic (Kênh truy cập)
-                    </h2>
-                    <p className="text-xs text-amber-200/50">Phân loại Google, Facebook, Trực tiếp & các nguồn khác</p>
-                  </div>
-                </div>
+          {/* Card 4: Zalo Clicks */}
+          <div className="bg-white rounded-2xl p-4 border border-blue-200 bg-gradient-to-br from-white to-blue-50/40 shadow-xs">
+            <div className="flex items-center justify-between text-blue-400 mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-900">Click Zalo</span>
+              <i className="fa-solid fa-comment-dots text-blue-600"></i>
+            </div>
+            <div className="text-2xl font-bold font-serif text-blue-700">{(s.zalo_clicks || 0).toLocaleString()}</div>
+            <p className="text-[11px] text-blue-600/80 mt-1">Liên hệ tư vấn Zalo</p>
+          </div>
 
-                <div className="grid grid-cols-3 gap-3 mb-4">
-                  <div className="rounded-xl border border-blue-900/40 bg-blue-950/20 p-3 text-center">
-                    <div className="text-xs text-blue-300 font-semibold flex items-center justify-center gap-1.5">
-                      <i className="fa-brands fa-google text-blue-400" /> Google Search
-                    </div>
-                    <div className="mt-1 text-lg font-black text-blue-100">
-                      {stats?.trafficChannels.google.toLocaleString("vi-VN") ?? 0}
-                    </div>
-                    <div className="text-[10px] text-blue-300/60">visitors</div>
-                  </div>
+          {/* Card 5: Signup Clicks */}
+          <div className="bg-white rounded-2xl p-4 border border-emerald-200 bg-gradient-to-br from-white to-emerald-50/40 shadow-xs">
+            <div className="flex items-center justify-between text-emerald-400 mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-900">Đăng Ký Học</span>
+              <i className="fa-solid fa-graduation-cap text-emerald-600"></i>
+            </div>
+            <div className="text-2xl font-bold font-serif text-emerald-700">{(s.signup_clicks || 0).toLocaleString()}</div>
+            <p className="text-[11px] text-emerald-600/80 mt-1">Bắt đầu học & Lớp học</p>
+          </div>
 
-                  <div className="rounded-xl border border-indigo-900/40 bg-indigo-950/20 p-3 text-center">
-                    <div className="text-xs text-indigo-300 font-semibold flex items-center justify-center gap-1.5">
-                      <i className="fa-brands fa-facebook text-indigo-400" /> Facebook
-                    </div>
-                    <div className="mt-1 text-lg font-black text-indigo-100">
-                      {stats?.trafficChannels.facebook.toLocaleString("vi-VN") ?? 0}
-                    </div>
-                    <div className="text-[10px] text-indigo-300/60">visitors</div>
-                  </div>
+          {/* Card 6: Phone Clicks */}
+          <div className="bg-white rounded-2xl p-4 border border-amber-200 bg-gradient-to-br from-white to-amber-50/40 shadow-xs">
+            <div className="flex items-center justify-between text-amber-400 mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-900">Click Gọi Điện</span>
+              <i className="fa-solid fa-phone text-amber-600"></i>
+            </div>
+            <div className="text-2xl font-bold font-serif text-amber-700">{(s.phone_clicks || 0).toLocaleString()}</div>
+            <p className="text-[11px] text-amber-600/80 mt-1">Hotline 0374 261 368</p>
+          </div>
+        </div>
 
-                  <div className="rounded-xl border border-amber-900/40 bg-amber-950/20 p-3 text-center">
-                    <div className="text-xs text-amber-300 font-semibold flex items-center justify-center gap-1.5">
-                      <i className="fa-solid fa-link text-amber-400" /> Direct (Trực tiếp)
-                    </div>
-                    <div className="mt-1 text-lg font-black text-amber-100">
-                      {stats?.trafficChannels.direct.toLocaleString("vi-VN") ?? 0}
-                    </div>
-                    <div className="text-[10px] text-amber-300/60">visitors</div>
-                  </div>
-                </div>
+        {/* Main Trend Chart */}
+        <div className="bg-white rounded-2xl p-5 sm:p-6 border border-[#E8DFC8] shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <div>
+              <h3 className="font-serif font-bold text-base text-[#292421]">Xu Hướng Truy Cập Theo Ngày</h3>
+              <p className="text-xs text-stone-500">So sánh lượt truy cập (Visitors) và lượt xem trang (Pageviews)</p>
+            </div>
+            <div className="flex items-center gap-4 text-xs">
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-[#881B1B]"></span> Pageviews
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-[#20402C]"></span> Visitors
+              </span>
+            </div>
+          </div>
 
-                {/* Detailed Channel List */}
-                <div className="space-y-2.5">
-                  {(stats?.trafficChannels.sources || []).map((src, idx) => {
-                    const totalV = stats?.overview.visitors || 1;
-                    const pct = Math.min(100, Math.round((src.visitors / totalV) * 100));
-                    return (
-                      <div key={idx} className="space-y-1">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-medium text-amber-100">{src.channel}</span>
-                          <span className="text-amber-200/70">
-                            {src.visitors.toLocaleString("vi-VN")} visitors ({pct}%)
-                          </span>
-                        </div>
-                        <div className="h-2 w-full overflow-hidden rounded-full bg-stone-900">
-                          <div
-                            className="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-400 transition-all duration-500"
-                            style={{ width: `${Math.max(4, pct)}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {(stats?.trafficChannels.sources || []).length === 0 && (
-                    <p className="text-xs text-amber-200/40 text-center py-4">Chưa có dữ liệu nguồn truy cập trong kỳ này</p>
-                  )}
-                </div>
-              </div>
+          {/* Canvas Chart Container */}
+          <div className="relative w-full h-64 sm:h-72">
+            <canvas ref={canvasRef} className="w-full h-full"></canvas>
+          </div>
+        </div>
 
-              {/* Devices & Behavioral Events */}
-              <div className="space-y-4">
-                {/* Device Breakdown */}
-                <div className="rounded-2xl border border-amber-900/30 bg-[#16060c]/80 p-5 shadow-lg">
-                  <h2 className="text-sm font-bold uppercase tracking-wider text-amber-100 mb-1">
-                    Thiết bị truy cập
-                  </h2>
-                  <p className="text-xs text-amber-200/50 mb-4">Mobile vs Desktop</p>
+        {/* Middle Grid: Sources & Devices */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Traffic Sources Breakdown (7 cols) */}
+          <div className="lg:col-span-7 bg-white rounded-2xl p-5 border border-[#E8DFC8] shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-serif font-bold text-base text-[#292421]">Nguồn Lưu Lượng (Traffic Sources)</h3>
+              <span className="text-xs text-stone-400">Google • Facebook • Direct • Khác</span>
+            </div>
+            <div className="space-y-3">
+              {(data?.sources || []).map((item, idx) => {
+                const pct = Math.min(100, Math.round((item.visitors / totalVisitors) * 100));
+                const color = sourceColors[item.group_source] || "bg-[#881B1B]";
+                const icon = sourceIcons[item.group_source] || "fa-solid fa-globe text-stone-500";
 
-                  <div className="flex items-center justify-between gap-4 mb-3 text-center">
-                    <div className="flex-1 rounded-xl border border-amber-900/30 bg-[#220c18] p-3">
-                      <i className="fa-solid fa-mobile-screen text-amber-400 text-lg mb-1" />
-                      <div className="text-base font-black text-amber-100">{mobilePercent}%</div>
-                      <div className="text-[10px] text-amber-200/60">{mobileDevice} visitors</div>
-                    </div>
-                    <div className="flex-1 rounded-xl border border-amber-900/30 bg-[#220c18] p-3">
-                      <i className="fa-solid fa-display text-amber-400 text-lg mb-1" />
-                      <div className="text-base font-black text-amber-100">{desktopPercent}%</div>
-                      <div className="text-[10px] text-amber-200/60">{desktopDevice} visitors</div>
-                    </div>
-                  </div>
-
-                  <div className="h-2.5 w-full flex overflow-hidden rounded-full bg-stone-900">
-                    <div className="bg-amber-400 h-full" style={{ width: `${mobilePercent}%` }} />
-                    <div className="bg-amber-700 h-full" style={{ width: `${desktopPercent}%` }} />
-                  </div>
-                </div>
-
-                {/* Behavioral Milestones */}
-                <div className="rounded-2xl border border-amber-900/30 bg-[#16060c]/80 p-5 shadow-lg">
-                  <h2 className="text-sm font-bold uppercase tracking-wider text-amber-100 mb-1">
-                    Hành vi tương tác
-                  </h2>
-                  <p className="text-xs text-amber-200/50 mb-3">Độ sâu cuộn trang & tương tác media</p>
-
-                  <div className="space-y-2 text-xs">
-                    <div className="flex items-center justify-between rounded-lg bg-[#220c18] px-3 py-2 border border-amber-900/20">
-                      <span className="text-amber-200/70">Cuộn 25% trang</span>
-                      <span className="font-bold text-amber-100">{stats?.overview.scrollMilestones.s25 ?? 0}</span>
-                    </div>
-                    <div className="flex items-center justify-between rounded-lg bg-[#220c18] px-3 py-2 border border-amber-900/20">
-                      <span className="text-amber-200/70">Cuộn 50% trang</span>
-                      <span className="font-bold text-amber-100">{stats?.overview.scrollMilestones.s50 ?? 0}</span>
-                    </div>
-                    <div className="flex items-center justify-between rounded-lg bg-[#220c18] px-3 py-2 border border-amber-900/20">
-                      <span className="text-amber-200/70">Cuộn 75% trang</span>
-                      <span className="font-bold text-amber-100">{stats?.overview.scrollMilestones.s75 ?? 0}</span>
-                    </div>
-                    <div className="flex items-center justify-between rounded-lg bg-[#220c18] px-3 py-2 border border-amber-900/20">
-                      <span className="text-amber-200/70">Cuộn 100% trang</span>
-                      <span className="font-bold text-amber-100">{stats?.overview.scrollMilestones.s100 ?? 0}</span>
-                    </div>
-                    <div className="flex items-center justify-between rounded-lg bg-[#220c18] px-3 py-2 border border-amber-900/20">
-                      <span className="text-amber-200/70">Bấm số điện thoại (Call)</span>
-                      <span className="font-bold text-amber-100">{stats?.overview.phoneClicks ?? 0}</span>
-                    </div>
-                    <div className="flex items-center justify-between rounded-lg bg-[#220c18] px-3 py-2 border border-amber-900/20">
-                      <span className="text-amber-200/70">Nghe Audio / Xem Video</span>
-                      <span className="font-bold text-amber-100">
-                        {(stats?.overview.playAudio ?? 0) + (stats?.overview.playVideo ?? 0)}
+                return (
+                  <div key={idx}>
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="flex items-center gap-2 font-medium">
+                        <i className={`${icon} w-4 text-center`}></i> {item.group_source}
+                      </span>
+                      <span className="font-bold text-stone-700">
+                        {item.visitors.toLocaleString()}{" "}
+                        <span className="text-stone-400 font-normal">({pct}%)</span>
                       </span>
                     </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Interactive Traffic Chart (7 days / 30 days) */}
-            <section className="mb-6 rounded-2xl border border-amber-900/30 bg-[#16060c]/80 p-5 shadow-lg">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-sm font-bold uppercase tracking-wider text-amber-100">
-                    Biểu đồ Traffic (Lượt xem & Khách truy cập)
-                  </h2>
-                  <p className="text-xs text-amber-200/50">Di chuột vào các điểm để xem chi tiết từng ngày</p>
-                </div>
-                <div className="flex items-center gap-4 text-xs font-semibold">
-                  <div className="flex items-center gap-1.5">
-                    <span className="h-3 w-3 rounded-full bg-amber-400" />
-                    <span className="text-amber-200">Visitors (Khách)</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="h-3 w-3 rounded-full bg-rose-500" />
-                    <span className="text-rose-200">Pageviews (Lượt xem)</span>
-                  </div>
-                </div>
-              </div>
-
-              {chartData.length === 0 ? (
-                <div className="flex h-52 items-center justify-center text-xs text-amber-200/40">
-                  Chưa có dữ liệu biểu đồ cho khoảng thời gian này
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <div className="min-w-[650px] relative">
-                    <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-56 overflow-visible">
-                      <defs>
-                        <linearGradient id="pvGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.3" />
-                          <stop offset="100%" stopColor="#f43f5e" stopOpacity="0" />
-                        </linearGradient>
-                      </defs>
-
-                      {/* Grid lines */}
-                      {[0, 0.25, 0.5, 0.75, 1].map((ratio, idx) => {
-                        const y = chartHeight - paddingY - ratio * (chartHeight - paddingY * 2);
-                        const val = Math.round(ratio * chartMax);
-                        return (
-                          <g key={idx}>
-                            <line
-                              x1={paddingX}
-                              y1={y}
-                              x2={chartWidth - paddingX}
-                              y2={y}
-                              stroke="#3a1622"
-                              strokeDasharray="4 4"
-                            />
-                            <text
-                              x={paddingX - 8}
-                              y={y + 3}
-                              fill="#9e717e"
-                              fontSize="10"
-                              textAnchor="end"
-                              fontFamily="sans-serif"
-                            >
-                              {val}
-                            </text>
-                          </g>
-                        );
-                      })}
-
-                      {/* Area Fill for Pageviews */}
-                      {pvArea && <polygon points={pvArea} fill="url(#pvGrad)" />}
-
-                      {/* Pageviews Line */}
-                      {pvPolyline && (
-                        <polyline
-                          fill="none"
-                          stroke="#f43f5e"
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          points={pvPolyline}
-                        />
-                      )}
-
-                      {/* Visitors Line */}
-                      {visPolyline && (
-                        <polyline
-                          fill="none"
-                          stroke="#fbbf24"
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          points={visPolyline}
-                        />
-                      )}
-
-                      {/* Data Points */}
-                      {chartData.map((d, idx) => {
-                        const pVis = visPoints[idx];
-                        const pPv = pvPoints[idx];
-                        const isHovered = hoveredIndex === idx;
-
-                        return (
-                          <g key={idx}>
-                            {/* Date Label on X Axis */}
-                            <text
-                              x={pVis.x}
-                              y={chartHeight - 6}
-                              fill={isHovered ? "#fbbf24" : "#9e717e"}
-                              fontSize="9.5"
-                              textAnchor="middle"
-                              fontWeight={isHovered ? "bold" : "normal"}
-                            >
-                              {d.day.slice(5)}
-                            </text>
-
-                            {/* Point for Pageviews */}
-                            <circle
-                              cx={pPv.x}
-                              cy={pPv.y}
-                              r={isHovered ? 5 : 3.5}
-                              fill="#f43f5e"
-                              stroke="#16060c"
-                              strokeWidth="2"
-                              className="transition-all"
-                            />
-
-                            {/* Point for Visitors */}
-                            <circle
-                              cx={pVis.x}
-                              cy={pVis.y}
-                              r={isHovered ? 5 : 3.5}
-                              fill="#fbbf24"
-                              stroke="#16060c"
-                              strokeWidth="2"
-                              className="transition-all"
-                            />
-
-                            {/* Transparent hover target */}
-                            <rect
-                              x={pVis.x - 15}
-                              y={paddingY}
-                              width={30}
-                              height={chartHeight - paddingY * 2}
-                              fill="transparent"
-                              className="cursor-pointer"
-                              onMouseEnter={() => setHoveredIndex(idx)}
-                              onMouseLeave={() => setHoveredIndex(null)}
-                            />
-                          </g>
-                        );
-                      })}
-                    </svg>
-
-                    {/* Interactive Tooltip Card */}
-                    {hoveredIndex !== null && chartData[hoveredIndex] && (
+                    <div className="w-full bg-[#FAF6EE] h-2 rounded-full overflow-hidden border border-[#EADFCB]">
                       <div
-                        className="pointer-events-none absolute z-20 rounded-xl border border-amber-500/40 bg-[#250d1b] p-3 shadow-2xl text-xs space-y-1"
-                        style={{
-                          left: `${Math.min(visPoints[hoveredIndex].x, chartWidth - 160)}px`,
-                          top: "10px",
-                        }}
-                      >
-                        <div className="font-bold text-amber-200 border-b border-amber-900/40 pb-1">
-                          Ngày {chartData[hoveredIndex].day}
-                        </div>
-                        <div className="flex justify-between gap-4 text-amber-100">
-                          <span className="text-amber-300">Khách truy cập:</span>
-                          <strong>{chartData[hoveredIndex].visitors}</strong>
-                        </div>
-                        <div className="flex justify-between gap-4 text-rose-200">
-                          <span className="text-rose-300">Lượt xem trang:</span>
-                          <strong>{chartData[hoveredIndex].pageviews}</strong>
-                        </div>
-                        <div className="flex justify-between gap-4 text-sky-200 pt-1 border-t border-amber-900/30">
-                          <span className="text-sky-300">Click Zalo:</span>
-                          <strong>{chartData[hoveredIndex].zalo_clicks}</strong>
-                        </div>
-                        <div className="flex justify-between gap-4 text-amber-200">
-                          <span className="text-amber-400">Click Đăng ký:</span>
-                          <strong>{chartData[hoveredIndex].signup_clicks}</strong>
+                        className={`${color} h-full rounded-full transition-all duration-500`}
+                        style={{ width: `${Math.max(4, pct)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
+              {(data?.sources || []).length === 0 && (
+                <div className="text-center py-6 text-stone-400">Chưa có dữ liệu nguồn truy cập</div>
+              )}
+            </div>
+          </div>
+
+          {/* Device Breakdown (5 cols) */}
+          <div className="lg:col-span-5 bg-white rounded-2xl p-5 border border-[#E8DFC8] shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 className="font-serif font-bold text-base text-[#292421] mb-1">Thiết Bị Truy Cập</h3>
+              <p className="text-xs text-stone-500 mb-4">Tỷ lệ Mobile, Desktop và Tablet</p>
+              <div className="space-y-3">
+                {(data?.devices || []).map((item, idx) => {
+                  const pct = Math.min(100, Math.round((item.visitors / totalVisitors) * 100));
+                  const icon = deviceIcons[item.device] || "fa-solid fa-display text-stone-500";
+
+                  return (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-3 rounded-xl bg-[#FAF6EE] border border-[#EADFCB]"
+                    >
+                      <div className="flex items-center gap-3">
+                        <i className={`${icon} text-lg`}></i>
+                        <div>
+                          <span className="font-bold text-xs text-stone-800 block">{item.device}</span>
+                          <span className="text-[11px] text-stone-500">
+                            {(item.events || 0).toLocaleString()} lượt tương tác
+                          </span>
                         </div>
                       </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </section>
-
-            {/* Landing Page Performance Table (Requirement 7) */}
-            <section className="mb-6 rounded-2xl border border-amber-900/30 bg-[#16060c]/80 p-5 shadow-lg">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-base font-bold uppercase tracking-wider text-amber-100 flex items-center gap-2">
-                    <i className="fa-solid fa-chart-simple text-amber-400" /> Bảng Thống Kê Landing Page
-                  </h2>
-                  <p className="text-xs text-amber-200/60 mt-0.5">
-                    Phễu hành vi: <span className="text-amber-300 font-semibold">Nguồn traffic → Landing page → Thời gian & Xem trang → Click Zalo / Đăng ký học</span>
-                  </p>
-                </div>
-
-                <div className="w-full sm:w-64">
-                  <input
-                    type="text"
-                    value={lpSearch}
-                    onChange={(e) => setLpSearch(e.target.value)}
-                    placeholder="Tìm kiếm trang đích..."
-                    className="w-full rounded-xl border border-amber-500/30 bg-[#250d1b] px-3.5 py-1.5 text-xs text-amber-100 placeholder-amber-200/40 focus:outline-none focus:border-amber-400"
-                  />
-                </div>
+                      <div className="text-right">
+                        <span className="text-sm font-bold text-[#881B1B]">{pct}%</span>
+                        <span className="block text-[10px] text-stone-500">{item.visitors} khách</span>
+                      </div>
+                    </div>
+                  );
+                })}
+                {(data?.devices || []).length === 0 && (
+                  <div className="text-center py-6 text-stone-400">Chưa có dữ liệu thiết bị</div>
+                )}
               </div>
+            </div>
 
-              <div className="overflow-x-auto rounded-xl border border-amber-900/30">
-                <table className="w-full text-left text-xs text-stone-200">
-                  <thead className="bg-[#270d1d] text-amber-200 text-[11px] uppercase tracking-wider font-bold border-b border-amber-900/40">
-                    <tr>
-                      <th className="py-3 px-4">Landing Page (Trang Đích)</th>
-                      <th className="py-3 px-3 text-right">Visitors</th>
-                      <th className="py-3 px-3 text-right">Pageviews</th>
-                      <th className="py-3 px-3 text-right">Avg Time</th>
-                      <th className="py-3 px-3 text-right text-sky-300">Zalo Clicks</th>
-                      <th className="py-3 px-3 text-right text-amber-300">Signup Clicks</th>
-                      <th className="py-3 px-4 text-right">CR (%)</th>
+            <div className="mt-4 p-3 bg-[#FAF6EE] rounded-xl border border-[#D9CDBB] text-xs text-stone-600">
+              <i className="fa-solid fa-circle-info text-[#881B1B] mr-1"></i> Tối ưu giao diện cho{" "}
+              <strong>Mobile</strong> giúp tăng tối đa tỷ lệ click Zalo và đăng ký học trực tiếp.
+            </div>
+          </div>
+        </div>
+
+        {/* Top Visited Pages & Landing Pages Table */}
+        <div className="bg-white rounded-2xl border border-[#E8DFC8] shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-[#EADFCB] flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 className="font-serif font-bold text-base text-[#292421]">
+                Hiệu Quả Landing Page & Phễu Chuyển Đổi
+              </h3>
+              <p className="text-xs text-stone-500">
+                Đo lường: Nguồn traffic → Landing page → Hành vi → Click Zalo / Đăng ký học
+              </p>
+            </div>
+            <span className="text-xs px-2.5 py-1 rounded-full bg-[#FAF6EE] border border-[#D9CDBB] text-stone-600">
+              Top Landing Pages
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#FAF6EE] text-[11px] font-bold text-stone-600 uppercase tracking-wider border-b border-[#EADFCB]">
+                  <th className="py-3 px-4">Landing Page / URL</th>
+                  <th className="py-3 px-4 text-center">Khách (Visitors)</th>
+                  <th className="py-3 px-4 text-center">Lượt xem (Pageviews)</th>
+                  <th className="py-3 px-4 text-center text-blue-700">Click Zalo</th>
+                  <th className="py-3 px-4 text-center text-emerald-700">Click Đăng ký</th>
+                  <th className="py-3 px-4 text-right">Tỷ lệ chuyển đổi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#EADFCB]/60 text-xs">
+                {(data?.landing_pages || []).map((p, idx) => {
+                  const totalConversions = (p.zalo_clicks || 0) + (p.signup_clicks || 0);
+                  const cr = p.visitors > 0 ? ((totalConversions / p.visitors) * 100).toFixed(1) : "0.0";
+
+                  return (
+                    <tr key={idx} className="hover:bg-[#FAF6EE]/50 transition-colors">
+                      <td className="py-3 px-4">
+                        <a
+                          href={p.path}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-medium text-[#881B1B] hover:underline flex items-center gap-1.5"
+                        >
+                          <i className="fa-solid fa-arrow-up-right-from-square text-[10px] text-stone-400"></i>
+                          <span className="truncate max-w-xs sm:max-w-md">{p.path}</span>
+                        </a>
+                      </td>
+                      <td className="py-3 px-4 text-center font-bold text-stone-700">
+                        {(p.visitors || 0).toLocaleString()}
+                      </td>
+                      <td className="py-3 px-4 text-center text-stone-600">
+                        {(p.pageviews || 0).toLocaleString()}
+                      </td>
+                      <td className="py-3 px-4 text-center font-bold text-blue-700">
+                        {(p.zalo_clicks || 0).toLocaleString()}
+                      </td>
+                      <td className="py-3 px-4 text-center font-bold text-emerald-700">
+                        {(p.signup_clicks || 0).toLocaleString()}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <span
+                          className={`inline-block px-2 py-0.5 rounded-md ${
+                            totalConversions > 0
+                              ? "bg-emerald-100 text-emerald-800 font-bold"
+                              : "bg-stone-100 text-stone-500"
+                          } text-xs`}
+                        >
+                          {cr}%
+                        </span>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-amber-900/20 bg-[#1a0711]">
-                    {filteredLandingPages.map((lp, idx) => {
-                      const totalConv = lp.zaloClicks + lp.signupClicks;
-                      const cr = lp.visitors > 0 ? ((totalConv / lp.visitors) * 100).toFixed(1) : "0.0";
-                      return (
-                        <tr key={idx} className="hover:bg-[#2e0e22]/50 transition-colors">
-                          <td className="py-3 px-4 font-mono text-amber-100/90 font-medium">
-                            <a
-                              href={lp.landingPage}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="hover:underline hover:text-amber-300 transition-colors inline-flex items-center gap-1.5"
-                            >
-                              <span>{lp.landingPage}</span>
-                              <i className="fa-solid fa-arrow-up-right-from-square text-[9px] opacity-60" />
-                            </a>
-                          </td>
-                          <td className="py-3 px-3 text-right font-semibold text-amber-100">
-                            {lp.visitors.toLocaleString("vi-VN")}
-                          </td>
-                          <td className="py-3 px-3 text-right text-amber-200/80">
-                            {lp.pageviews.toLocaleString("vi-VN")}
-                          </td>
-                          <td className="py-3 px-3 text-right text-stone-300 font-mono">
-                            {formatDuration(lp.avgTimeSeconds)}
-                          </td>
-                          <td className="py-3 px-3 text-right font-bold text-sky-400">
-                            {lp.zaloClicks > 0 ? lp.zaloClicks : "-"}
-                          </td>
-                          <td className="py-3 px-3 text-right font-bold text-amber-400">
-                            {lp.signupClicks > 0 ? lp.signupClicks : "-"}
-                          </td>
-                          <td className="py-3 px-4 text-right font-bold">
-                            <span
-                              className={`rounded-full px-2 py-0.5 text-[10px] ${
-                                Number(cr) > 0
-                                  ? "bg-emerald-950/70 text-emerald-300 border border-emerald-500/40"
-                                  : "text-stone-500"
-                              }`}
-                            >
-                              {cr}%
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                    {filteredLandingPages.length === 0 && (
-                      <tr>
-                        <td colSpan={7} className="py-6 text-center text-xs text-amber-200/40">
-                          Chưa ghi nhận landing page nào trong khoảng thời gian này
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-
-            {/* Top Viewed Pages */}
-            <section className="rounded-2xl border border-amber-900/30 bg-[#16060c]/80 p-5 shadow-lg">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-amber-100 mb-1">
-                Top Các Trang Được Xem Nhiều Nhất
-              </h2>
-              <p className="text-xs text-amber-200/50 mb-4">Các URL nhận được nhiều lượt xem nhất</p>
-
-              <div className="overflow-x-auto rounded-xl border border-amber-900/30">
-                <table className="w-full text-left text-xs text-stone-200">
-                  <thead className="bg-[#270d1d] text-amber-200 text-[11px] uppercase tracking-wider font-bold border-b border-amber-900/40">
-                    <tr>
-                      <th className="py-2.5 px-4 w-12 text-center">#</th>
-                      <th className="py-2.5 px-4">Đường dẫn trang (Path)</th>
-                      <th className="py-2.5 px-4 text-right">Lượt xem (Views)</th>
-                      <th className="py-2.5 px-4 text-right">Khách xem (Visitors)</th>
-                      <th className="py-2.5 px-4 text-right">Tỷ lệ xem</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-amber-900/20 bg-[#1a0711]">
-                    {(stats?.topPages || []).map((page, idx) => {
-                      const totalViews = stats?.overview.pageviews || 1;
-                      const pct = Math.min(100, Math.round((page.views / totalViews) * 100));
-                      return (
-                        <tr key={idx} className="hover:bg-[#2e0e22]/50 transition-colors">
-                          <td className="py-2.5 px-4 text-center font-bold text-amber-400/60">{idx + 1}</td>
-                          <td className="py-2.5 px-4 font-mono text-amber-100">
-                            <a
-                              href={page.path}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="hover:underline hover:text-amber-300 transition-colors"
-                            >
-                              {page.path}
-                            </a>
-                          </td>
-                          <td className="py-2.5 px-4 text-right font-bold text-amber-100">
-                            {page.views.toLocaleString("vi-VN")}
-                          </td>
-                          <td className="py-2.5 px-4 text-right text-stone-300">
-                            {page.visitors.toLocaleString("vi-VN")}
-                          </td>
-                          <td className="py-2.5 px-4 text-right">
-                            <span className="rounded-full bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 text-[10px] text-amber-300 font-semibold">
-                              {pct}%
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                    {(stats?.topPages || []).length === 0 && (
-                      <tr>
-                        <td colSpan={5} className="py-6 text-center text-xs text-amber-200/40">
-                          Chưa có dữ liệu lượt xem trang
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          </>
-        )}
+                  );
+                })}
+                {(data?.landing_pages || []).length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="py-6 text-center text-stone-400">
+                      Chưa có dữ liệu landing page
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </main>
+
+      {/* Footer */}
+      <footer className="text-center py-4 text-xs text-stone-400 border-t border-[#EADFCB] bg-white">
+        saotrucauco.com In-House Analytics • Sáo Trúc Âu Cơ © 2026
+      </footer>
     </div>
   );
 }

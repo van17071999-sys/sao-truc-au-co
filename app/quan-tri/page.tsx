@@ -46,6 +46,7 @@ const collections = [
 ];
 
 const singletons = [
+  { key: "analytics-report", label: "📊 Báo cáo Analytics", note: "Xem trực tiếp số liệu lưu lượng, tỷ lệ chuyển đổi Zalo & Đăng ký học" },
   { key: "founder-intro", label: "Trang Nhà sáng lập", note: "Quản lý trang giới thiệu Người sáng lập (/gioi-thieu-admin) - Trạng thái (Đang cập nhật / Hiển thị), ảnh đại diện, thông tin giới thiệu, hotline" },
   { key: "home-map", label: "Địa chỉ & Bản đồ Google Maps", note: "Địa chỉ trung tâm, link Google Maps & ảnh bản đồ (đồng bộ toàn website)" },
   { key: "settings", label: "Cài đặt chung & VietQR", note: "Thương hiệu, liên hệ và thanh toán VietQR", contentLabel: "Địa chỉ các chi nhánh (Mỗi chi nhánh 1 dòng - CN1, CN2,...)", excerptLabel: "Khẩu hiệu (Tagline)", priceLabel: "Hotline / Zalo", tagLabel: "Email liên hệ" },
@@ -1598,12 +1599,32 @@ export default function ContentAdmin() {
       <header className="admin-topbar">
         <button className="admin-menu" onClick={() => setNavOpen(true)}>☰</button>
         <div><small>{isSingleton ? "TRANG ĐƠN" : "BỘ SƯU TẬP"}</small><h1>{activeMeta.label}</h1><p>{activeMeta.note}</p></div>
-        {!draft && section !== "change-password" && <button className="admin-primary" onClick={startCreate}>{isSingleton && sectionEntries.length ? "Chỉnh sửa" : "+ Tạo mới"}</button>}
+        {!draft && section !== "change-password" && section !== "analytics-report" && <button className="admin-primary" onClick={startCreate}>{isSingleton && sectionEntries.length ? "Chỉnh sửa" : "+ Tạo mới"}</button>}
       </header>
 
       {notice && <div className="admin-notice" role="status">{notice}</div>}
 
-      {section === "change-password" ? (
+      {section === "analytics-report" ? (
+        <div style={{ padding: "20px 24px" }}>
+          <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #E8DFC8", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", boxShadow: "0 1px 3px rgba(0,0,0,0.05)", marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: "#881B1B", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, boxShadow: "0 2px 6px rgba(136,27,27,0.3)" }}>
+                <i className="fa-solid fa-chart-line"></i>
+              </div>
+              <div>
+                <h3 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 16, fontWeight: 700, color: "#193822", margin: 0 }}>Hệ Thống Analytics & Phễu Chuyển Đổi</h3>
+                <p style={{ fontSize: 12, color: "#78716c", margin: "3px 0 0" }}>Xem trực tiếp số liệu lưu lượng, tỷ lệ chuyển đổi Zalo & Đăng ký học</p>
+              </div>
+            </div>
+            <a href="/admin/analytics" target="_blank" rel="noreferrer" style={{ padding: "9px 18px", background: "#FAF6EE", border: "1px solid #D9CDBB", color: "#881B1B", fontWeight: 700, borderRadius: 12, fontSize: 12, display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
+              <i className="fa-solid fa-arrow-up-right-from-square"></i> Mở trang riêng
+            </a>
+          </div>
+          <div style={{ width: "100%", height: "85vh", borderRadius: 16, overflow: "hidden", border: "1px solid #E8DFC8", background: "#FAF6EE", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+            <iframe src="/admin/analytics" style={{ width: "100%", height: "100%", border: 0 }} title="Analytics Dashboard" />
+          </div>
+        </div>
+      ) : section === "change-password" ? (
         <div style={{ padding: "30px 34px", maxWidth: 620 }}>
           <div style={{ background: "#fff", padding: "28px 30px", border: "1px solid var(--admin-line)", borderRadius: 14, boxShadow: "0 4px 16px rgba(0,0,0,0.03)" }}>
             <h2 style={{ margin: "0 0 6px", color: "#1e293b", fontSize: 20 }}>Đổi mật khẩu trang quản trị</h2>
