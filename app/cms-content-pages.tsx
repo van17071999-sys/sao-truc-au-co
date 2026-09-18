@@ -3,7 +3,7 @@
 import Link from "next/link";
 import BrandLogo from "./brand-logo";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Fragment } from "react";
 import type { ReactNode } from "react";
 import { PaymentModal, ContactSection } from "./service-pages";
 import { PriceTag, parsePrice } from "./price-helper";
@@ -525,22 +525,22 @@ export function NewsIndex({ initialEntries }: { initialEntries?: CmsEntry[] }) {
                   <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between space-y-3">
                     <div className="space-y-2">
                       {/* Ngày đăng & Thời gian đọc */}
-                      <div className="text-[11px] text-slate-400 font-medium flex items-center gap-2">
-                        <span>📅 {dateStr}</span>
+                      <div className="text-[11px] text-slate-400 font-medium flex items-center gap-2 article-card-meta">
+                        <span>📅 <span className="lining-num">{dateStr}</span></span>
                         <span>•</span>
-                        <span>⏱ {readTime} phút đọc</span>
+                        <span>⏱ <span className="lining-num">{readTime}</span> {t("phút đọc", "min read")}</span>
                       </div>
 
                       {/* Tiêu đề bài viết */}
-                      <h3 className="font-serif font-bold text-base sm:text-lg text-slate-900 group-hover:text-[#70141D] transition-colors leading-snug line-clamp-2">
+                      <h3 className="font-serif font-bold text-base sm:text-lg text-slate-900 group-hover:text-[#70141D] transition-colors leading-snug line-clamp-2 article-card-title">
                         <Link href={`/bai-viet/${entry.slug}`}>
-                          {translate(entry.title)}
+                          {formatLiningNumbers(translate(entry.title))}
                         </Link>
                       </h3>
 
                       {/* Mô tả tóm tắt */}
                       <p className="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-3">
-                        {translate(entry.excerpt) || (entry.content ? entry.content.slice(0, 130) + "..." : "")}
+                        {formatLiningNumbers(translate(entry.excerpt) || (entry.content ? entry.content.slice(0, 130) + "..." : ""))}
                       </p>
                     </div>
 
@@ -767,6 +767,28 @@ export function parseInlineArticleFormatting(source: string): ReactNode[] {
   return result;
 }
 
+export function formatLiningNumbers(content: ReactNode): ReactNode {
+  if (content === null || content === undefined || typeof content === "boolean") return content;
+  if (typeof content === "string") {
+    if (!/\d/.test(content)) return content;
+    const parts = content.split(/(\d+)/);
+    if (parts.length === 1) return content;
+    return parts.map((part, i) =>
+      /^\d+$/.test(part) ? (
+        <span key={i} className="lining-num">{part}</span>
+      ) : (
+        part
+      )
+    );
+  }
+  if (Array.isArray(content)) {
+    return content.map((item, i) => (
+      <Fragment key={i}>{formatLiningNumbers(item)}</Fragment>
+    ));
+  }
+  return content;
+}
+
 export function renderArticleFormatting(source: string): ReactNode[] {
   if (!source) return [];
 
@@ -799,7 +821,7 @@ export function renderArticleFormatting(source: string): ReactNode[] {
     if (h1Match) {
       blocks.push(
         <h2 key={`h1-${i}`} className="article-heading article-h1">
-          {parseInlineArticleFormatting(h1Match[1].trim())}
+          {formatLiningNumbers(parseInlineArticleFormatting(h1Match[1].trim()))}
         </h2>
       );
       continue;
@@ -809,7 +831,7 @@ export function renderArticleFormatting(source: string): ReactNode[] {
     if (h2Match) {
       blocks.push(
         <h2 key={`h2-${i}`} className="article-heading article-h2">
-          {parseInlineArticleFormatting(h2Match[1].trim())}
+          {formatLiningNumbers(parseInlineArticleFormatting(h2Match[1].trim()))}
         </h2>
       );
       continue;
@@ -819,7 +841,7 @@ export function renderArticleFormatting(source: string): ReactNode[] {
     if (h3Match) {
       blocks.push(
         <h3 key={`h3-${i}`} className="article-heading article-h3">
-          {parseInlineArticleFormatting(h3Match[1].trim())}
+          {formatLiningNumbers(parseInlineArticleFormatting(h3Match[1].trim()))}
         </h3>
       );
       continue;
@@ -829,7 +851,7 @@ export function renderArticleFormatting(source: string): ReactNode[] {
     if (h4Match) {
       blocks.push(
         <h4 key={`h4-${i}`} className="article-heading article-h4">
-          {parseInlineArticleFormatting(h4Match[1].trim())}
+          {formatLiningNumbers(parseInlineArticleFormatting(h4Match[1].trim()))}
         </h4>
       );
       continue;
@@ -852,7 +874,7 @@ export function renderArticleFormatting(source: string): ReactNode[] {
     if (quoteMatch) {
       blocks.push(
         <blockquote key={`quote-${i}`} className="article-blockquote">
-          {parseInlineArticleFormatting(quoteMatch[1].trim())}
+          {formatLiningNumbers(parseInlineArticleFormatting(quoteMatch[1].trim()))}
         </blockquote>
       );
       continue;
@@ -865,7 +887,7 @@ export function renderArticleFormatting(source: string): ReactNode[] {
       blocks.push(
         <div key={`bullet-${i}`} className={`article-bullet-item ${isSub ? "article-bullet-sub" : ""}`}>
           <span className="article-bullet-dot">✦</span>
-          <div className="article-bullet-content">{parseInlineArticleFormatting(bulletMatch[1].trim())}</div>
+          <div className="article-bullet-content">{formatLiningNumbers(parseInlineArticleFormatting(bulletMatch[1].trim()))}</div>
         </div>
       );
       continue;
@@ -877,7 +899,7 @@ export function renderArticleFormatting(source: string): ReactNode[] {
       blocks.push(
         <div key={`num-${i}`} className="article-num-item">
           <span className="article-num-badge">{numMatch[1]}</span>
-          <div className="article-num-content">{parseInlineArticleFormatting(numMatch[2].trim())}</div>
+          <div className="article-num-content">{formatLiningNumbers(parseInlineArticleFormatting(numMatch[2].trim()))}</div>
         </div>
       );
       continue;
@@ -892,7 +914,7 @@ export function renderArticleFormatting(source: string): ReactNode[] {
     // 8. Regular text line / paragraph - Trimmed to ensure straight left alignment
     blocks.push(
       <p key={`p-${i}`} className="article-paragraph">
-        {parseInlineArticleFormatting(trimmed)}
+        {formatLiningNumbers(parseInlineArticleFormatting(trimmed))}
       </p>
     );
   }
@@ -1022,11 +1044,11 @@ export function NewsDetail({ initialEntry }: { initialEntry?: CmsEntry }) {
       <section className="content-detail-hero content-detail-hero-article">
         <div className="content-detail-hero-inner">
           <p className="eyebrow">{translate(entry.tag) || t("BÀI VIẾT", "ARTICLE")}</p>
-          <h1>{translate(entry.title)}</h1>
-          {entry.excerpt && <p className="article-excerpt">{translate(entry.excerpt)}</p>}
+          <h1>{formatLiningNumbers(translate(entry.title))}</h1>
+          {entry.excerpt && <p className="article-excerpt">{formatLiningNumbers(translate(entry.excerpt))}</p>}
           {entry.publishedAt && (
             <div className="article-meta-date">
-              <span>{new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN")}</span>
+              <span>{formatLiningNumbers(new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN"))}</span>
             </div>
           )}
         </div>
@@ -1954,11 +1976,11 @@ export function GuideDetail({ initialEntry }: { initialEntry?: CmsEntry | null }
       <section className="content-detail-hero content-detail-hero-article">
         <div className="content-detail-hero-inner">
           <p className="eyebrow">{translate(entry.tag) || t("HƯỚNG DẪN", "TUTORIAL")}</p>
-          <h1>{translate(entry.title)}</h1>
-          {entry.excerpt && <p className="article-excerpt">{translate(entry.excerpt)}</p>}
+          <h1>{formatLiningNumbers(translate(entry.title))}</h1>
+          {entry.excerpt && <p className="article-excerpt">{formatLiningNumbers(translate(entry.excerpt))}</p>}
           {entry.publishedAt && (
             <div className="article-meta-date">
-              <span>{new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN")}</span>
+              <span>{formatLiningNumbers(new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN"))}</span>
             </div>
           )}
         </div>
