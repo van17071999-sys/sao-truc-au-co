@@ -142,22 +142,22 @@ const defaultClassroomPhotos = [
   {
     id: "photo-class-01",
     image: "/class-lesson.jpg",
-    caption: "Giờ học trực tiếp tại trung tâm",
-    title: "Giờ học trực tiếp tại trung tâm",
+    caption: "Giờ học kèm sáo trúc trực tiếp tại trung tâm",
+    title: "Lớp học sáo trúc kèm 1:1 tại TP.HCM",
     href: "/lop-hoc",
   },
   {
     id: "photo-class-02",
     image: "/class-group.jpg",
-    caption: "Học viên của Sáo Trúc Âu Cơ",
-    title: "Học viên của Sáo Trúc Âu Cơ",
+    caption: "Học viên các bộ môn sáo tại Sáo Trúc Âu Cơ",
+    title: "Học viên lớp sáo trúc và nhạc cụ dân tộc",
     href: "/lop-hoc",
   },
   {
     id: "photo-class-03",
     image: "/class-student.jpg",
-    caption: "Học viên tiến bộ sau 3 tháng",
-    title: "Học viên tiến bộ sau 3 tháng",
+    caption: "Học viên tự tin biểu diễn sáo sau khóa học",
+    title: "Học viên tiến bộ nhanh sau khóa học sáo trúc",
     href: "/lop-hoc",
   },
 ];

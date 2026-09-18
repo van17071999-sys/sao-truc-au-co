@@ -145,7 +145,9 @@ test("SSR / Pre-render for /cam-am and /huong-dan delivers complete HTML without
 
   // Must have dedicated canonical and title
   assert.match(huongDanHtml, /<link[^>]*rel=["']canonical["'][^>]*href=["']https:\/\/saotrucauco\.com\/huong-dan["']/i);
-  assert.match(huongDanHtml, /<title>Hướng Dẫn Thổi Sáo Trúc &amp; Video Bài Giảng Chuẩn Kỹ Thuật \| Sáo Trúc Âu Cơ<\/title>/i);
+  assert.match(huongDanHtml, /<title>Hướng Dẫn (?:Học Thổi|Thổi) Sáo Trúc &amp; Video Bài Giảng (?:Kỹ Thuật|Chuẩn Kỹ Thuật) \| Sáo Trúc Âu Cơ<\/title>/i);
+  assert.match(huongDanHtml, /"CollectionPage"/i);
+  assert.match(huongDanHtml, /"BreadcrumbList"/i);
 });
 
 test("handles thin content and gioi-thieu-admin with noindex and sitemap exclusion", async () => {
@@ -318,3 +320,57 @@ test("verifies student portal endpoints and synchronization", async () => {
   assert.equal(jsonSync.ok, true);
   assert.ok(jsonSync.syncedAt);
 });
+
+test("verifies flute learning on-page SEO metadata and structured data", async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+
+  const mockEnv = { ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } };
+  const mockCtx = { waitUntil() {}, passThroughOnException() {} };
+
+  // 1. /lop-hoc
+  const lopHocRes = await worker.fetch(new Request("https://saotrucauco.com/lop-hoc", { headers: { accept: "text/html" } }), mockEnv, mockCtx);
+  assert.equal(lopHocRes.status, 200);
+  const lopHocHtml = await lopHocRes.text();
+  assert.match(lopHocHtml, /<title>Lớp Học Sáo Trúc Tại TP\.HCM &amp; Online 1 Kèm 1 \| Sáo Trúc Âu Cơ<\/title>/i);
+  assert.match(lopHocHtml, /"Course"/i);
+  assert.match(lopHocHtml, /"BreadcrumbList"/i);
+  assert.match(lopHocHtml, /"ItemList"/i);
+
+  // 2. /dang-ky-hoc
+  const dangKyRes = await worker.fetch(new Request("https://saotrucauco.com/dang-ky-hoc", { headers: { accept: "text/html" } }), mockEnv, mockCtx);
+  assert.equal(dangKyRes.status, 200);
+  const dangKyHtml = await dangKyRes.text();
+  assert.match(dangKyHtml, /<title>Đăng Ký Học Sáo Trúc Tại TP\.HCM &amp; Online 1 Kèm 1 \| Sáo Trúc Âu Cơ<\/title>/i);
+  assert.match(dangKyHtml, /"ContactPage"/i);
+
+  // 3. /khoa-hoc-quay-san
+  const recordedRes = await worker.fetch(new Request("https://saotrucauco.com/khoa-hoc-quay-san", { headers: { accept: "text/html" } }), mockEnv, mockCtx);
+  assert.equal(recordedRes.status, 200);
+  const recordedHtml = await recordedRes.text();
+  assert.match(recordedHtml, /<title>Khóa Học Sáo Trúc Online Qua Video HD – Tự Học Sáo Tại Nhà \| Sáo Trúc Âu Cơ<\/title>/i);
+  assert.match(recordedHtml, /"Course"/i);
+
+  // 4. /giao-trinh-va-sheet
+  const materialsRes = await worker.fetch(new Request("https://saotrucauco.com/giao-trinh-va-sheet", { headers: { accept: "text/html" } }), mockEnv, mockCtx);
+  assert.equal(materialsRes.status, 200);
+  const materialsHtml = await materialsRes.text();
+  assert.match(materialsHtml, /<title>Giáo Trình Học Sáo Trúc &amp; Sheet Nhạc Chuyển Soạn Chuẩn \| Sáo Trúc Âu Cơ<\/title>/i);
+  assert.match(materialsHtml, /"LearningResource"/i);
+
+  // 5. /bai-viet
+  const baiVietRes = await worker.fetch(new Request("https://saotrucauco.com/bai-viet", { headers: { accept: "text/html" } }), mockEnv, mockCtx);
+  assert.equal(baiVietRes.status, 200);
+  const baiVietHtml = await baiVietRes.text();
+  assert.match(baiVietHtml, /<title>Bài Viết &amp; Kiến Thức Học Sáo Trúc \| Sáo Trúc Âu Cơ<\/title>/i);
+  assert.match(baiVietHtml, /"CollectionPage"/i);
+
+  // 6. /gioi-thieu
+  const founderRes = await worker.fetch(new Request("https://saotrucauco.com/gioi-thieu", { headers: { accept: "text/html" } }), mockEnv, mockCtx);
+  assert.equal(founderRes.status, 200);
+  const founderHtml = await founderRes.text();
+  assert.match(founderHtml, /"Person"/i);
+  assert.match(founderHtml, /Quách Hạ Văn/i);
+});
+

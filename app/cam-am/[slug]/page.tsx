@@ -15,19 +15,34 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const rawTitle = slug.split("-").filter(Boolean).map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
   const baseTitle = fluteTabTitles[slug] || `Cảm Âm ${rawTitle} – Nốt Chuẩn 2 Dòng`;
   const canonicalUrl = `https://saotrucauco.com/cam-am/${slug}`;
+  const description = `Xem và luyện tập ${baseTitle} với lời bài hát và nốt cảm âm quãng chuẩn xác, biên soạn bởi Sáo Trúc Âu Cơ.`;
 
   return {
     title: { absolute: `${baseTitle} | Sáo Trúc Âu Cơ` },
-    description: `Xem và luyện tập ${baseTitle} với lời bài hát và nốt cảm âm quãng chuẩn xác, biên soạn bởi Sáo Trúc Âu Cơ.`,
+    description,
+    keywords: [
+      baseTitle,
+      "cảm âm sáo trúc",
+      "nốt sáo trúc",
+      "tự thổi sáo",
+      "Sáo Trúc Âu Cơ",
+    ],
     alternates: {
       canonical: canonicalUrl,
     },
     openGraph: {
       title: `${baseTitle} | Sáo Trúc Âu Cơ`,
-      description: `Xem và luyện tập ${baseTitle} với lời bài hát và nốt cảm âm quãng chuẩn xác.`,
+      description,
       url: canonicalUrl,
       siteName: "Sáo Trúc Âu Cơ",
       type: "article",
+      images: [{ url: "/carousel-saotruc.webp", width: 1672, height: 941, alt: baseTitle }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${baseTitle} | Sáo Trúc Âu Cơ`,
+      description,
+      images: ["/carousel-saotruc.webp"],
     },
   };
 }
@@ -35,5 +50,44 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const initialEntry = getFluteTabBySlug(slug);
-  return <FluteDetail initialEntry={initialEntry} />;
+  const rawTitle = slug.split("-").filter(Boolean).map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+  const baseTitle = fluteTabTitles[slug] || `Cảm Âm ${rawTitle}`;
+  const canonicalUrl = `https://saotrucauco.com/cam-am/${slug}`;
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "MusicComposition",
+        "@id": `${canonicalUrl}#composition`,
+        name: baseTitle,
+        description: `Bản cảm âm sáo trúc chuẩn 2 dòng của tác phẩm ${baseTitle}, biên soạn bởi Sáo Trúc Âu Cơ.`,
+        inLanguage: "vi-VN",
+        publisher: {
+          "@type": "Organization",
+          name: "Sáo Trúc Âu Cơ",
+          url: "https://saotrucauco.com",
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonicalUrl}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Trang chủ", item: "https://saotrucauco.com" },
+          { "@type": "ListItem", position: 2, name: "Cảm âm", item: "https://saotrucauco.com/cam-am" },
+          { "@type": "ListItem", position: 3, name: baseTitle, item: canonicalUrl },
+        ],
+      },
+    ],
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <FluteDetail initialEntry={initialEntry} />
+    </>
+  );
 }
