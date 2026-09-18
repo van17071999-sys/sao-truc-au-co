@@ -773,6 +773,8 @@ export function renderArticleFormatting(source: string): ReactNode[] {
   const normalized = source
     .replace(/\r\n/g, "\n")
     .replace(/\r/g, "\n")
+    .replace(/[\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]/g, " ")
+    .replace(/&nbsp;/gi, " ")
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<\/p>\s*<p[^>]*>/gi, "\n\n")
     .replace(/<\/?p[^>]*>/gi, "");
@@ -797,7 +799,7 @@ export function renderArticleFormatting(source: string): ReactNode[] {
     if (h1Match) {
       blocks.push(
         <h2 key={`h1-${i}`} className="article-heading article-h1">
-          {parseInlineArticleFormatting(h1Match[1])}
+          {parseInlineArticleFormatting(h1Match[1].trim())}
         </h2>
       );
       continue;
@@ -807,7 +809,7 @@ export function renderArticleFormatting(source: string): ReactNode[] {
     if (h2Match) {
       blocks.push(
         <h2 key={`h2-${i}`} className="article-heading article-h2">
-          {parseInlineArticleFormatting(h2Match[1])}
+          {parseInlineArticleFormatting(h2Match[1].trim())}
         </h2>
       );
       continue;
@@ -817,7 +819,7 @@ export function renderArticleFormatting(source: string): ReactNode[] {
     if (h3Match) {
       blocks.push(
         <h3 key={`h3-${i}`} className="article-heading article-h3">
-          {parseInlineArticleFormatting(h3Match[1])}
+          {parseInlineArticleFormatting(h3Match[1].trim())}
         </h3>
       );
       continue;
@@ -827,7 +829,7 @@ export function renderArticleFormatting(source: string): ReactNode[] {
     if (h4Match) {
       blocks.push(
         <h4 key={`h4-${i}`} className="article-heading article-h4">
-          {parseInlineArticleFormatting(h4Match[1])}
+          {parseInlineArticleFormatting(h4Match[1].trim())}
         </h4>
       );
       continue;
@@ -846,36 +848,36 @@ export function renderArticleFormatting(source: string): ReactNode[] {
     }
 
     // 4. Blockquote
-    const quoteMatch = rawLine.match(/^>\s*(.+)$/);
+    const quoteMatch = trimmed.match(/^>\s*(.+)$/);
     if (quoteMatch) {
       blocks.push(
         <blockquote key={`quote-${i}`} className="article-blockquote">
-          {parseInlineArticleFormatting(quoteMatch[1])}
+          {parseInlineArticleFormatting(quoteMatch[1].trim())}
         </blockquote>
       );
       continue;
     }
 
     // 5. Bullet list item
-    const bulletMatch = rawLine.match(/^(\s*)(?:[-*•]|\+)\s+(.+)$/);
+    const bulletMatch = trimmed.match(/^(?:[-*•]|\+)\s+(.+)$/);
     if (bulletMatch) {
-      const indent = bulletMatch[1].length > 0;
+      const isSub = rawLine.match(/^(\s{2,}|\t+)(?:[-*•]|\+)/);
       blocks.push(
-        <div key={`bullet-${i}`} className={`article-bullet-item ${indent ? "article-bullet-sub" : ""}`}>
+        <div key={`bullet-${i}`} className={`article-bullet-item ${isSub ? "article-bullet-sub" : ""}`}>
           <span className="article-bullet-dot">✦</span>
-          <div className="article-bullet-content">{parseInlineArticleFormatting(bulletMatch[2])}</div>
+          <div className="article-bullet-content">{parseInlineArticleFormatting(bulletMatch[1].trim())}</div>
         </div>
       );
       continue;
     }
 
     // 6. Numbered list item
-    const numMatch = rawLine.match(/^(\s*)(\d+)[.)]\s+(.+)$/);
+    const numMatch = trimmed.match(/^(\d+)[.)]\s+(.+)$/);
     if (numMatch) {
       blocks.push(
         <div key={`num-${i}`} className="article-num-item">
-          <span className="article-num-badge">{numMatch[2]}</span>
-          <div className="article-num-content">{parseInlineArticleFormatting(numMatch[3])}</div>
+          <span className="article-num-badge">{numMatch[1]}</span>
+          <div className="article-num-content">{parseInlineArticleFormatting(numMatch[2].trim())}</div>
         </div>
       );
       continue;
@@ -887,10 +889,10 @@ export function renderArticleFormatting(source: string): ReactNode[] {
       continue;
     }
 
-    // 8. Regular text line / paragraph
+    // 8. Regular text line / paragraph - Trimmed to ensure straight left alignment
     blocks.push(
       <p key={`p-${i}`} className="article-paragraph">
-        {parseInlineArticleFormatting(rawLine)}
+        {parseInlineArticleFormatting(trimmed)}
       </p>
     );
   }
@@ -1017,7 +1019,18 @@ export function NewsDetail({ initialEntry }: { initialEntry?: CmsEntry }) {
   return <main className="subject-page content-page">
     <ContentHeader />
     {entries === null && !initialEntry ? <p className="content-state content-detail-state">{t("Đang tải bài viết…", "Loading article…")}</p> : entry ? <>
-      <section className="content-detail-hero"><p className="eyebrow">{translate(entry.tag) || t("BÀI VIẾT", "ARTICLE")}</p><h1>{translate(entry.title)}</h1><p>{translate(entry.excerpt)}</p><span>{entry.publishedAt ? new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN") : ""}</span></section>
+      <section className="content-detail-hero content-detail-hero-article">
+        <div className="content-detail-hero-inner">
+          <p className="eyebrow">{translate(entry.tag) || t("BÀI VIẾT", "ARTICLE")}</p>
+          <h1>{translate(entry.title)}</h1>
+          {entry.excerpt && <p className="article-excerpt">{translate(entry.excerpt)}</p>}
+          {entry.publishedAt && (
+            <div className="article-meta-date">
+              <span>{new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN")}</span>
+            </div>
+          )}
+        </div>
+      </section>
       <article className="content-detail-body prose-content">
         {entry.imageUrl && <img src={entry.imageUrl} alt={entry.title} onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }} />}
         <div className="article-formatted-content">{renderArticleFormatting(articleContent)}</div>
@@ -1938,11 +1951,17 @@ export function GuideDetail({ initialEntry }: { initialEntry?: CmsEntry | null }
   return (
     <main className="subject-page content-page">
       <ContentHeader />
-      <section className="content-detail-hero">
-        <p className="eyebrow">{translate(entry.tag) || t("HƯỚNG DẪN", "TUTORIAL")}</p>
-        <h1>{translate(entry.title)}</h1>
-        <p>{translate(entry.excerpt)}</p>
-        {entry.publishedAt && <span>{new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN")}</span>}
+      <section className="content-detail-hero content-detail-hero-article">
+        <div className="content-detail-hero-inner">
+          <p className="eyebrow">{translate(entry.tag) || t("HƯỚNG DẪN", "TUTORIAL")}</p>
+          <h1>{translate(entry.title)}</h1>
+          {entry.excerpt && <p className="article-excerpt">{translate(entry.excerpt)}</p>}
+          {entry.publishedAt && (
+            <div className="article-meta-date">
+              <span>{new Date(`${entry.publishedAt}T00:00:00`).toLocaleDateString("vi-VN")}</span>
+            </div>
+          )}
+        </div>
       </section>
       <article className="content-detail-body prose-content">
         {entry.imageUrl && <img src={entry.imageUrl} alt={entry.title} onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }} />}
