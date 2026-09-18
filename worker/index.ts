@@ -654,6 +654,427 @@ async function handleStudentPortal(request: Request, env: Env, url: URL): Promis
   return null;
 }
 
+let analyticsSchemaInitialized = false;
+async function ensureAnalyticsSchema(db: D1Database) {
+  if (analyticsSchemaInitialized) return;
+  await db.batch([
+    db.prepare(`CREATE TABLE IF NOT EXISTS analytics_events (
+      id TEXT PRIMARY KEY,
+      visitor_id TEXT NOT NULL,
+      session_id TEXT NOT NULL,
+      event_name TEXT NOT NULL,
+      path TEXT NOT NULL,
+      referrer TEXT NOT NULL DEFAULT '',
+      source TEXT NOT NULL DEFAULT '',
+      medium TEXT NOT NULL DEFAULT '',
+      campaign TEXT NOT NULL DEFAULT '',
+      device TEXT NOT NULL DEFAULT 'desktop',
+      browser TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL
+    )`),
+    db.prepare("CREATE INDEX IF NOT EXISTS idx_analytics_created ON analytics_events(created_at)"),
+    db.prepare("CREATE INDEX IF NOT EXISTS idx_analytics_visitor ON analytics_events(visitor_id, session_id)"),
+    db.prepare("CREATE INDEX IF NOT EXISTS idx_analytics_event ON analytics_events(event_name, created_at)"),
+    db.prepare("CREATE INDEX IF NOT EXISTS idx_analytics_path ON analytics_events(path)"),
+  ]);
+  analyticsSchemaInitialized = true;
+}
+
+const BOT_USER_AGENTS = /googlebot|bingbot|yandex|baiduspider|facebookexternalhit|twitterbot|rogerbot|linkedinbot|embedly|quora\s+link\s+preview|showyoubot|outbrain|pinterest|slackbot|vkshare|w3c_validator|whatsapp|ahrefs|semrush|dotbot|mj12bot|bytespider|petalbot|seznam|applebot|duckduckbot|screaming\s+frog|uptimerobot/i;
+
+const analyticsRateMap = new Map<string, { count: number; resetAt: number }>();
+function checkAnalyticsRateLimit(key: string): boolean {
+  const now = Date.now();
+  if (analyticsRateMap.size > 2000) {
+    for (const [k, v] of analyticsRateMap.entries()) {
+      if (now > v.resetAt) analyticsRateMap.delete(k);
+    }
+  }
+  const entry = analyticsRateMap.get(key);
+  if (!entry || now > entry.resetAt) {
+    analyticsRateMap.set(key, { count: 1, resetAt: now + 60_000 });
+    return true;
+  }
+  if (entry.count >= 120) {
+    return false;
+  }
+  entry.count++;
+  return true;
+}
+
+async function handleAnalytics(request: Request, env: Env, url: URL): Promise<Response | null> {
+  if (!url.pathname.startsWith("/api/analytics/")) return null;
+
+  if (request.method === "OPTIONS" && url.pathname === "/api/analytics/track") {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Max-Age": "86400",
+      },
+    });
+  }
+
+  if (url.pathname === "/api/analytics/track") {
+    if (request.method !== "POST") {
+      return Response.json({ error: "Method not allowed" }, { status: 405, headers: { Allow: "POST" } });
+    }
+
+    const userAgent = request.headers.get("user-agent") || "";
+    if (BOT_USER_AGENTS.test(userAgent)) {
+      return Response.json({ ok: true, ignored: "bot" });
+    }
+
+    const clientIp = request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for") || "unknown";
+    if (!checkAnalyticsRateLimit(clientIp)) {
+      return Response.json({ error: "Too many requests" }, { status: 429 });
+    }
+
+    let data: Record<string, unknown>;
+    try {
+      data = await request.json() as Record<string, unknown>;
+    } catch {
+      return Response.json({ error: "Invalid JSON" }, { status: 400 });
+    }
+
+    const eventName = String(data.eventName || data.event_name || "").trim().slice(0, 50);
+    const visitorId = String(data.visitorId || data.visitor_id || "").trim().slice(0, 64);
+    const sessionId = String(data.sessionId || data.session_id || "").trim().slice(0, 64);
+    const rawPath = String(data.path || "/").trim().slice(0, 255);
+    const path = rawPath.startsWith("/") ? rawPath : `/${rawPath}`;
+    const referrer = String(data.referrer || "").trim().slice(0, 300);
+    const source = String(data.source || data.utm_source || "").trim().slice(0, 100);
+    const medium = String(data.medium || data.utm_medium || "").trim().slice(0, 100);
+    const campaign = String(data.campaign || data.utm_campaign || "").trim().slice(0, 100);
+    const rawDevice = String(data.device || "desktop").trim().toLowerCase();
+    const device = rawDevice.includes("mobile") ? "mobile" : (rawDevice.includes("tablet") ? "tablet" : "desktop");
+    const browser = String(data.browser || "").trim().slice(0, 80);
+
+    if (!eventName || !visitorId || !sessionId) {
+      return Response.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    if (!/^[a-zA-Z0-9_.-]+$/.test(eventName)) {
+      return Response.json({ error: "Invalid eventName" }, { status: 400 });
+    }
+
+    if (!env.DB) {
+      return Response.json({ ok: false, error: "Database not available" }, { status: 503 });
+    }
+
+    const id = `evt_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+    const createdAt = new Date().toISOString();
+
+    try {
+      await ensureAnalyticsSchema(env.DB);
+      await env.DB.prepare(`
+        INSERT INTO analytics_events
+        (id, visitor_id, session_id, event_name, path, referrer, source, medium, campaign, device, browser, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(id, visitorId, sessionId, eventName, path, referrer, source, medium, campaign, device, browser, createdAt).run();
+    } catch (err) {
+      console.error("Analytics track insertion error:", err);
+      return Response.json({ ok: false, error: "Insert failed" }, { status: 500 });
+    }
+
+    return Response.json({ ok: true }, {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "no-store",
+      },
+    });
+  }
+
+  if (url.pathname === "/api/analytics/stats") {
+    if (request.method !== "GET") {
+      return Response.json({ error: "Method not allowed" }, { status: 405, headers: { Allow: "GET" } });
+    }
+
+    if (!await isCmsAuthenticated(request, env)) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!env.DB) {
+      return Response.json({ error: "Database not available" }, { status: 503 });
+    }
+
+    await ensureAnalyticsSchema(env.DB);
+
+    const range = url.searchParams.get("range") || "today";
+    const customFrom = url.searchParams.get("from")?.trim() || "";
+    const customTo = url.searchParams.get("to")?.trim() || "";
+
+    const vnDateStr = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Ho_Chi_Minh",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+
+    const todayStart = new Date(`${vnDateStr}T00:00:00+07:00`).toISOString();
+    const todayEnd = new Date(`${vnDateStr}T23:59:59.999+07:00`).toISOString();
+    const onlineCutoff = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+    let filterStart = todayStart;
+    let filterEnd = todayEnd;
+
+    if (range === "7d") {
+      const d = new Date();
+      d.setDate(d.getDate() - 6);
+      const dStr = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(d);
+      filterStart = new Date(`${dStr}T00:00:00+07:00`).toISOString();
+      filterEnd = todayEnd;
+    } else if (range === "30d") {
+      const d = new Date();
+      d.setDate(d.getDate() - 29);
+      const dStr = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(d);
+      filterStart = new Date(`${dStr}T00:00:00+07:00`).toISOString();
+      filterEnd = todayEnd;
+    } else if (range === "custom" && customFrom && customTo) {
+      filterStart = new Date(`${customFrom}T00:00:00+07:00`).toISOString();
+      filterEnd = new Date(`${customTo}T23:59:59.999+07:00`).toISOString();
+    }
+
+    try {
+      const onlineRow = await env.DB.prepare(
+        "SELECT COUNT(DISTINCT visitor_id) as online_count FROM analytics_events WHERE created_at >= ?"
+      ).bind(onlineCutoff).first<{ online_count: number }>();
+
+      const todayRow = await env.DB.prepare(`
+        SELECT
+          COUNT(DISTINCT visitor_id) as visitors_today,
+          COUNT(CASE WHEN event_name = 'page_view' THEN 1 END) as pageviews_today
+        FROM analytics_events
+        WHERE created_at >= ? AND created_at <= ?
+      `).bind(todayStart, todayEnd).first<{ visitors_today: number; pageviews_today: number }>();
+
+      const overviewRow = await env.DB.prepare(`
+        SELECT
+          COUNT(DISTINCT visitor_id) as total_visitors,
+          COUNT(DISTINCT session_id) as total_sessions,
+          COUNT(CASE WHEN event_name = 'page_view' THEN 1 END) as total_pageviews,
+          COUNT(CASE WHEN event_name = 'click_zalo' THEN 1 END) as click_zalo,
+          COUNT(CASE WHEN event_name = 'click_signup' THEN 1 END) as click_signup,
+          COUNT(CASE WHEN event_name = 'click_phone' THEN 1 END) as click_phone,
+          COUNT(CASE WHEN event_name = 'play_audio' THEN 1 END) as play_audio,
+          COUNT(CASE WHEN event_name = 'play_video' THEN 1 END) as play_video,
+          COUNT(CASE WHEN event_name = 'scroll_25' THEN 1 END) as scroll_25,
+          COUNT(CASE WHEN event_name = 'scroll_50' THEN 1 END) as scroll_50,
+          COUNT(CASE WHEN event_name = 'scroll_75' THEN 1 END) as scroll_75,
+          COUNT(CASE WHEN event_name = 'scroll_100' THEN 1 END) as scroll_100
+        FROM analytics_events
+        WHERE created_at >= ? AND created_at <= ?
+      `).bind(filterStart, filterEnd).first<{
+        total_visitors: number;
+        total_sessions: number;
+        total_pageviews: number;
+        click_zalo: number;
+        click_signup: number;
+        click_phone: number;
+        play_audio: number;
+        play_video: number;
+        scroll_25: number;
+        scroll_50: number;
+        scroll_75: number;
+        scroll_100: number;
+      }>();
+
+      const googleRow = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT visitor_id) as count
+        FROM analytics_events
+        WHERE created_at >= ? AND created_at <= ?
+          AND (lower(source) LIKE '%google%' OR lower(referrer) LIKE '%google%')
+      `).bind(filterStart, filterEnd).first<{ count: number }>();
+
+      const facebookRow = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT visitor_id) as count
+        FROM analytics_events
+        WHERE created_at >= ? AND created_at <= ?
+          AND (lower(source) LIKE '%facebook%' OR lower(source) LIKE '%fb%' OR lower(referrer) LIKE '%facebook%' OR lower(referrer) LIKE '%fb.com%')
+      `).bind(filterStart, filterEnd).first<{ count: number }>();
+
+      const directRow = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT visitor_id) as count
+        FROM analytics_events
+        WHERE created_at >= ? AND created_at <= ?
+          AND (source = '' OR lower(source) = 'direct')
+          AND (referrer = '' OR referrer IS NULL)
+      `).bind(filterStart, filterEnd).first<{ count: number }>();
+
+      const sourcesList = await env.DB.prepare(`
+        SELECT
+          CASE
+            WHEN lower(source) LIKE '%google%' OR lower(referrer) LIKE '%google%' THEN 'Google Search'
+            WHEN lower(source) LIKE '%facebook%' OR lower(source) LIKE '%fb%' OR lower(referrer) LIKE '%facebook%' OR lower(referrer) LIKE '%fb.com%' THEN 'Facebook'
+            WHEN lower(source) LIKE '%zalo%' OR lower(referrer) LIKE '%zalo%' THEN 'Zalo'
+            WHEN lower(source) LIKE '%youtube%' OR lower(referrer) LIKE '%youtube%' THEN 'YouTube'
+            WHEN lower(source) LIKE '%tiktok%' OR lower(referrer) LIKE '%tiktok%' THEN 'TikTok'
+            WHEN (source = '' OR lower(source) = 'direct') AND (referrer = '' OR referrer IS NULL) THEN 'Direct (Trực tiếp)'
+            ELSE COALESCE(NULLIF(source, ''), NULLIF(referrer, ''), 'Khác')
+          END as channel,
+          COUNT(DISTINCT visitor_id) as visitors,
+          COUNT(id) as total_events
+        FROM analytics_events
+        WHERE created_at >= ? AND created_at <= ?
+        GROUP BY channel
+        ORDER BY visitors DESC
+        LIMIT 10
+      `).bind(filterStart, filterEnd).all<{ channel: string; visitors: number; total_events: number }>();
+
+      const devicesList = await env.DB.prepare(`
+        SELECT
+          device,
+          COUNT(DISTINCT visitor_id) as visitors,
+          COUNT(id) as total_events
+        FROM analytics_events
+        WHERE created_at >= ? AND created_at <= ?
+        GROUP BY device
+      `).bind(filterStart, filterEnd).all<{ device: string; visitors: number; total_events: number }>();
+
+      const topPages = await env.DB.prepare(`
+        SELECT
+          path,
+          COUNT(id) as views,
+          COUNT(DISTINCT visitor_id) as visitors
+        FROM analytics_events
+        WHERE event_name = 'page_view' AND created_at >= ? AND created_at <= ?
+        GROUP BY path
+        ORDER BY views DESC
+        LIMIT 25
+      `).bind(filterStart, filterEnd).all<{ path: string; views: number; visitors: number }>();
+
+      const timeline = await env.DB.prepare(`
+        SELECT
+          substr(created_at, 1, 10) as day,
+          COUNT(DISTINCT visitor_id) as visitors,
+          COUNT(CASE WHEN event_name = 'page_view' THEN 1 END) as pageviews,
+          COUNT(CASE WHEN event_name = 'click_zalo' THEN 1 END) as zalo_clicks,
+          COUNT(CASE WHEN event_name = 'click_signup' THEN 1 END) as signup_clicks
+        FROM analytics_events
+        WHERE created_at >= ? AND created_at <= ?
+        GROUP BY substr(created_at, 1, 10)
+        ORDER BY day ASC
+      `).bind(filterStart, filterEnd).all<{
+        day: string;
+        visitors: number;
+        pageviews: number;
+        zalo_clicks: number;
+        signup_clicks: number;
+      }>();
+
+      const landingPages = await env.DB.prepare(`
+        WITH first_views AS (
+          SELECT session_id, path as landing_page, MIN(created_at) as session_start
+          FROM analytics_events
+          WHERE event_name = 'page_view'
+          GROUP BY session_id
+        ),
+        session_summary AS (
+          SELECT
+            fv.landing_page,
+            fv.session_id,
+            e.visitor_id,
+            COUNT(CASE WHEN e.event_name = 'page_view' THEN 1 END) as pv_count,
+            COUNT(CASE WHEN e.event_name = 'click_zalo' THEN 1 END) as zalo_count,
+            COUNT(CASE WHEN e.event_name = 'click_signup' THEN 1 END) as signup_count,
+            (strftime('%s', MAX(e.created_at)) - strftime('%s', MIN(e.created_at))) as duration_seconds
+          FROM first_views fv
+          JOIN analytics_events e ON e.session_id = fv.session_id
+          WHERE e.created_at >= ? AND e.created_at <= ?
+          GROUP BY fv.landing_page, fv.session_id, e.visitor_id
+        )
+        SELECT
+          landing_page,
+          COUNT(DISTINCT visitor_id) as visitors,
+          SUM(pv_count) as pageviews,
+          ROUND(AVG(duration_seconds), 0) as avg_time_sec,
+          SUM(zalo_count) as zalo_clicks,
+          SUM(signup_count) as signup_clicks
+        FROM session_summary
+        GROUP BY landing_page
+        ORDER BY visitors DESC
+        LIMIT 30
+      `).bind(filterStart, filterEnd).all<{
+        landing_page: string;
+        visitors: number;
+        pageviews: number;
+        avg_time_sec: number | null;
+        zalo_clicks: number;
+        signup_clicks: number;
+      }>();
+
+      return Response.json({
+        ok: true,
+        period: {
+          range,
+          from: filterStart,
+          to: filterEnd,
+          todayDate: vnDateStr,
+        },
+        online: onlineRow?.online_count || 0,
+        today: {
+          visitors: todayRow?.visitors_today || 0,
+          pageviews: todayRow?.pageviews_today || 0,
+        },
+        overview: {
+          visitors: overviewRow?.total_visitors || 0,
+          sessions: overviewRow?.total_sessions || 0,
+          pageviews: overviewRow?.total_pageviews || 0,
+          zaloClicks: overviewRow?.click_zalo || 0,
+          signupClicks: overviewRow?.click_signup || 0,
+          phoneClicks: overviewRow?.click_phone || 0,
+          playAudio: overviewRow?.play_audio || 0,
+          playVideo: overviewRow?.play_video || 0,
+          scrollMilestones: {
+            s25: overviewRow?.scroll_25 || 0,
+            s50: overviewRow?.scroll_50 || 0,
+            s75: overviewRow?.scroll_75 || 0,
+            s100: overviewRow?.scroll_100 || 0,
+          },
+        },
+        trafficChannels: {
+          google: googleRow?.count || 0,
+          facebook: facebookRow?.count || 0,
+          direct: directRow?.count || 0,
+          sources: sourcesList.results || [],
+        },
+        devices: devicesList.results || [],
+        topPages: topPages.results || [],
+        timeline: timeline.results || [],
+        landingPages: (landingPages.results || []).map((row) => ({
+          landingPage: row.landing_page,
+          visitors: row.visitors,
+          pageviews: row.pageviews,
+          avgTimeSeconds: Math.max(0, Number(row.avg_time_sec) || 0),
+          zaloClicks: row.zalo_clicks,
+          signupClicks: row.signup_clicks,
+        })),
+      }, {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      });
+    } catch (err) {
+      console.error("Analytics stats calculation error:", err);
+      return Response.json({ ok: false, error: "Stats calculation failed" }, { status: 500 });
+    }
+  }
+
+  return null;
+}
+
 async function handleCms(request: Request, env: Env, url: URL): Promise<Response | null> {
   if (!url.pathname.startsWith("/api/cms/") && !url.pathname.startsWith("/media/")) return null;
 
@@ -873,6 +1294,9 @@ const worker = {
 
     const studentResponse = await handleStudentPortal(request, env, url);
     if (studentResponse) return studentResponse;
+
+    const analyticsResponse = await handleAnalytics(request, env, url);
+    if (analyticsResponse) return analyticsResponse;
 
     if (url.pathname === "/api/contact-request") {
       if (request.method !== "POST") {

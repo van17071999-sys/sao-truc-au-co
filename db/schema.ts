@@ -22,3 +22,18 @@ export const cmsAssets = sqliteTable("cms_assets", {
   data: blob("data", { mode: "buffer" }).notNull(),
   createdAt: text("created_at").notNull(),
 });
+
+export const analyticsEvents = sqliteTable("analytics_events", {
+  id: text("id").primaryKey(),
+  visitorId: text("visitor_id").notNull(),
+  sessionId: text("session_id").notNull(),
+  eventName: text("event_name").notNull(),
+  path: text("path").notNull(),
+  referrer: text("referrer").notNull().default(""),
+  source: text("source").notNull().default(""),
+  medium: text("medium").notNull().default(""),
+  campaign: text("campaign").notNull().default(""),
+  device: text("device").notNull().default("desktop"),
+  browser: text("browser").notNull().default(""),
+  createdAt: text("created_at").notNull(),
+});

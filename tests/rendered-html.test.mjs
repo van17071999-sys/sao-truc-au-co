@@ -374,3 +374,199 @@ test("verifies flute learning on-page SEO metadata and structured data", async (
   assert.match(founderHtml, /Quách Hạ Văn/i);
 });
 
+test("verifies internal analytics system: tracking, bot filtering, authentication, and stats", async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+
+  const events = [];
+  const mockDB = {
+    prepare(sql) {
+      return {
+        bind(...args) {
+          return {
+            async run() {
+              if (sql.includes("INSERT INTO analytics_events")) {
+                events.push({
+                  id: args[0],
+                  visitor_id: args[1],
+                  session_id: args[2],
+                  event_name: args[3],
+                  path: args[4],
+                  referrer: args[5],
+                  source: args[6],
+                  medium: args[7],
+                  campaign: args[8],
+                  device: args[9],
+                  browser: args[10],
+                  created_at: args[11],
+                });
+              }
+              return { success: true };
+            },
+            async all() {
+              if (sql.includes("FROM analytics_events") && sql.includes("GROUP BY channel")) {
+                return { results: [{ channel: "Direct (Trực tiếp)", visitors: 1, total_events: 2 }] };
+              }
+              if (sql.includes("FROM analytics_events") && sql.includes("GROUP BY device")) {
+                return { results: [{ device: "desktop", visitors: 1, total_events: 2 }] };
+              }
+              if (sql.includes("FROM analytics_events") && sql.includes("GROUP BY path")) {
+                return { results: [{ path: "/", views: 1, visitors: 1 }] };
+              }
+              if (sql.includes("FROM analytics_events") && sql.includes("GROUP BY substr(created_at, 1, 10)")) {
+                return { results: [{ day: "2026-09-18", visitors: 1, pageviews: 1, zalo_clicks: 1, signup_clicks: 1 }] };
+              }
+              if (sql.includes("first_views")) {
+                return { results: [{ landing_page: "/", visitors: 1, pageviews: 1, avg_time_sec: 45, zalo_clicks: 1, signup_clicks: 1 }] };
+              }
+              return { results: [] };
+            },
+            async first() {
+              if (sql.includes("WHERE collection = 'settings' AND slug = 'admin-password'")) {
+                return null;
+              }
+              if (sql.includes("online_count")) {
+                return { online_count: events.length > 0 ? 1 : 0 };
+              }
+              if (sql.includes("visitors_today")) {
+                return { visitors_today: 1, pageviews_today: 1 };
+              }
+              if (sql.includes("total_visitors")) {
+                return {
+                  total_visitors: 1,
+                  total_sessions: 1,
+                  total_pageviews: 1,
+                  click_zalo: 1,
+                  click_signup: 1,
+                  click_phone: 0,
+                  play_audio: 0,
+                  play_video: 0,
+                  scroll_25: 1,
+                  scroll_50: 1,
+                  scroll_75: 0,
+                  scroll_100: 0,
+                };
+              }
+              if (sql.includes("lower(source) LIKE '%google%'")) {
+                return { count: 0 };
+              }
+              if (sql.includes("lower(source) LIKE '%facebook%'")) {
+                return { count: 0 };
+              }
+              if (sql.includes("source = '' OR lower(source) = 'direct'")) {
+                return { count: 1 };
+              }
+              return null;
+            }
+          };
+        },
+        async run() {
+          return { success: true };
+        },
+        async all() {
+          return { results: [] };
+        },
+        async first() {
+          return null;
+        }
+      };
+    },
+    async batch() {
+      return [];
+    }
+  };
+
+  const mockEnv = {
+    DB: mockDB,
+    CMS_ADMIN_PASSWORD: "testpassword123",
+    CMS_SESSION_SECRET: "test-secret-saotrucauco-2026",
+    ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) },
+  };
+  const mockCtx = { waitUntil() {}, passThroughOnException() {} };
+
+  // 1. Bot exclusion test: Googlebot should be ignored and not inserted
+  const botRes = await worker.fetch(new Request("https://saotrucauco.com/api/analytics/track", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+    },
+    body: JSON.stringify({
+      eventName: "page_view",
+      visitorId: "test_bot_vid",
+      sessionId: "test_bot_sid",
+      path: "/cam-am"
+    })
+  }), mockEnv, mockCtx);
+
+  assert.equal(botRes.status, 200);
+  const botJson = await botRes.json();
+  assert.equal(botJson.ignored, "bot");
+  assert.equal(events.length, 0, "Bot events must not be inserted into DB");
+
+  // 2. Validation test: missing required fields should return 400
+  const invalidRes = await worker.fetch(new Request("https://saotrucauco.com/api/analytics/track", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ eventName: "page_view" }) // missing visitorId & sessionId
+  }), mockEnv, mockCtx);
+  assert.equal(invalidRes.status, 400);
+
+  // 3. Valid event tracking: page_view, scroll_25, click_zalo, click_signup
+  const validEvents = [
+    { eventName: "page_view", visitorId: "v_user_1", sessionId: "s_user_1", path: "/", device: "desktop" },
+    { eventName: "scroll_25", visitorId: "v_user_1", sessionId: "s_user_1", path: "/", device: "desktop" },
+    { eventName: "click_zalo", visitorId: "v_user_1", sessionId: "s_user_1", path: "/", device: "desktop" },
+    { eventName: "click_signup", visitorId: "v_user_1", sessionId: "s_user_1", path: "/", device: "desktop" }
+  ];
+
+  for (const evt of validEvents) {
+    const res = await worker.fetch(new Request("https://saotrucauco.com/api/analytics/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(evt)
+    }), mockEnv, mockCtx);
+    assert.equal(res.status, 200);
+    const json = await res.json();
+    assert.equal(json.ok, true);
+  }
+  assert.equal(events.length, 4, "4 events should have been inserted into DB");
+
+  // 4. GET /api/analytics/stats unauthorized when no cookie
+  const unauthRes = await worker.fetch(new Request("https://saotrucauco.com/api/analytics/stats"), mockEnv, mockCtx);
+  assert.equal(unauthRes.status, 401);
+
+  // 5. Authenticate via CMS login and fetch stats
+  const loginRes = await worker.fetch(new Request("https://saotrucauco.com/api/cms/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ password: "testpassword123" })
+  }), mockEnv, mockCtx);
+  assert.equal(loginRes.status, 200);
+  const cookieHeader = loginRes.headers.get("set-cookie");
+  assert.ok(cookieHeader);
+
+  const cookie = cookieHeader.split(";")[0];
+  const statsRes = await worker.fetch(new Request("https://saotrucauco.com/api/analytics/stats?range=today", {
+    headers: { Cookie: cookie }
+  }), mockEnv, mockCtx);
+
+  assert.equal(statsRes.status, 200);
+  const statsJson = await statsRes.json();
+  assert.equal(statsJson.ok, true);
+  assert.ok(statsJson.period);
+  assert.ok(statsJson.overview);
+  assert.ok(statsJson.trafficChannels);
+  assert.ok(Array.isArray(statsJson.landingPages));
+
+  // 6. Verify /admin/analytics HTML has noindex, nofollow
+  const adminAnalyticsRes = await worker.fetch(new Request("https://saotrucauco.com/admin/analytics", {
+    headers: { accept: "text/html" }
+  }), mockEnv, mockCtx);
+  assert.equal(adminAnalyticsRes.status, 200);
+  const adminHtml = await adminAnalyticsRes.text();
+  assert.match(adminHtml, /<meta[^>]*name=["']robots["'][^>]*content=["'][^"']*noindex/i);
+  assert.match(adminHtml, /<meta[^>]*name=["']robots["'][^>]*content=["'][^"']*nofollow/i);
+});
+

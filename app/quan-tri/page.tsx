@@ -1574,6 +1574,7 @@ export default function ContentAdmin() {
       <div className="admin-brand"><BrandLogo size={35} radius={999} /><span><strong>Sáo Trúc Âu Cơ</strong><small>Quản trị nội dung</small></span></div>
       <button className="admin-nav-close" onClick={() => setNavOpen(false)}>×</button>
       <a className="admin-dashboard-link" href="/" target="_blank" rel="noreferrer">↗ Xem website</a>
+      <a className="admin-dashboard-link" href="/admin/analytics" style={{ background: "linear-gradient(135deg, #7c1d35, #4a0e1c)", borderColor: "#e5a93b", color: "#fef3c7", marginTop: "4px" }}>📊 Thống kê Analytics</a>
       <p className="admin-nav-title">BỘ SƯU TẬP</p>
       <nav>{collections.map((item) => {
         const count = item.key === "curriculums"

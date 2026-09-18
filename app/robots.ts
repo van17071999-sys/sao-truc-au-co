@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/quan-tri", "/api/", "/diem-danh"],
+      disallow: ["/quan-tri", "/admin/", "/api/", "/diem-danh"],
     },
     sitemap: "https://saotrucauco.com/sitemap.xml",
   };
