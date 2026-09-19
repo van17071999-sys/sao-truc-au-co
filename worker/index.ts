@@ -1113,7 +1113,7 @@ async function handleAnalytics(request: Request, env: Env, url: URL): Promise<Re
   return null;
 }
 
-async function handleCms(request: Request, env: Env, url: URL): Promise<Response | null> {
+async function handleCms(request: Request, env: Env, url: URL, ctx?: ExecutionContext): Promise<Response | null> {
   if (!url.pathname.startsWith("/api/cms/") && !url.pathname.startsWith("/media/")) return null;
 
   if (!env.DB) return Response.json({ error: "CMS database is unavailable" }, { status: 503 });
@@ -1258,7 +1258,13 @@ async function handleCms(request: Request, env: Env, url: URL): Promise<Response
       price=excluded.price, content=excluded.content, visible=excluded.visible, sort_order=excluded.sort_order, updated_at=excluded.updated_at`)
       .bind(id, collection, title, slug, entry.publishedAt, entry.excerpt, entry.imageUrl, entry.tag, entry.price, entry.content, entry.visible ? 1 : 0, entry.sortOrder, now).run();
     const telegramNotified = await notifyCmsUpdate(env, entry, Boolean(existingId));
-    return Response.json({ entry, telegramNotified });
+    notifyCrawlers(env, entry, ctx);
+    return Response.json({ entry, telegramNotified, crawlerNotified: true });
+  }
+
+  if (url.pathname === "/api/cms/ping-crawlers" && request.method === "POST") {
+    notifyCrawlers(env, { title: "Cập nhật bài viết Sáo Trúc Âu Cơ", collection: "articles", slug: "" }, ctx);
+    return Response.json({ ok: true, message: "Đã gửi thông báo đến các bot tìm kiếm (Google, Bing, IndexNow)!" });
   }
 
   if (url.pathname === "/api/cms/admin" && request.method === "DELETE") {
@@ -1288,6 +1294,495 @@ async function handleCms(request: Request, env: Env, url: URL): Promise<Response
   }
 
   return Response.json({ error: "Not found" }, { status: 404 });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Dynamic SEO, Sitemap, RSS & Crawler Auto-Notification
+// ─────────────────────────────────────────────────────────────────────────────
+
+const INDEXNOW_KEY = "8e7b92f4c1a5406798b3d629a8f2e4c1";
+
+const SITEMAP_SERVICE_PAGES = [
+  "/gioi-thieu",
+  "/lop-hoc",
+  "/dang-ky-hoc",
+  "/sao-va-phu-kien",
+  "/khoa-hoc-quay-san",
+  "/giao-trinh-va-sheet",
+  "/thu-am-va-quay-video",
+  "/booking-nghe-si",
+  "/thu-am-nhac-cu-that",
+];
+
+const SITEMAP_SUBJECTS = ["sao-truc-viet-nam", "sao-dizi", "sao-recorder", "dong-tieu-xiao", "flute", "sao-hmong"];
+const SITEMAP_GUIDE_SLUGS = ["cach-lay-hoi-va-tao-tieng-sao-tron-ro", "meo-sua-loi-xi-tieng-va-rung-ngon", "chon-nhac-cu-va-xay-dung-lo-trinh-hoc"];
+const SITEMAP_FLUTE_TAB_SLUGS = ["beo-dat-may-troi", "chieu-tren-que-huong", "khuc-sao-vung-cao", "ve-que", "tinh-ca-tay-bac"];
+const SITEMAP_CATALOG_PATHS = [
+  ..."dan-ca-nhac-co nhac-dan-gian nhac-tru-tinh-bolero nhac-tre sao-meo-co-ban nhac-ngu-cung giao-trinh-steiner nhac-thieu-nhi dizi-co-ban nhac-hoa-loi-viet".split(" ").map((slug) => `/khoa-hoc/${slug}`),
+  ..."beo-dat-may-troi-sao-truc ve-que-sao-truc tinh-ca-tay-bac-sao-truc dai-ngu-sao-dizi than-thoai-sao-dizi luong-son-ba-chuc-anh-dai-sao-dizi inh-la-oi-sao-meo xuan-ve-ban-mong-sao-meo goi-em-ben-suoi-sao-meo vo-ky-tieu-xiao co-mong-tieu-xiao tinh-tam-tieu-xiao always-with-me-recorder ly-cay-xanh-recorder con-chim-non-recorder the-swan-flute canon-in-d-flute a-thousand-years-flute".split(" ").map((slug) => `/video/${slug}`),
+  ..."giao-trinh-tong-hop giao-trinh-co-ban giao-trinh-nang-cao giao-trinh-gam-etude giao-trinh-dan-ca ca-khuc-chuyen-soan-theo-chu-de giao-trinh-tong-hop-dizi giao-trinh-co-ban-dizi giao-trinh-nang-cao-dizi giao-trinh-gam-etude-dizi giao-trinh-dan-ca-dizi ca-khuc-chuyen-soan-theo-chu-de-dizi giao-trinh-tong-hop-sao-recorder giao-trinh-co-ban-sao-recorder giao-trinh-nang-cao-sao-recorder giao-trinh-gam-etude-sao-recorder giao-trinh-dan-ca-sao-recorder ca-khuc-chuyen-soan-theo-chu-de-sao-recorder".split(" ").map((slug) => `/giao-trinh/${slug}`),
+  ..."tuyen-tap-sheet-sao-truc sheet-kem-ngon-bam tuyen-tap-sheet-dizi sheet-kem-ky-thuat-dizi tuyen-tap-sheet-recorder sheet-hoa-tau-recorder".split(" ").map((slug) => `/sheet/${slug}`),
+];
+const SITEMAP_THIN_SLUGS = new Set(["5-buoc-tao-tieng-sao", "nguoi-moi-chon-sao-tone-nao", "cach-luyen-hoi-dai"]);
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function formatInlineMarkdown(text: string): string {
+  let res = escapeHtml(text);
+  res = res.replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>");
+  res = res.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  res = res.replace(/\*(.+?)\*/g, "<em>$1</em>");
+  res = res.replace(/\[(.+?)\]\((https?:\/\/[^\s)]+|\/[^\s)]*)\)/g, '<a href="$2" class="text-[#881B1B] underline hover:text-[#591024] font-medium">$1</a>');
+  return res;
+}
+
+function convertMarkdownToHtml(markdown: string): string {
+  if (!markdown) return "";
+  const lines = markdown
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .split("\n");
+
+  const htmlPieces: string[] = [];
+  let inList = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const rawLine = lines[i];
+    const trimmed = rawLine.trim();
+
+    if (inList && !trimmed.startsWith("- ") && !trimmed.startsWith("* ") && !trimmed.startsWith("+ ")) {
+      htmlPieces.push("</ul>");
+      inList = false;
+    }
+
+    if (trimmed === "") {
+      continue;
+    }
+
+    const h1 = trimmed.match(/^#\s+(.+)$/);
+    if (h1) {
+      htmlPieces.push(`<h2 class="text-2xl sm:text-3xl font-bold text-[#70141D] mt-8 mb-4 font-serif">${formatInlineMarkdown(h1[1])}</h2>`);
+      continue;
+    }
+    const h2 = trimmed.match(/^##\s+(.+)$/);
+    if (h2) {
+      htmlPieces.push(`<h2 class="text-xl sm:text-2xl font-bold text-[#70141D] mt-7 mb-3 font-serif">${formatInlineMarkdown(h2[1])}</h2>`);
+      continue;
+    }
+    const h3 = trimmed.match(/^###\s+(.+)$/);
+    if (h3) {
+      htmlPieces.push(`<h3 class="text-lg sm:text-xl font-bold text-[#881B1B] mt-6 mb-2 font-serif">${formatInlineMarkdown(h3[1])}</h3>`);
+      continue;
+    }
+    const h4 = trimmed.match(/^####\s+(.+)$/);
+    if (h4) {
+      htmlPieces.push(`<h4 class="text-base sm:text-lg font-semibold text-[#881B1B] mt-5 mb-2">${formatInlineMarkdown(h4[1])}</h4>`);
+      continue;
+    }
+
+    const img = trimmed.match(/^!\[(.*?)\]\((.*?)\)$/);
+    if (img) {
+      htmlPieces.push(
+        `<figure class="my-6 text-center"><img src="${escapeHtml(img[2])}" alt="${escapeHtml(img[1])}" class="rounded-xl shadow-md mx-auto max-w-full" />${img[1] ? `<figcaption class="text-xs text-gray-500 mt-2">${escapeHtml(img[1])}</figcaption>` : ""}</figure>`
+      );
+      continue;
+    }
+
+    const quote = trimmed.match(/^>\s+(.+)$/);
+    if (quote) {
+      htmlPieces.push(
+        `<blockquote class="border-l-4 border-[#881B1B] bg-red-50/50 p-4 my-4 italic text-[#4A3834] rounded-r-lg">${formatInlineMarkdown(quote[1])}</blockquote>`
+      );
+      continue;
+    }
+
+    const bullet = trimmed.match(/^[-*+]\s+(.+)$/);
+    if (bullet) {
+      if (!inList) {
+        htmlPieces.push('<ul class="list-disc list-inside space-y-2 my-4 text-[#4A3834]">');
+        inList = true;
+      }
+      htmlPieces.push(`<li>${formatInlineMarkdown(bullet[1])}</li>`);
+      continue;
+    }
+
+    htmlPieces.push(`<p class="mb-4 leading-relaxed text-[#4A3834] text-base">${formatInlineMarkdown(trimmed)}</p>`);
+  }
+
+  if (inList) {
+    htmlPieces.push("</ul>");
+  }
+
+  return htmlPieces.join("\n");
+}
+
+async function handleDynamicSitemap(env: Env): Promise<Response> {
+  const baseUrl = "https://saotrucauco.com";
+  const now = new Date().toISOString();
+
+  let articleRows: Array<{ slug: string; updated_at?: string }> = [];
+  if (env.DB) {
+    try {
+      const res = await env.DB.prepare(
+        "SELECT slug, updated_at FROM cms_entries WHERE collection IN ('articles', 'news') AND visible = 1"
+      ).all<{ slug: string; updated_at?: string }>();
+      articleRows = res.results || [];
+    } catch {}
+  }
+
+  const validArticleSlugs = articleRows
+    .filter((row) => row.slug && !SITEMAP_THIN_SLUGS.has(row.slug));
+
+  const articleEntries = validArticleSlugs.length > 0
+    ? validArticleSlugs.map((row) => ({
+        url: `${baseUrl}/bai-viet/${row.slug}`,
+        lastmod: row.updated_at || now,
+        changefreq: "weekly",
+        priority: "0.85",
+      }))
+    : [{
+        url: `${baseUrl}/bai-viet/hoc-thoi-sao-hcm`,
+        lastmod: now,
+        changefreq: "weekly",
+        priority: "0.85",
+      }];
+
+  const urls: Array<{ url: string; lastmod: string; changefreq: string; priority: string }> = [
+    { url: baseUrl, lastmod: now, changefreq: "daily", priority: "1.0" },
+    ...SITEMAP_SERVICE_PAGES.map((path) => ({ url: `${baseUrl}${path}`, lastmod: now, changefreq: "weekly", priority: "0.95" })),
+    { url: `${baseUrl}/bai-viet`, lastmod: now, changefreq: "weekly", priority: "0.9" },
+    { url: `${baseUrl}/huong-dan`, lastmod: now, changefreq: "weekly", priority: "0.9" },
+    { url: `${baseUrl}/cam-am`, lastmod: now, changefreq: "weekly", priority: "0.9" },
+    ...articleEntries,
+    ...SITEMAP_GUIDE_SLUGS.map((slug) => ({ url: `${baseUrl}/huong-dan/${slug}`, lastmod: now, changefreq: "monthly", priority: "0.85" })),
+    ...SITEMAP_FLUTE_TAB_SLUGS.map((slug) => ({ url: `${baseUrl}/cam-am/${slug}`, lastmod: now, changefreq: "monthly", priority: "0.85" })),
+    ...SITEMAP_SUBJECTS.map((slug) => ({ url: `${baseUrl}/bo-mon/${slug}`, lastmod: now, changefreq: "monthly", priority: "0.8" })),
+    ...SITEMAP_CATALOG_PATHS.map((path) => ({ url: `${baseUrl}${path}`, lastmod: now, changefreq: "monthly", priority: "0.7" })),
+  ];
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map((u) => `  <url>
+    <loc>${u.url}</loc>
+    <lastmod>${u.lastmod}</lastmod>
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority}</priority>
+  </url>`).join("\n")}
+</urlset>`;
+
+  return new Response(xml, {
+    status: 200,
+    headers: {
+      "Content-Type": "application/xml; charset=utf-8",
+      "Cache-Control": "public, max-age=60, s-maxage=60",
+    },
+  });
+}
+
+async function handleDynamicRss(env: Env): Promise<Response> {
+  const baseUrl = "https://saotrucauco.com";
+  const now = new Date().toUTCString();
+
+  let articleRows: Array<{ title: string; slug: string; excerpt?: string; published_at?: string; updated_at?: string; image_url?: string }> = [];
+  if (env.DB) {
+    try {
+      const res = await env.DB.prepare(
+        "SELECT title, slug, excerpt, published_at, updated_at, image_url FROM cms_entries WHERE collection IN ('articles', 'news') AND visible = 1 ORDER BY updated_at DESC LIMIT 50"
+      ).all<{ title: string; slug: string; excerpt?: string; published_at?: string; updated_at?: string; image_url?: string }>();
+      articleRows = res.results || [];
+    } catch {}
+  }
+
+  const items = articleRows.map((item) => {
+    const pubDate = item.published_at ? new Date(`${item.published_at}T00:00:00+07:00`).toUTCString() : (item.updated_at ? new Date(item.updated_at).toUTCString() : now);
+    const itemUrl = `${baseUrl}/bai-viet/${item.slug}`;
+    return `    <item>
+      <title><![CDATA[${item.title}]]></title>
+      <link>${itemUrl}</link>
+      <guid isPermaLink="true">${itemUrl}</guid>
+      <description><![CDATA[${item.excerpt || item.title}]]></description>
+      <pubDate>${pubDate}</pubDate>
+      ${item.image_url ? `<enclosure url="${item.image_url.startsWith("http") ? item.image_url : baseUrl + item.image_url}" type="image/jpeg" />` : ""}
+    </item>`;
+  }).join("\n");
+
+  const rss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Bài Viết &amp; Kiến Thức Học Sáo Trúc | Sáo Trúc Âu Cơ</title>
+    <link>${baseUrl}/bai-viet</link>
+    <description>Tổng hợp các bài viết hướng dẫn luyện sáo, kỹ thuật và tin tức từ Sáo Trúc Âu Cơ.</description>
+    <language>vi</language>
+    <lastBuildDate>${now}</lastBuildDate>
+    <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />
+${items}
+  </channel>
+</rss>`;
+
+  return new Response(rss, {
+    status: 200,
+    headers: {
+      "Content-Type": "application/rss+xml; charset=utf-8",
+      "Cache-Control": "public, max-age=60, s-maxage=60",
+    },
+  });
+}
+
+async function notifyCrawlers(env: Env, entry: { title: string; collection: string; slug: string }, ctx?: ExecutionContext) {
+  if (entry.collection !== "articles" && entry.collection !== "news") return;
+
+  const doNotify = async () => {
+    try {
+      await fetch("https://api.indexnow.org/indexnow", {
+        method: "POST",
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+        body: JSON.stringify({
+          host: "saotrucauco.com",
+          key: INDEXNOW_KEY,
+          keyLocation: `https://saotrucauco.com/${INDEXNOW_KEY}.txt`,
+          urlList: [
+            ...(entry.slug ? [`https://saotrucauco.com/bai-viet/${entry.slug}`] : []),
+            "https://saotrucauco.com/bai-viet",
+            "https://saotrucauco.com/sitemap.xml",
+            "https://saotrucauco.com/rss.xml",
+          ],
+        }),
+      });
+
+      await fetch("https://www.bing.com/ping?sitemap=https%3A%2F%2Fsaotrucauco.com%2Fsitemap.xml");
+    } catch (e) {
+      console.error("Crawler notification error:", e);
+    }
+  };
+
+  if (ctx && typeof ctx.waitUntil === "function") {
+    ctx.waitUntil(doNotify());
+  } else {
+    await doNotify();
+  }
+}
+
+async function handleArticleDetailSsr(
+  request: Request,
+  env: Env,
+  url: URL,
+  ctx: ExecutionContext,
+  fetchHandler: () => Promise<Response>,
+  slug: string
+): Promise<Response> {
+  const response = await fetchHandler();
+
+  if (!env.DB) return response;
+  if (response.status !== 200) return response;
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("text/html")) return response;
+
+  let article: CmsRow | null = null;
+  try {
+    article = await env.DB.prepare(
+      "SELECT * FROM cms_entries WHERE collection IN ('articles', 'news') AND slug = ? AND visible = 1"
+    ).bind(slug).first<CmsRow>();
+  } catch {}
+
+  if (!article) return response;
+
+  let html = await response.text();
+
+  const title = article.title.includes("Sáo Trúc Âu Cơ")
+    ? article.title
+    : `${article.title} | Sáo Trúc Âu Cơ`;
+  const excerpt = article.excerpt || article.title;
+  const canonicalUrl = `https://saotrucauco.com/bai-viet/${article.slug}`;
+  const imageUrl = article.image_url
+    ? (article.image_url.startsWith("http") ? article.image_url : `https://saotrucauco.com${article.image_url}`)
+    : "https://saotrucauco.com/logo.jpg";
+  const isThin = SITEMAP_THIN_SLUGS.has(article.slug);
+
+  html = html.replace(/<title>.*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
+  html = html.replace(
+    /<meta[^>]*name=["']description["'][^>]*>/i,
+    `<meta name="description" content="${escapeHtml(excerpt)}">`
+  );
+  html = html.replace(
+    /<link[^>]*rel=["']canonical["'][^>]*>/i,
+    `<link rel="canonical" href="${canonicalUrl}">`
+  );
+  html = html.replace(
+    /<meta[^>]*property=["']og:title["'][^>]*>/i,
+    `<meta property="og:title" content="${escapeHtml(title)}">`
+  );
+  html = html.replace(
+    /<meta[^>]*property=["']og:description["'][^>]*>/i,
+    `<meta property="og:description" content="${escapeHtml(excerpt)}">`
+  );
+  html = html.replace(
+    /<meta[^>]*property=["']og:url["'][^>]*>/i,
+    `<meta property="og:url" content="${canonicalUrl}">`
+  );
+  html = html.replace(
+    /<meta[^>]*property=["']og:image["'][^>]*>/i,
+    `<meta property="og:image" content="${imageUrl}">`
+  );
+  html = html.replace(
+    /<meta[^>]*name=["']twitter:title["'][^>]*>/i,
+    `<meta name="twitter:title" content="${escapeHtml(title)}">`
+  );
+  html = html.replace(
+    /<meta[^>]*name=["']twitter:description["'][^>]*>/i,
+    `<meta name="twitter:description" content="${escapeHtml(excerpt)}">`
+  );
+  html = html.replace(
+    /<meta[^>]*name=["']twitter:image["'][^>]*>/i,
+    `<meta name="twitter:image" content="${imageUrl}">`
+  );
+
+  if (isThin) {
+    html = html.replace(
+      /<meta[^>]*name=["']robots["'][^>]*>/i,
+      '<meta name="robots" content="noindex, follow">'
+    );
+  } else {
+    html = html.replace(
+      /<meta[^>]*name=["']robots["'][^>]*>/i,
+      '<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">'
+    );
+  }
+
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BlogPosting",
+        "@id": `${canonicalUrl}#article`,
+        "headline": article.title,
+        "description": excerpt,
+        "image": imageUrl,
+        "datePublished": article.published_at ? `${article.published_at}T00:00:00+07:00` : article.updated_at,
+        "dateModified": article.updated_at || article.published_at,
+        "inLanguage": "vi-VN",
+        "mainEntityOfPage": canonicalUrl,
+        "author": { "@type": "Organization", "name": "Sáo Trúc Âu Cơ", "url": "https://saotrucauco.com" },
+        "publisher": { "@type": "Organization", "name": "Sáo Trúc Âu Cơ", "url": "https://saotrucauco.com" },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonicalUrl}#breadcrumb`,
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Trang chủ", "item": "https://saotrucauco.com" },
+          { "@type": "ListItem", "position": 2, "name": "Bài viết", "item": "https://saotrucauco.com/bai-viet" },
+          { "@type": "ListItem", "position": 3, "name": article.title, "item": canonicalUrl },
+        ],
+      },
+    ],
+  };
+
+  const jsonLdTag = `<script type="application/ld+json">${JSON.stringify(articleJsonLd).replace(/</g, "\\u003c")}</script>`;
+  html = html.replace("</head>", `${jsonLdTag}</head>`);
+
+  const formattedDate = article.published_at
+    ? new Intl.DateTimeFormat("vi-VN").format(new Date(`${article.published_at}T00:00:00`))
+    : "";
+  const renderedBody = convertMarkdownToHtml(article.content || article.excerpt || "");
+
+  const renderedArticleHtml = `<section class="content-detail-hero content-detail-hero-article">
+  <div class="content-detail-hero-inner max-w-4xl mx-auto text-center px-4 py-8 sm:py-12">
+    <p class="eyebrow text-xs uppercase tracking-widest font-bold text-[#A87932] mb-2">${escapeHtml(article.tag || "BÀI VIẾT")}</p>
+    <h1 class="font-serif text-2xl sm:text-4xl md:text-5xl font-bold text-[#70141D] leading-tight mb-4">${escapeHtml(article.title)}</h1>
+    ${article.excerpt ? `<p class="article-excerpt text-base sm:text-lg text-[#6B5751] max-w-3xl mx-auto leading-relaxed mb-4">${escapeHtml(article.excerpt)}</p>` : ""}
+    ${formattedDate ? `<div class="article-meta-date text-xs sm:text-sm text-[#8C7A75]"><span>Ngày đăng: ${escapeHtml(formattedDate)}</span></div>` : ""}
+  </div>
+</section>
+<article class="content-detail-body prose-content max-w-4xl mx-auto px-4 py-6 bg-white rounded-2xl shadow-sm my-6">
+  ${article.image_url ? `<img src="${escapeHtml(article.image_url)}" alt="${escapeHtml(article.title)}" class="w-full max-h-[480px] object-cover rounded-xl mb-8 shadow-sm" />` : ""}
+  <div class="article-formatted-content text-[#4A3834] leading-relaxed">
+    ${renderedBody}
+  </div>
+  <div class="content-detail-actions mt-10 pt-6 border-t border-[#E8DFD8] text-center flex flex-col sm:flex-row items-center justify-center gap-4">
+    <a href="/dang-ky-hoc#dang-ky" data-analytics="click_signup" class="inline-flex items-center justify-center px-6 py-3 bg-[#881B1B] hover:bg-[#70141D] text-white font-medium rounded-xl shadow transition">
+      Đăng Ký Học Sáo Trúc
+    </a>
+    <a href="https://zalo.me/0374261368" data-analytics="click_zalo" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center px-6 py-3 bg-[#0068FF] hover:bg-[#0054cc] text-white font-medium rounded-xl shadow transition">
+      Tư Vấn Nhanh Qua Zalo
+    </a>
+  </div>
+</article>`;
+
+  if (html.includes("Đang tải bài viết…")) {
+    html = html.replace(
+      /<p[^>]*class=["'][^"']*content-detail-state[^"']*["'][^>]*>Đang tải bài viết…<\/p>/i,
+      renderedArticleHtml
+    );
+  }
+
+  return new Response(html, {
+    status: 200,
+    headers: response.headers,
+  });
+}
+
+async function handleArticleIndexSsr(
+  request: Request,
+  env: Env,
+  url: URL,
+  ctx: ExecutionContext,
+  fetchHandler: () => Promise<Response>
+): Promise<Response> {
+  const response = await fetchHandler();
+
+  if (!env.DB) return response;
+  if (response.status !== 200) return response;
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("text/html")) return response;
+
+  let articles: CmsRow[] = [];
+  try {
+    const res = await env.DB.prepare(
+      "SELECT id, collection, title, slug, published_at, excerpt, image_url, tag, visible, sort_order, updated_at FROM cms_entries WHERE collection IN ('articles', 'news') AND visible = 1 ORDER BY sort_order ASC, updated_at DESC"
+    ).all<CmsRow>();
+    articles = res.results || [];
+  } catch {}
+
+  if (articles.length === 0) return response;
+
+  let html = await response.text();
+
+  const itemListJson = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "@id": "https://saotrucauco.com/bai-viet#articles-list",
+    "name": "Danh mục bài viết & kiến thức học sáo trúc",
+    "itemListElement": articles.map((item, idx) => ({
+      "@type": "ListItem",
+      "position": idx + 1,
+      "name": item.title,
+      "url": `https://saotrucauco.com/bai-viet/${item.slug}`,
+      "description": item.excerpt || item.title,
+    })),
+  };
+
+  const schemaTag = `<script type="application/ld+json">${JSON.stringify(itemListJson).replace(/</g, "\\u003c")}</script>`;
+  html = html.replace("</head>", `${schemaTag}</head>`);
+
+  const crawlerLinks = `<section class="crawler-articles-index sr-only" aria-label="Danh sách bài viết cho công cụ tìm kiếm" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">
+    <h2>Tất cả bài viết Sáo Trúc Âu Cơ</h2>
+    <ul>
+      ${articles.map((a) => `<li><a href="/bai-viet/${a.slug}"><h3>${escapeHtml(a.title)}</h3><p>${escapeHtml(a.excerpt || "")}</p></a></li>`).join("\n")}
+    </ul>
+  </section>`;
+
+  html = html.replace("</body>", `${crawlerLinks}</body>`);
+
+  return new Response(html, {
+    status: 200,
+    headers: response.headers,
+  });
 }
 
 // Image security config. SVG sources with .svg extension auto-skip the
@@ -1327,8 +1822,22 @@ const worker = {
       });
     }
 
-    const cmsResponse = await handleCms(request, env, url);
+    const cmsResponse = await handleCms(request, env, url, ctx);
     if (cmsResponse) return cmsResponse;
+
+    if (url.pathname === "/sitemap.xml") {
+      return handleDynamicSitemap(env);
+    }
+
+    if (url.pathname === "/rss.xml" || url.pathname === "/feed.xml") {
+      return handleDynamicRss(env);
+    }
+
+    if (url.pathname === `/${INDEXNOW_KEY}.txt`) {
+      return new Response(INDEXNOW_KEY, {
+        headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=86400" },
+      });
+    }
 
     const studentResponse = await handleStudentPortal(request, env, url);
     if (studentResponse) return studentResponse;
@@ -1560,6 +2069,17 @@ const worker = {
           return result.response();
         },
       }, allowedWidths);
+    }
+
+    if (url.pathname === "/bai-viet") {
+      return handleArticleIndexSsr(request, env, url, ctx, () => handler.fetch(request, env, ctx));
+    }
+
+    if (url.pathname.startsWith("/bai-viet/")) {
+      const slug = url.pathname.slice("/bai-viet/".length).replace(/\/$/, "");
+      if (slug && !slug.includes(".")) {
+        return handleArticleDetailSsr(request, env, url, ctx, () => handler.fetch(request, env, ctx), slug);
+      }
     }
 
     return handler.fetch(request, env, ctx);

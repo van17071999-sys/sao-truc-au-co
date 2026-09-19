@@ -2,7 +2,13 @@ import type { MetadataRoute } from "next";
 
 const subjects = ["sao-truc-viet-nam", "sao-dizi", "sao-recorder", "dong-tieu-xiao", "flute", "sao-hmong"];
 // Only include indexable articles with substantial content. Thin articles are excluded.
-const articleSlugs = ["hoc-thoi-sao-hcm"];
+const articleSlugs = [
+  "hoc-thoi-sao-hcm",
+  "4-the-tay-co-ban-cua-nguoi-choi-sao-truc",
+  "tu-hoc-sao-truc-hay-hoc-voi-giao-vien",
+  "do-lech-quang-tren-sao-truc-vi-sao-cac-not-khong-phai-luc-nao-cung-chuan-tuyet-doi",
+  "co-nen-mua-nhieu-sao",
+];
 const guideSlugs = ["cach-lay-hoi-va-tao-tieng-sao-tron-ro", "meo-sua-loi-xi-tieng-va-rung-ngon", "chon-nhac-cu-va-xay-dung-lo-trinh-hoc"];
 const fluteTabSlugs = ["beo-dat-may-troi", "chieu-tren-que-huong", "khuc-sao-vung-cao", "ve-que", "tinh-ca-tay-bac"];
 

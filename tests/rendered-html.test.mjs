@@ -570,3 +570,190 @@ test("verifies internal analytics system: tracking, bot filtering, authenticatio
   assert.match(adminHtml, /<meta[^>]*name=["']robots["'][^>]*content=["'][^"']*nofollow/i);
 });
 
+test("verifies dynamic crawler and SEO engine: sitemap, rss, indexnow, and dynamic article SSR", async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+
+  const sampleArticles = [
+    {
+      id: "art-1",
+      collection: "articles",
+      title: "4 thế tay cơ bản của người chơi sáo trúc",
+      slug: "4-the-tay-co-ban-cua-nguoi-choi-sao-truc",
+      excerpt: "Tổng hợp 4 thế tay quan trọng nhất khi chơi sáo trúc từ cơ bản đến nâng cao.",
+      published_at: "2026-09-18",
+      updated_at: "2026-09-18T10:00:00Z",
+      content: "## 4 thế tay cơ bản\n\nNội dung chi tiết về các thế tay bấm sáo trúc.\n\n- Thế tay 1: C/Am\n- Thế tay 2: F/Dm\n\nChúc các bạn luyện tập thành công!",
+      image_url: "/media/the-tay.jpg",
+      tag: "Kỹ thuật",
+      visible: 1,
+      sort_order: 1,
+    },
+    {
+      id: "art-2",
+      collection: "articles",
+      title: "Tự học sáo trúc hay học với giáo viên?",
+      slug: "tu-hoc-sao-truc-hay-hoc-voi-giao-vien",
+      excerpt: "Phân tích ưu nhược điểm giữa tự học sáo qua mạng và có thầy hướng dẫn trực tiếp.",
+      published_at: "2026-08-25",
+      updated_at: "2026-08-25T12:00:00Z",
+      content: "## Nên tự học hay học giáo viên?\n\nPhân tích chi tiết giúp người mới định hướng đúng đắn.",
+      image_url: "",
+      tag: "Định hướng",
+      visible: 1,
+      sort_order: 2,
+    },
+    {
+      id: "art-thin",
+      collection: "articles",
+      title: "5 bước tạo tiếng sáo",
+      slug: "5-buoc-tao-tieng-sao",
+      excerpt: "Nội dung ngắn",
+      published_at: "2026-08-08",
+      updated_at: "2026-08-08T00:00:00Z",
+      content: "5 buoc tao tieng sao",
+      image_url: "",
+      tag: "Kỹ thuật",
+      visible: 1,
+      sort_order: 99,
+    },
+  ];
+
+  const mockDB = {
+    prepare(sql) {
+      return {
+        bind(...args) {
+          return {
+            async first() {
+              if (sql.includes("slug = ?")) {
+                const requestedSlug = args[0];
+                return sampleArticles.find((a) => a.slug === requestedSlug) || null;
+              }
+              return null;
+            },
+            async all() {
+              return { results: sampleArticles };
+            },
+            async run() {
+              return { success: true };
+            }
+          };
+        },
+        async all() {
+          if (sql.includes("FROM cms_entries")) {
+            return { results: sampleArticles };
+          }
+          return { results: [] };
+        },
+        async first() {
+          return null;
+        },
+        async run() {
+          return { success: true };
+        }
+      };
+    },
+    async batch() {
+      return [];
+    }
+  };
+
+  const mockEnv = {
+    DB: mockDB,
+    ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) },
+  };
+  const mockCtx = { waitUntil() {}, passThroughOnException() {} };
+
+  // 1. Test dynamic /sitemap.xml
+  const sitemapRes = await worker.fetch(new Request("https://saotrucauco.com/sitemap.xml"), mockEnv, mockCtx);
+  assert.equal(sitemapRes.status, 200);
+  assert.match(sitemapRes.headers.get("content-type") || "", /xml/i);
+  const sitemapText = await sitemapRes.text();
+
+  assert.match(sitemapText, /<loc>https:\/\/saotrucauco\.com\/bai-viet\/4-the-tay-co-ban-cua-nguoi-choi-sao-truc<\/loc>/);
+  assert.match(sitemapText, /<loc>https:\/\/saotrucauco\.com\/bai-viet\/tu-hoc-sao-truc-hay-hoc-voi-giao-vien<\/loc>/);
+  // Must exclude thin article from sitemap
+  assert.doesNotMatch(sitemapText, /<loc>https:\/\/saotrucauco\.com\/bai-viet\/5-buoc-tao-tieng-sao<\/loc>/);
+
+  // 2. Test dynamic /rss.xml
+  const rssRes = await worker.fetch(new Request("https://saotrucauco.com/rss.xml"), mockEnv, mockCtx);
+  assert.equal(rssRes.status, 200);
+  assert.match(rssRes.headers.get("content-type") || "", /xml/i);
+  const rssText = await rssRes.text();
+  assert.match(rssText, /<title><!\[CDATA\[4 thế tay cơ bản của người chơi sáo trúc\]\]><\/title>/);
+  assert.match(rssText, /https:\/\/saotrucauco\.com\/bai-viet\/4-the-tay-co-ban-cua-nguoi-choi-sao-truc/);
+
+  // 3. Test IndexNow key verification endpoint
+  const indexNowRes = await worker.fetch(new Request("https://saotrucauco.com/8e7b92f4c1a5406798b3d629a8f2e4c1.txt"), mockEnv, mockCtx);
+  assert.equal(indexNowRes.status, 200);
+  const indexNowText = await indexNowRes.text();
+  assert.equal(indexNowText.trim(), "8e7b92f4c1a5406798b3d629a8f2e4c1");
+
+  // 4. Test dynamic SSR for article list /bai-viet
+  const baiVietRes = await worker.fetch(new Request("https://saotrucauco.com/bai-viet", {
+    headers: { accept: "text/html" }
+  }), mockEnv, mockCtx);
+  assert.equal(baiVietRes.status, 200);
+  const baiVietHtml = await baiVietRes.text();
+  assert.match(baiVietHtml, /4 thế tay cơ bản của người chơi sáo trúc/);
+  assert.match(baiVietHtml, /href=["']\/bai-viet\/4-the-tay-co-ban-cua-nguoi-choi-sao-truc["']/);
+
+  // 5. Test dynamic SSR for single article /bai-viet/4-the-tay-co-ban-cua-nguoi-choi-sao-truc
+  const articleRes = await worker.fetch(new Request("https://saotrucauco.com/bai-viet/4-the-tay-co-ban-cua-nguoi-choi-sao-truc", {
+    headers: { accept: "text/html" }
+  }), mockEnv, mockCtx);
+  assert.equal(articleRes.status, 200);
+  const articleHtml = await articleRes.text();
+
+  // Initial HTML MUST contain real title, NOT generic fallback
+  assert.match(articleHtml, /<title>4 thế tay cơ bản của người chơi sáo trúc \| Sáo Trúc Âu Cơ<\/title>/);
+  // Initial HTML MUST contain article excerpt
+  assert.match(articleHtml, /<meta[^>]*name=["']description["'][^>]*content=["'][^"']*4 thế tay quan trọng nhất/);
+  // Canonical URL
+  assert.match(articleHtml, /<link[^>]*rel=["']canonical["'][^>]*href=["']https:\/\/saotrucauco\.com\/bai-viet\/4-the-tay-co-ban-cua-nguoi-choi-sao-truc["']/);
+  // OpenGraph tags
+  assert.match(articleHtml, /<meta[^>]*property=["']og:title["'][^>]*content=["'][^"']*4 thế tay/);
+  // Structured data BlogPosting
+  assert.match(articleHtml, /"BlogPosting"/);
+  assert.match(articleHtml, /"4 thế tay cơ bản của người chơi sáo trúc"/);
+  // Must NOT contain loading message
+  assert.doesNotMatch(articleHtml, /Đang tải bài viết…/);
+  // Must contain rendered headings and paragraphs
+  assert.match(articleHtml, /<h1[^>]*>(?:<span[^>]*>)?4(?:<\/span>)? thế tay cơ bản của người chơi sáo trúc<\/h1>/i);
+  assert.match(articleHtml, /4 thế tay cơ bản/i);
+
+  // 6. Test dynamic SSR for a brand-new article created solely in D1 (NOT present in static data)
+  const brandNewArticle = {
+    id: "art-future-99",
+    collection: "articles",
+    title: "Kỹ thuật lấy hơi đa chiều cho sáo trúc",
+    slug: "ky-thuat-lay-hoi-da-chieu",
+    excerpt: "Bí quyết giữ hơi liên tục trong 60 giây không bị ngắt quãng.",
+    published_at: "2026-09-19",
+    updated_at: "2026-09-19T14:00:00Z",
+    content: "## Luyện hơi đa chiều\n\nĐây là bài viết mới nhất vừa được thêm vào CMS.\n\n- Bước 1: Thả lỏng cơ bụng\n- Bước 2: Hít sâu bằng mũi và miệng\n\nChúc thành công!",
+    image_url: "/media/lay-hoi.jpg",
+    tag: "Luyện hơi",
+    visible: 1,
+    sort_order: 1,
+  };
+  sampleArticles.unshift(brandNewArticle);
+
+  const futureArticleRes = await worker.fetch(new Request("https://saotrucauco.com/bai-viet/ky-thuat-lay-hoi-da-chieu", {
+    headers: { accept: "text/html" }
+  }), mockEnv, mockCtx);
+  assert.equal(futureArticleRes.status, 200);
+  const futureHtml = await futureArticleRes.text();
+
+  assert.match(futureHtml, /<title>Kỹ thuật lấy hơi đa chiều cho sáo trúc \| Sáo Trúc Âu Cơ<\/title>/);
+  assert.match(futureHtml, /<meta[^>]*name=["']description["'][^>]*content=["'][^"']*Bí quyết giữ hơi liên tục/);
+  assert.match(futureHtml, /<link[^>]*rel=["']canonical["'][^>]*href=["']https:\/\/saotrucauco\.com\/bai-viet\/ky-thuat-lay-hoi-da-chieu["']/);
+  assert.match(futureHtml, /"Kỹ thuật lấy hơi đa chiều cho sáo trúc"/);
+  assert.doesNotMatch(futureHtml, /Đang tải bài viết…/);
+  assert.match(futureHtml, /<h1[^>]*>Kỹ thuật lấy hơi đa chiều cho sáo trúc<\/h1>/);
+  assert.match(futureHtml, /Luyện hơi đa chiều/);
+  assert.match(futureHtml, /Bước 1: Thả lỏng cơ bụng/);
+});
+
+
