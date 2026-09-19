@@ -125,6 +125,9 @@ export const metadata: Metadata = {
   },
   manifest: "/site.webmanifest",
   category: "music",
+  verification: {
+    google: "cXADG1dJozi0hYs4hg41yZFuIekXMc5OLJJP47feFz4",
+  },
 };
 
 const jsonLdData = {
@@ -310,6 +313,7 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <head>
+        <meta name="google-site-verification" content="cXADG1dJozi0hYs4hg41yZFuIekXMc5OLJJP47feFz4" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
         <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
