@@ -141,6 +141,51 @@ export function migrateStudentId(oldId: string): string {
   return oldId;
 }
 
+// ================= SCHEDULE SORT & PARSE HELPERS =================
+// Phân tích ngày và giờ ca dạy để ưu tiên sắp xếp theo thời gian ngày trước, sau đó tới giờ dạy
+export function parseScheduleDateTime(dateStr: string, timeStr: string): { dateValue: number; timeValue: number } {
+  let dateValue = 0;
+  if (dateStr) {
+    const trimmedDate = String(dateStr).trim();
+    // Khớp định dạng ngày kiểu Việt Nam: DD/MM/YYYY hoặc D/M/YYYY hoặc DD-MM-YYYY
+    const dmyMatch = trimmedDate.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
+    if (dmyMatch) {
+      const day = parseInt(dmyMatch[1], 10);
+      const month = parseInt(dmyMatch[2], 10);
+      const year = parseInt(dmyMatch[3], 10);
+      dateValue = year * 10000 + month * 100 + day;
+    } else {
+      // Khớp định dạng ISO: YYYY-MM-DD
+      const ymdMatch = trimmedDate.match(/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/);
+      if (ymdMatch) {
+        const year = parseInt(ymdMatch[1], 10);
+        const month = parseInt(ymdMatch[2], 10);
+        const day = parseInt(ymdMatch[3], 10);
+        dateValue = year * 10000 + month * 100 + day;
+      } else {
+        const parsed = Date.parse(trimmedDate);
+        if (!isNaN(parsed)) {
+          const d = new Date(parsed);
+          dateValue = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+        }
+      }
+    }
+  }
+
+  let timeValue = 0;
+  if (timeStr) {
+    // Trích xuất giờ bắt đầu của ca dạy (ví dụ: "18:00 - 18:40", "8:00 - 10:30", "9:00", "8h30")
+    const match = String(timeStr).trim().match(/(\d{1,2})(?:[:hH](\d{1,2}))?/);
+    if (match) {
+      const hours = parseInt(match[1], 10);
+      const minutes = match[2] ? parseInt(match[2], 10) : 0;
+      timeValue = hours * 60 + minutes;
+    }
+  }
+
+  return { dateValue, timeValue };
+}
+
 const INITIAL_STUDENTS: StudentData[] = [
   {
     id: "6-DyqX6a46",
@@ -553,6 +598,74 @@ function StudentPortalContent() {
 
   const [showAddScheduleModal, setShowAddScheduleModal] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<ScheduleItem | null>(null);
+
+  // Quản lý thứ tự sắp xếp lịch dạy: ưu tiên thời gian ngày trước, sau đó tới giờ dạy
+  const [scheduleSortOrder, setScheduleSortOrder] = useState<"date-asc" | "date-desc" | "created-desc">(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("auco_schedules_sort_order");
+        if (saved === "date-asc" || saved === "date-desc" || saved === "created-desc") {
+          return saved;
+        }
+      } catch (e) {}
+    }
+    return "date-asc"; // Mặc định ưu tiên sắp xếp theo thời gian ngày trước, sau đó tới giờ dạy (sớm nhất trước)
+  });
+
+  const [scheduleSearch, setScheduleSearch] = useState("");
+  const [scheduleStatusFilter, setScheduleStatusFilter] = useState("all");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("auco_schedules_sort_order", scheduleSortOrder);
+      } catch (e) {}
+    }
+  }, [scheduleSortOrder]);
+
+  // Danh sách lịch dạy sau khi lọc và sắp xếp
+  const sortedSchedules = useMemo(() => {
+    let result = [...schedules];
+
+    if (scheduleSearch.trim()) {
+      const q = scheduleSearch.toLowerCase().trim();
+      result = result.filter(
+        (sc) =>
+          sc.studentName.toLowerCase().includes(q) ||
+          sc.course.toLowerCase().includes(q) ||
+          sc.teacher.toLowerCase().includes(q) ||
+          sc.date.includes(q) ||
+          sc.time.includes(q)
+      );
+    }
+
+    if (scheduleStatusFilter !== "all") {
+      result = result.filter((sc) => sc.status === scheduleStatusFilter);
+    }
+
+    if (scheduleSortOrder === "created-desc") {
+      return result;
+    }
+
+    return result.sort((a, b) => {
+      const dtA = parseScheduleDateTime(a.date, a.time);
+      const dtB = parseScheduleDateTime(b.date, b.time);
+
+      if (scheduleSortOrder === "date-asc") {
+        // Ưu tiên ngày trước
+        if (dtA.dateValue !== dtB.dateValue) return dtA.dateValue - dtB.dateValue;
+        // Sau đó tới giờ dạy
+        if (dtA.timeValue !== dtB.timeValue) return dtA.timeValue - dtB.timeValue;
+        return (a.id || "").localeCompare(b.id || "");
+      } else {
+        // Giảm dần: Ưu tiên ngày trước (ngày xa hơn/muộn hơn lên trước)
+        if (dtA.dateValue !== dtB.dateValue) return dtB.dateValue - dtA.dateValue;
+        // Sau đó tới giờ dạy (giờ muộn hơn lên trước)
+        if (dtA.timeValue !== dtB.timeValue) return dtB.timeValue - dtA.timeValue;
+        return (b.id || "").localeCompare(a.id || "");
+      }
+    });
+  }, [schedules, scheduleSortOrder, scheduleSearch, scheduleStatusFilter]);
 
   const [showAddInvoiceModal, setShowAddInvoiceModal] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<StudentData | null>(null);
@@ -1808,25 +1921,112 @@ function StudentPortalContent() {
         {/* ---------------- 3. TAB LỊCH DẠY ---------------- */}
         {activeTab === "lich-day" && (
           <div className="space-y-5">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-bold text-slate-900">Lịch Dạy & Điểm Danh Theo Buổi</h2>
                 <p className="text-xs text-slate-500">Xác nhận ca dạy, tự động tích lũy số buổi đã học cho học viên</p>
               </div>
               <button
                 onClick={() => setShowAddScheduleModal(true)}
-                className="px-4 py-2 bg-[#4A101D] hover:bg-[#631728] text-white text-xs font-bold rounded-xl shadow transition-colors"
+                className="px-4 py-2 bg-[#4A101D] hover:bg-[#631728] text-white text-xs font-bold rounded-xl shadow transition-colors shrink-0"
               >
                 + Thêm ca dạy mới
               </button>
             </div>
 
+            {/* THANH ĐIỀU KHIỂN & THAY ĐỔI THỨ TỰ LỊCH DẠY */}
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3.5 text-xs">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <div className="flex items-center gap-1.5 font-bold text-slate-700">
+                  <span className="text-base text-[#4A101D]">⇅</span>
+                  <span>Thứ tự sắp xếp:</span>
+                </div>
+                <select
+                  value={scheduleSortOrder}
+                  onChange={(e) => setScheduleSortOrder(e.target.value as any)}
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#4A101D]/20 cursor-pointer shadow-sm"
+                >
+                  <option value="date-asc">📅 Ngày & Giờ tăng dần (Sớm nhất trước)</option>
+                  <option value="date-desc">📅 Ngày & Giờ giảm dần (Muộn nhất trước)</option>
+                  <option value="created-desc">🕒 Mới thêm gần đây</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setScheduleSortOrder((prev) => (prev === "date-asc" ? "date-desc" : "date-asc"))}
+                  className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl flex items-center gap-1.5 transition-colors border border-slate-200 shadow-sm"
+                  title="Đổi chiều sắp xếp Ngày & Giờ nhanh"
+                >
+                  {scheduleSortOrder === "date-asc" ? "▲ Sớm nhất trước" : scheduleSortOrder === "date-desc" ? "▼ Muộn nhất trước" : "⇅ Đổi chiều"}
+                </button>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2.5">
+                {/* Bộ lọc trạng thái */}
+                <select
+                  value={scheduleStatusFilter}
+                  onChange={(e) => setScheduleStatusFilter(e.target.value)}
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 font-medium cursor-pointer shadow-sm"
+                >
+                  <option value="all">Tất cả trạng thái</option>
+                  <option value="Chưa học">Chưa học</option>
+                  <option value="Đã học">Đã học</option>
+                  <option value="Bảo lưu">Bảo lưu</option>
+                  <option value="Hủy">Hủy</option>
+                </select>
+
+                {/* Ô tìm kiếm */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="🔍 Tìm tên, ngày, lớp..."
+                    value={scheduleSearch}
+                    onChange={(e) => setScheduleSearch(e.target.value)}
+                    className="bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-7 py-2 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#4A101D]/20 shadow-sm"
+                  />
+                  {scheduleSearch && (
+                    <button
+                      onClick={() => setScheduleSearch("")}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                <span className="text-slate-500 font-medium whitespace-nowrap">
+                  ({sortedSchedules.length} ca)
+                </span>
+              </div>
+            </div>
+
             <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
-                    <th className="py-2.5 px-3">Ngày</th>
-                    <th className="py-2.5 px-3">Khung giờ</th>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold select-none">
+                    <th
+                      onClick={() => setScheduleSortOrder((prev) => (prev === "date-asc" ? "date-desc" : "date-asc"))}
+                      className="py-2.5 px-3 cursor-pointer hover:bg-slate-100 transition-colors"
+                      title="Nhấp để thay đổi thứ tự ngày dạy"
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span>Ngày</span>
+                        <span className="text-[11px] font-bold text-[#4A101D]">
+                          {scheduleSortOrder === "date-asc" ? "▲" : scheduleSortOrder === "date-desc" ? "▼" : "⇅"}
+                        </span>
+                      </div>
+                    </th>
+                    <th
+                      onClick={() => setScheduleSortOrder((prev) => (prev === "date-asc" ? "date-desc" : "date-asc"))}
+                      className="py-2.5 px-3 cursor-pointer hover:bg-slate-100 transition-colors"
+                      title="Nhấp để thay đổi thứ tự giờ dạy"
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span>Khung giờ</span>
+                        <span className="text-[11px] font-bold text-[#4A101D]">
+                          {scheduleSortOrder === "date-asc" ? "▲" : scheduleSortOrder === "date-desc" ? "▼" : "⇅"}
+                        </span>
+                      </div>
+                    </th>
                     <th className="py-2.5 px-3">Học viên / Lớp</th>
                     <th className="py-2.5 px-3">Khóa học</th>
                     <th className="py-2.5 px-3">Giáo viên</th>
@@ -1835,50 +2035,58 @@ function StudentPortalContent() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {schedules.map((sc) => (
-                    <tr key={sc.id} className="hover:bg-slate-50/60">
-                      <td className="py-2.5 px-3 font-semibold text-slate-800">{sc.date}</td>
-                      <td className="py-2.5 px-3 text-slate-600 font-medium">⏰ {sc.time}</td>
-                      <td className="py-2.5 px-3 font-bold text-slate-900">{sc.studentName}</td>
-                      <td className="py-2.5 px-3 text-slate-600">{sc.course}</td>
-                      <td className="py-2.5 px-3 text-slate-700">{sc.teacher}</td>
-                      <td className="py-2.5 px-3">
-                        <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                          sc.status === "Đã học" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
-                          sc.status === "Bảo lưu" ? "bg-amber-50 text-amber-700 border border-amber-200" :
-                          sc.status === "Hủy" ? "bg-rose-50 text-rose-700 border border-rose-200" :
-                          "bg-slate-100 text-slate-700"
-                        }`}>
-                          {sc.status}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3 text-right space-x-1.5">
-                        {sc.status !== "Đã học" && (
-                          <button
-                            onClick={() => {
-                              handleCheckIn(sc.studentId, `Ca dạy ngày ${sc.date} lúc ${sc.time}`);
-                              setSchedules((prev) => prev.map((item) => item.id === sc.id ? { ...item, status: "Đã học" } : item));
-                            }}
-                            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[11px]"
-                          >
-                            ✓ Xác nhận đã học
-                          </button>
-                        )}
-                        <button
-                          onClick={() => setEditingSchedule(sc)}
-                          className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded text-[11px]"
-                        >
-                          Sửa
-                        </button>
-                        <button
-                          onClick={() => handleDeleteSchedule(sc.id)}
-                          className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold rounded text-[11px]"
-                        >
-                          Xóa
-                        </button>
+                  {sortedSchedules.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-8 text-center text-slate-400 font-medium">
+                        Không có ca dạy nào phù hợp với bộ lọc.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    sortedSchedules.map((sc) => (
+                      <tr key={sc.id} className="hover:bg-slate-50/60 transition-colors">
+                        <td className="py-2.5 px-3 font-semibold text-slate-800">{sc.date}</td>
+                        <td className="py-2.5 px-3 text-slate-600 font-medium">⏰ {sc.time}</td>
+                        <td className="py-2.5 px-3 font-bold text-slate-900">{sc.studentName}</td>
+                        <td className="py-2.5 px-3 text-slate-600">{sc.course}</td>
+                        <td className="py-2.5 px-3 text-slate-700">{sc.teacher}</td>
+                        <td className="py-2.5 px-3">
+                          <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                            sc.status === "Đã học" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
+                            sc.status === "Bảo lưu" ? "bg-amber-50 text-amber-700 border border-amber-200" :
+                            sc.status === "Hủy" ? "bg-rose-50 text-rose-700 border border-rose-200" :
+                            "bg-slate-100 text-slate-700"
+                          }`}>
+                            {sc.status}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 text-right space-x-1.5 whitespace-nowrap">
+                          {sc.status !== "Đã học" && (
+                            <button
+                              onClick={() => {
+                                handleCheckIn(sc.studentId, `Ca dạy ngày ${sc.date} lúc ${sc.time}`);
+                                setSchedules((prev) => prev.map((item) => item.id === sc.id ? { ...item, status: "Đã học" } : item));
+                              }}
+                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[11px]"
+                            >
+                              ✓ Xác nhận đã học
+                            </button>
+                          )}
+                          <button
+                            onClick={() => setEditingSchedule(sc)}
+                            className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded text-[11px]"
+                          >
+                            Sửa
+                          </button>
+                          <button
+                            onClick={() => handleDeleteSchedule(sc.id)}
+                            className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold rounded text-[11px]"
+                          >
+                            Xóa
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
