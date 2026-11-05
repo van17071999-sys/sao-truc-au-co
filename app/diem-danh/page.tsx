@@ -598,6 +598,7 @@ function StudentPortalContent() {
 
   const [showAddScheduleModal, setShowAddScheduleModal] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<ScheduleItem | null>(null);
+  const [duplicatingSchedule, setDuplicatingSchedule] = useState<ScheduleItem | null>(null);
 
   // Quản lý thứ tự sắp xếp lịch dạy: ưu tiên thời gian ngày trước, sau đó tới giờ dạy
   const [scheduleSortOrder, setScheduleSortOrder] = useState<"date-asc" | "date-desc" | "created-desc">(() => {
@@ -2072,6 +2073,13 @@ function StudentPortalContent() {
                             </button>
                           )}
                           <button
+                            onClick={() => setDuplicatingSchedule(sc)}
+                            className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold rounded text-[11px] border border-amber-200/60 transition-colors shadow-sm"
+                            title="Nhân bản ca dạy để sửa ngày hoặc đổi học viên"
+                          >
+                            📋 Nhân bản
+                          </button>
+                          <button
                             onClick={() => setEditingSchedule(sc)}
                             className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded text-[11px]"
                           >
@@ -3072,11 +3080,15 @@ function StudentPortalContent() {
               onSubmit={(e) => {
                 e.preventDefault();
                 const form = e.target as any;
+                const student = students.find((s) => s.id === form.studentId.value);
                 setSchedules((prev) =>
                   prev.map((sc) => (sc.id === editingSchedule.id ? {
                     ...sc,
                     date: form.date.value,
                     time: form.time.value,
+                    studentId: form.studentId.value,
+                    studentName: student?.name || sc.studentName,
+                    course: form.course.value,
                     teacher: form.teacher.value,
                     status: form.status.value,
                   } : sc))
@@ -3086,6 +3098,14 @@ function StudentPortalContent() {
               }}
               className="space-y-3 text-xs"
             >
+              <div>
+                <label className="font-semibold text-slate-700 block mb-1">Học viên</label>
+                <select name="studentId" defaultValue={editingSchedule.studentId} className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 font-medium">
+                  {students.map((s) => (
+                    <option key={s.id} value={s.id}>{s.name} ({s.id})</option>
+                  ))}
+                </select>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="font-semibold text-slate-700 block mb-1">Ngày dạy</label>
@@ -3095,6 +3115,10 @@ function StudentPortalContent() {
                   <label className="font-semibold text-slate-700 block mb-1">Khung giờ</label>
                   <input required name="time" defaultValue={editingSchedule.time} className="w-full p-2.5 border border-slate-200 rounded-xl" />
                 </div>
+              </div>
+              <div>
+                <label className="font-semibold text-slate-700 block mb-1">Khóa học</label>
+                <input required name="course" defaultValue={editingSchedule.course} className="w-full p-2.5 border border-slate-200 rounded-xl" />
               </div>
               <div>
                 <label className="font-semibold text-slate-700 block mb-1">Giáo viên</label>
@@ -3120,6 +3144,20 @@ function StudentPortalContent() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* ================= MODAL: NHÂN BẢN CA DẠY (DUPLICATE) ================= */}
+      {duplicatingSchedule && (
+        <DuplicateScheduleModal
+          item={duplicatingSchedule}
+          students={students}
+          onClose={() => setDuplicatingSchedule(null)}
+          onDuplicate={(newSc) => {
+            setSchedules((prev) => [newSc, ...prev]);
+            setDuplicatingSchedule(null);
+            showToast(`Đã nhân bản ca dạy cho ${newSc.studentName}!`);
+          }}
+        />
       )}
 
       {/* ================= MODAL: THÊM GIÁO VIÊN ================= */}
@@ -3252,6 +3290,225 @@ function StudentPortalContent() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ================= MODAL: NHÂN BẢN CA DẠY (DUPLICATE) =================
+function DuplicateScheduleModal({
+  item,
+  students,
+  onClose,
+  onDuplicate,
+}: {
+  item: ScheduleItem;
+  students: StudentData[];
+  onClose: () => void;
+  onDuplicate: (newSc: ScheduleItem) => void;
+}) {
+  const [date, setDate] = useState(item.date);
+  const [time, setTime] = useState(item.time);
+  const [studentId, setStudentId] = useState(item.studentId);
+  const [course, setCourse] = useState(item.course);
+  const [teacher, setTeacher] = useState(item.teacher);
+  const [status, setStatus] = useState<ScheduleItem["status"]>("Chưa học");
+
+  // Khi người dùng đổi học viên, tự động gợi ý khóa học hiện tại của học viên đó
+  const handleStudentChange = (newId: string) => {
+    setStudentId(newId);
+    const st = students.find((s) => s.id === newId);
+    if (st && st.course) {
+      setCourse(st.course);
+    }
+  };
+
+  // Nút tăng số ngày nhanh (+7 ngày cho tuần sau, +1 ngày, ...)
+  const handleAddDays = (days: number) => {
+    const dt = parseScheduleDateTime(date, "");
+    if (!dt.dateValue) {
+      const now = new Date();
+      now.setDate(now.getDate() + days);
+      setDate(`${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`);
+      return;
+    }
+    const year = Math.floor(dt.dateValue / 10000);
+    const month = Math.floor((dt.dateValue % 10000) / 100);
+    const day = dt.dateValue % 100;
+    const d = new Date(year, month - 1, day);
+    d.setDate(d.getDate() + days);
+    setDate(`${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`);
+  };
+
+  const handleSetToday = () => {
+    const now = new Date();
+    setDate(`${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const student = students.find((s) => s.id === studentId);
+    const newSc: ScheduleItem = {
+      id: `SCH-${Math.floor(100 + Math.random() * 900)}`,
+      date: date.trim(),
+      time: time.trim(),
+      studentId: studentId,
+      studentName: student?.name || item.studentName || "Học viên",
+      course: course.trim(),
+      teacher: teacher.trim(),
+      status: status,
+    };
+    onDuplicate(newSc);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 animate-in fade-in">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xl">📋</span>
+              <h3 className="text-lg font-bold text-slate-900">Nhân Bản Ca Dạy</h3>
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              Sao chép ca dạy của <b>{item.studentName}</b>. Bạn có thể sửa ngày học hoặc chọn tên học viên khác.
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-600 text-lg w-7 h-7 rounded-full flex items-center justify-center hover:bg-slate-100"
+          >
+            ✕
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
+          {/* Chọn Học viên */}
+          <div>
+            <label className="font-semibold text-slate-700 block mb-1">
+              Học viên / Lớp <span className="text-rose-500">*</span>
+            </label>
+            <select
+              value={studentId}
+              onChange={(e) => handleStudentChange(e.target.value)}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4A101D]/20 cursor-pointer font-medium"
+            >
+              {students.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name} ({s.id}) - {s.course}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Ngày dạy & Khung giờ */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="font-semibold text-slate-700 block mb-1">
+                Ngày dạy <span className="text-rose-500">*</span>
+              </label>
+              <input
+                required
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                placeholder="D/M/YYYY"
+                className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4A101D]/20 font-medium"
+              />
+            </div>
+            <div>
+              <label className="font-semibold text-slate-700 block mb-1">
+                Khung giờ <span className="text-rose-500">*</span>
+              </label>
+              <input
+                required
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                placeholder="18:00 - 19:30"
+                className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4A101D]/20 font-medium"
+              />
+            </div>
+          </div>
+
+          {/* Nút bấm nhanh đổi ngày */}
+          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+            <span className="text-[11px] text-slate-400 font-medium">Chỉnh ngày nhanh:</span>
+            <button
+              type="button"
+              onClick={() => handleAddDays(7)}
+              className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 text-[11px] font-semibold rounded-lg border border-amber-200/60 transition-colors"
+            >
+              +7 ngày (Tuần sau)
+            </button>
+            <button
+              type="button"
+              onClick={() => handleAddDays(1)}
+              className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold rounded-lg transition-colors"
+            >
+              +1 ngày (Mai)
+            </button>
+            <button
+              type="button"
+              onClick={handleSetToday}
+              className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold rounded-lg transition-colors"
+            >
+              Hôm nay
+            </button>
+          </div>
+
+          {/* Khóa học */}
+          <div>
+            <label className="font-semibold text-slate-700 block mb-1">Khóa học</label>
+            <input
+              required
+              value={course}
+              onChange={(e) => setCourse(e.target.value)}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4A101D]/20"
+            />
+          </div>
+
+          {/* Giáo viên */}
+          <div>
+            <label className="font-semibold text-slate-700 block mb-1">Giáo viên phụ trách</label>
+            <input
+              required
+              value={teacher}
+              onChange={(e) => setTeacher(e.target.value)}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4A101D]/20"
+            />
+          </div>
+
+          {/* Trạng thái */}
+          <div>
+            <label className="font-semibold text-slate-700 block mb-1">Trạng thái ca mới</label>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as any)}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4A101D]/20 cursor-pointer"
+            >
+              <option value="Chưa học">Chưa học</option>
+              <option value="Đã học">Đã học</option>
+              <option value="Bảo lưu">Bảo lưu</option>
+              <option value="Hủy">Hủy</option>
+            </select>
+          </div>
+
+          <div className="pt-4 flex justify-end gap-2 border-t border-slate-100 mt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold transition-colors"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2 bg-[#4A101D] hover:bg-[#631728] text-white rounded-xl font-bold shadow transition-colors flex items-center gap-1.5"
+            >
+              <span>📋</span>
+              <span>Tạo ca nhân bản</span>
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
