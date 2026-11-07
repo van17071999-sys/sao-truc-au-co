@@ -13,6 +13,14 @@ export interface AttendanceRecord {
   teacher?: string;
 }
 
+export interface RenewalRecord {
+  date: string;
+  packageSessions: number;
+  totalAmount: string;
+  paymentStatus: string;
+  note?: string;
+}
+
 export interface StudentData {
   id: string;
   name: string;
@@ -32,6 +40,7 @@ export interface StudentData {
   debtAmount: string;
   paymentStatus: "Đã thanh toán" | "Chưa thanh toán" | "Còn nợ" | string;
   attendanceList: AttendanceRecord[];
+  renewals?: RenewalRecord[];
 }
 
 export interface ClassData {
@@ -184,6 +193,13 @@ export function parseScheduleDateTime(dateStr: string, timeStr: string): { dateV
   }
 
   return { dateValue, timeValue };
+}
+
+// Tính tổng học phí theo số buổi và đơn giá
+export function calculateTuition(sessions: number, unitPriceStr?: string): string {
+  const numeric = parseInt((unitPriceStr || "300000").replace(/\D/g, ""), 10) || 300000;
+  const total = sessions * numeric;
+  return new Intl.NumberFormat("vi-VN").format(total) + "đ";
 }
 
 const INITIAL_STUDENTS: StudentData[] = [
@@ -600,6 +616,8 @@ function StudentPortalContent() {
   const [editingSchedule, setEditingSchedule] = useState<ScheduleItem | null>(null);
   const [duplicatingSchedule, setDuplicatingSchedule] = useState<ScheduleItem | null>(null);
 
+  const [renewingStudent, setRenewingStudent] = useState<StudentData | null>(null);
+
   // Quản lý thứ tự sắp xếp lịch dạy: ưu tiên thời gian ngày trước, sau đó tới giờ dạy
   const [scheduleSortOrder, setScheduleSortOrder] = useState<"date-asc" | "date-desc" | "created-desc">(() => {
     if (typeof window !== "undefined") {
@@ -817,6 +835,68 @@ function StudentPortalContent() {
           console.error("Lỗi gửi thông báo Telegram:", err);
         });
     }
+  };
+
+  // Gia hạn khóa học mới cho học viên (bắt đầu lại từ 0/8 buổi)
+  const handleRenewStudent = (params: {
+    studentId: string;
+    newPackageSessions: number;
+    totalAmount: string;
+    paymentStatus: string;
+    resetHistory: boolean;
+    note?: string;
+  }) => {
+    const today = new Date();
+    const formattedDate = `${String(today.getDate()).padStart(2, "0")}/${String(today.getMonth() + 1).padStart(2, "0")}/${today.getFullYear()}`;
+    const formattedTime = `${String(today.getHours()).padStart(2, "0")}:${String(today.getMinutes()).padStart(2, "0")}`;
+    const newInvoiceCode = `HD-2026-GH${Math.floor(100 + Math.random() * 900)}`;
+
+    const targetStudent = students.find((s) => s.id === params.studentId);
+
+    const renewalMilestone: AttendanceRecord = {
+      date: formattedDate,
+      time: formattedTime,
+      status: "Đã học",
+      note: `🔄 GIA HẠN KHÓA HỌC: Bắt đầu gói mới ${params.newPackageSessions} buổi${params.note ? ` (${params.note})` : ""}`,
+      teacher: targetStudent?.teacherName || "Quách Hạ Văn",
+    };
+
+    const renewalRecord: RenewalRecord = {
+      date: formattedDate,
+      packageSessions: params.newPackageSessions,
+      totalAmount: params.totalAmount,
+      paymentStatus: params.paymentStatus,
+      note: params.note,
+    };
+
+    setStudents((prev) =>
+      prev.map((s) => {
+        if (s.id !== params.studentId) return s;
+
+        const newAttendanceList = params.resetHistory
+          ? []
+          : [renewalMilestone, ...s.attendanceList];
+
+        return {
+          ...s,
+          packageSessions: params.newPackageSessions,
+          attendedSessions: 0, // Bắt đầu tính lại từ 0 buổi!
+          status: "Đang học", // Đổi trạng thái sang Đang học
+          tuition: params.totalAmount,
+          totalAmount: params.totalAmount,
+          paidAmount: params.paymentStatus === "Đã thanh toán" ? params.totalAmount : "0đ",
+          debtAmount: params.paymentStatus === "Đã thanh toán" ? "0đ" : params.totalAmount,
+          paymentStatus: params.paymentStatus,
+          invoiceCode: newInvoiceCode,
+          invoiceDate: formattedDate,
+          attendanceList: newAttendanceList,
+          renewals: [renewalRecord, ...(s.renewals || [])],
+        };
+      })
+    );
+
+    setRenewingStudent(null);
+    showToast(`✓ Đã gia hạn thành công! Tiến độ của học viên được đặt lại: 0/${params.newPackageSessions} buổi.`);
   };
 
   // Check in whole class
@@ -1560,7 +1640,21 @@ function StudentPortalContent() {
                                   </div>
                                 </div>
 
-                                <div className="text-right shrink-0">
+                                <div className="text-right shrink-0 flex items-center gap-1.5">
+                                  {(s.attendedSessions >= s.packageSessions || s.status === "Hết buổi") && (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedStudentId(s.id);
+                                        setRenewingStudent(s);
+                                      }}
+                                      className="px-1.5 py-0.5 bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold rounded shadow-sm transition-colors cursor-pointer"
+                                      title="Bấm để gia hạn khóa học (tính lại từ 0 buổi)"
+                                    >
+                                      🔄 Gia hạn
+                                    </button>
+                                  )}
                                   <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
                                     isSelected
                                       ? "bg-white/20 text-white"
@@ -1631,6 +1725,20 @@ function StudentPortalContent() {
                     <span>✓ Điểm danh hôm nay (+1)</span>
                   </button>
 
+                  {/* Renew Button */}
+                  <button
+                    onClick={() => setRenewingStudent(currentStudent)}
+                    className={`px-3.5 py-2 font-bold text-xs rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer ${
+                      currentStudent.attendedSessions >= currentStudent.packageSessions || currentStudent.status === "Hết buổi"
+                        ? "bg-amber-500 hover:bg-amber-600 text-white ring-2 ring-amber-300 shadow-amber-200 animate-pulse"
+                        : "bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80"
+                    }`}
+                    title="Gia hạn khóa học mới để bắt đầu tính lại từ 0 buổi"
+                  >
+                    <span>🔄</span>
+                    <span>Gia hạn khóa học</span>
+                  </button>
+
                   {/* Edit Student Button */}
                   <button
                     onClick={() => setEditingStudent(currentStudent)}
@@ -1660,14 +1768,38 @@ function StudentPortalContent() {
 
               {/* Session Progress Stats */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200/80">
-                  <span className="text-xs font-semibold text-slate-500 block">Số buổi đã học</span>
-                  <div className="text-2xl font-bold text-[#4A101D] mt-1">
-                    {currentStudent.attendedSessions} <span className="text-sm font-medium text-slate-400">/ {currentStudent.packageSessions}</span>
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 flex flex-col justify-between">
+                  <div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-semibold text-slate-500 block">Số buổi đã học</span>
+                      {(currentStudent.attendedSessions >= currentStudent.packageSessions || currentStudent.status === "Hết buổi") && (
+                        <span className="px-2 py-0.5 bg-rose-100 text-rose-700 font-bold text-[10px] rounded-full border border-rose-200">
+                          Đã hết buổi
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-2xl font-bold text-[#4A101D] mt-1">
+                      {currentStudent.attendedSessions} <span className="text-sm font-medium text-slate-400">/ {currentStudent.packageSessions}</span>
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-2 mt-2">
+                      <div
+                        className={`h-full rounded-full transition-all ${
+                          currentStudent.attendedSessions >= currentStudent.packageSessions ? "bg-rose-500" : "bg-[#4A101D]"
+                        }`}
+                        style={{ width: `${Math.min(100, Math.round((currentStudent.attendedSessions / currentStudent.packageSessions) * 100))}%` }}
+                      ></div>
+                    </div>
                   </div>
-                  <div className="w-full bg-slate-200 rounded-full h-2 mt-2">
-                    <div className="bg-[#4A101D] h-full rounded-full" style={{ width: `${Math.min(100, Math.round((currentStudent.attendedSessions / currentStudent.packageSessions) * 100))}%` }}></div>
-                  </div>
+
+                  {(currentStudent.attendedSessions >= currentStudent.packageSessions || currentStudent.status === "Hết buổi") && (
+                    <button
+                      onClick={() => setRenewingStudent(currentStudent)}
+                      className="mt-3 w-full py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <span>🔄</span>
+                      <span>Gia hạn ngay (tính lại từ 0/{currentStudent.packageSessions})</span>
+                    </button>
+                  )}
                 </div>
 
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200/80">
@@ -1695,6 +1827,39 @@ function StudentPortalContent() {
                   </div>
                 </div>
               </div>
+
+              {/* Renewal History if any */}
+              {currentStudent.renewals && currentStudent.renewals.length > 0 && (
+                <div className="bg-amber-50/70 rounded-xl p-4 border border-amber-200/80 text-xs">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-bold text-amber-950 flex items-center gap-1.5">
+                      <span>🔄</span>
+                      <span>Lịch sử gia hạn ({currentStudent.renewals.length} lần gia hạn)</span>
+                    </span>
+                    <span className="text-[11px] text-amber-800">
+                      Đang ở chu kỳ học: <b>Khóa {currentStudent.renewals.length + 1}</b>
+                    </span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {currentStudent.renewals.map((rn, idx) => (
+                      <div key={idx} className="flex flex-wrap justify-between items-center bg-white p-2.5 rounded-lg border border-amber-200/60 text-[11px]">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-[#4A101D]">Lần {currentStudent.renewals!.length - idx}:</span>
+                          <span className="text-slate-600">Ngày {rn.date}</span>
+                          <span className="font-semibold text-slate-800">· Gói {rn.packageSessions} buổi</span>
+                          {rn.note && <span className="text-slate-500 italic">({rn.note})</span>}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-slate-900">{rn.totalAmount}</span>
+                          <span className="text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                            {rn.paymentStatus}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Attendance Table */}
               <div>
@@ -2289,26 +2454,41 @@ function StudentPortalContent() {
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {students
-                      .filter((s) => s.packageSessions - s.attendedSessions <= 2 && s.status !== "Hết buổi")
-                      .map((s) => (
-                        <tr key={s.id}>
-                          <td className="py-2 px-3 font-bold text-slate-800">{s.name}</td>
-                          <td className="py-2 px-3 text-slate-600">{s.phone}</td>
-                          <td className="py-2 px-3 text-slate-600">{s.course}</td>
-                          <td className="py-2 px-3 font-semibold">{s.attendedSessions}/{s.packageSessions}</td>
-                          <td className="py-2 px-3 font-bold text-rose-600">{s.packageSessions - s.attendedSessions} buổi</td>
-                          <td className="py-2 px-3 text-right">
-                            <a
-                              href={`https://zalo.me/${s.phone.replace(/\s+/g, "")}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-block px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-[11px] font-bold"
-                            >
-                              Nhắc Zalo ↗
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
+                      .filter((s) => s.packageSessions - s.attendedSessions <= 2 || s.status === "Hết buổi" || s.attendedSessions >= s.packageSessions)
+                      .map((s) => {
+                        const isFinished = s.attendedSessions >= s.packageSessions || s.status === "Hết buổi";
+                        return (
+                          <tr key={s.id}>
+                            <td className="py-2 px-3 font-bold text-slate-800">{s.name}</td>
+                            <td className="py-2 px-3 text-slate-600">{s.phone}</td>
+                            <td className="py-2 px-3 text-slate-600">{s.course}</td>
+                            <td className="py-2 px-3 font-semibold">{s.attendedSessions}/{s.packageSessions}</td>
+                            <td className="py-2 px-3 font-bold text-rose-600">
+                              {isFinished ? "Đã hết buổi" : `${s.packageSessions - s.attendedSessions} buổi`}
+                            </td>
+                            <td className="py-2 px-3 text-right space-x-1.5 whitespace-nowrap">
+                              <button
+                                onClick={() => {
+                                  setSelectedStudentId(s.id);
+                                  setRenewingStudent(s);
+                                }}
+                                className="inline-block px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded text-[11px] font-bold shadow-sm transition-colors cursor-pointer"
+                                title="Gia hạn khóa học mới để bắt đầu lại từ 0 buổi"
+                              >
+                                🔄 Gia hạn
+                              </button>
+                              <a
+                                href={`https://zalo.me/${s.phone.replace(/\s+/g, "")}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-block px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-[11px] font-bold"
+                              >
+                                Nhắc Zalo ↗
+                              </a>
+                            </td>
+                          </tr>
+                        );
+                      })}
                   </tbody>
                 </table>
               </div>
@@ -3160,6 +3340,15 @@ function StudentPortalContent() {
         />
       )}
 
+      {/* ================= MODAL: GIA HẠN KHÓA HỌC (RENEWAL) ================= */}
+      {renewingStudent && (
+        <RenewStudentModal
+          student={renewingStudent}
+          onClose={() => setRenewingStudent(null)}
+          onRenew={handleRenewStudent}
+        />
+      )}
+
       {/* ================= MODAL: THÊM GIÁO VIÊN ================= */}
       {showAddTeacherModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3">
@@ -3505,6 +3694,297 @@ function DuplicateScheduleModal({
             >
               <span>📋</span>
               <span>Tạo ca nhân bản</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ================= MODAL: GIA HẠN KHÓA HỌC (RENEWAL) =================
+interface RenewStudentModalProps {
+  student: StudentData;
+  onClose: () => void;
+  onRenew: (params: {
+    studentId: string;
+    newPackageSessions: number;
+    totalAmount: string;
+    paymentStatus: string;
+    resetHistory: boolean;
+    note?: string;
+  }) => void;
+}
+
+function RenewStudentModal({ student, onClose, onRenew }: RenewStudentModalProps) {
+  const [packageSessions, setPackageSessions] = useState<number>(student.packageSessions || 8);
+  const [unitPrice, setUnitPrice] = useState<string>(student.unitPrice || "300.000đ");
+  const [totalAmount, setTotalAmount] = useState<string>(() =>
+    calculateTuition(student.packageSessions || 8, student.unitPrice || "300.000đ")
+  );
+  const [paymentStatus, setPaymentStatus] = useState<string>("Đã thanh toán");
+  const [resetHistory, setResetHistory] = useState<boolean>(false);
+  const [note, setNote] = useState<string>("");
+
+  const handleSelectPackage = (sessions: number) => {
+    setPackageSessions(sessions);
+    setTotalAmount(calculateTuition(sessions, unitPrice));
+  };
+
+  const handleUnitPriceChange = (val: string) => {
+    setUnitPrice(val);
+    setTotalAmount(calculateTuition(packageSessions, val));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (packageSessions <= 0) return;
+    onRenew({
+      studentId: student.id,
+      newPackageSessions: packageSessions,
+      totalAmount: totalAmount || calculateTuition(packageSessions, unitPrice),
+      paymentStatus,
+      resetHistory,
+      note: note.trim() || undefined,
+    });
+  };
+
+  const currentCycles = (student.renewals?.length || 0) + 1;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-5 sm:p-6 relative my-auto border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-base font-bold shadow-2xs">
+                🔄
+              </span>
+              <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                Gia Hạn Khóa Học Cho Học Viên
+              </h3>
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              Bắt đầu chu kỳ học mới, đặt lại số buổi đã học về <b>0/{packageSessions}</b> buổi.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors text-sm"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Student summary info card */}
+        <div className="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-xs space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-slate-800 text-sm">{student.name}</span>
+            <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-[11px] border border-amber-200">
+              Khóa tiếp theo: Đợt {currentCycles + 1}
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-slate-500 text-[11px]">
+            <span>SĐT: <b className="text-slate-700">{student.phone}</b></span>
+            <span>·</span>
+            <span>Bộ môn: <b className="text-slate-700">{student.course}</b></span>
+            <span>·</span>
+            <span>Tiến độ hiện tại: <b className="text-rose-600 font-bold">{student.attendedSessions}/{student.packageSessions} buổi</b> ({student.status})</span>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4 text-xs">
+          {/* Package selection */}
+          <div>
+            <label className="font-semibold text-slate-700 block mb-1.5">
+              1. Chọn số buổi gói mới (Chu kỳ học tiếp theo) *
+            </label>
+            <div className="grid grid-cols-5 gap-1.5 mb-2">
+              {[4, 8, 12, 16, 24].map((s) => {
+                const isSelected = packageSessions === s;
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => handleSelectPackage(s)}
+                    className={`py-2 px-1 text-center rounded-xl font-bold transition-all text-xs border cursor-pointer ${
+                      isSelected
+                        ? "bg-[#4A101D] text-white border-[#4A101D] shadow ring-2 ring-[#4A101D]/20"
+                        : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
+                    }`}
+                  >
+                    <div>{s} buổi</div>
+                    {s === 8 && (
+                      <span className={`text-[9px] block ${isSelected ? "text-amber-300" : "text-amber-600"}`}>
+                        Phổ biến
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-slate-500 whitespace-nowrap">Hoặc nhập số buổi tùy chọn:</span>
+              <input
+                type="number"
+                min={1}
+                max={200}
+                value={packageSessions}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value, 10) || 0;
+                  setPackageSessions(val);
+                  setTotalAmount(calculateTuition(val, unitPrice));
+                }}
+                className="w-24 p-1.5 text-center border border-slate-200 rounded-lg bg-slate-50 font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4A101D]"
+              />
+              <span className="text-[11px] text-slate-400">buổi</span>
+            </div>
+          </div>
+
+          {/* Pricing & Tuition */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-slate-100">
+            <div>
+              <label className="font-semibold text-slate-700 block mb-1">
+                2. Đơn giá mỗi buổi
+              </label>
+              <input
+                type="text"
+                value={unitPrice}
+                onChange={(e) => handleUnitPriceChange(e.target.value)}
+                placeholder="300.000đ"
+                className="w-full p-2 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4A101D]"
+              />
+            </div>
+            <div>
+              <label className="font-semibold text-slate-700 block mb-1">
+                3. Tổng học phí khóa mới
+              </label>
+              <input
+                type="text"
+                required
+                value={totalAmount}
+                onChange={(e) => setTotalAmount(e.target.value)}
+                placeholder="2.400.000đ"
+                className="w-full p-2 border border-slate-200 rounded-xl bg-slate-50 font-bold text-emerald-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4A101D]"
+              />
+            </div>
+          </div>
+
+          {/* Payment Status */}
+          <div className="pt-1 border-t border-slate-100">
+            <label className="font-semibold text-slate-700 block mb-1">
+              4. Trạng thái thanh toán học phí
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: "Đã thanh toán", color: "emerald" },
+                { label: "Chưa thanh toán", color: "rose" },
+                { label: "Còn nợ", color: "amber" },
+              ].map((opt) => {
+                const isSelected = paymentStatus === opt.label;
+                return (
+                  <button
+                    key={opt.label}
+                    type="button"
+                    onClick={() => setPaymentStatus(opt.label)}
+                    className={`py-2 px-2 text-center rounded-xl font-bold transition-all text-xs border cursor-pointer ${
+                      isSelected
+                        ? opt.color === "emerald"
+                          ? "bg-emerald-600 text-white border-emerald-600 shadow"
+                          : opt.color === "rose"
+                          ? "bg-rose-600 text-white border-rose-600 shadow"
+                          : "bg-amber-600 text-white border-amber-600 shadow"
+                        : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* History handling option */}
+          <div className="pt-1 border-t border-slate-100 space-y-1.5">
+            <label className="font-semibold text-slate-700 block">
+              5. Tùy chọn lịch sử điểm danh cũ
+            </label>
+            <label className="flex items-start gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100/70 cursor-pointer transition-colors">
+              <input
+                type="radio"
+                name="historyOpt"
+                checked={!resetHistory}
+                onChange={() => setResetHistory(false)}
+                className="mt-0.5 text-[#4A101D] focus:ring-[#4A101D]"
+              />
+              <div>
+                <div className="font-bold text-slate-800">
+                  Giữ lại lịch sử & thêm mốc gia hạn <span className="text-emerald-600 font-semibold">(Khuyên dùng)</span>
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  Học viên và giáo viên vẫn tra cứu lại được các buổi học ở chu kỳ trước.
+                </div>
+              </div>
+            </label>
+
+            <label className="flex items-start gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100/70 cursor-pointer transition-colors">
+              <input
+                type="radio"
+                name="historyOpt"
+                checked={resetHistory}
+                onChange={() => setResetHistory(true)}
+                className="mt-0.5 text-[#4A101D] focus:ring-[#4A101D]"
+              />
+              <div>
+                <div className="font-bold text-slate-800">
+                  Làm mới danh sách (Xóa danh sách điểm danh cũ)
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  Bảng điểm danh sẽ bắt đầu lại từ bảng trống hoàn toàn.
+                </div>
+              </div>
+            </label>
+          </div>
+
+          {/* Note */}
+          <div className="pt-1 border-t border-slate-100">
+            <label className="font-semibold text-slate-700 block mb-1">
+              6. Ghi chú gia hạn (Tùy chọn)
+            </label>
+            <input
+              type="text"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Ví dụ: Đóng học phí đợt 2 qua VietQR Sacombank, giảm 10%..."
+              className="w-full p-2 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4A101D]"
+            />
+          </div>
+
+          {/* Notice Banner */}
+          <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200/80 text-[11px] text-amber-900 flex items-center gap-2">
+            <span className="text-base shrink-0">💡</span>
+            <span>
+              Sau khi xác nhận, tiến độ của học viên sẽ chuyển thành <b>0/{packageSessions} buổi</b>, trạng thái trở về <b>Đang học</b> và sẵn sàng cho các ca dạy tiếp theo.
+            </span>
+          </div>
+
+          {/* Action buttons */}
+          <div className="pt-3 flex justify-end gap-2 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold transition-colors cursor-pointer"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2.5 bg-[#4A101D] hover:bg-[#631728] text-white rounded-xl font-bold shadow-md transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <span>🔄</span>
+              <span>Xác nhận gia hạn (0/{packageSessions} buổi)</span>
             </button>
           </div>
         </form>
